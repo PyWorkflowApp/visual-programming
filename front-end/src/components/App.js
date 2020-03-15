@@ -1,16 +1,32 @@
 import React from 'react';
-import { Container } from 'react-bootstrap';
+import { Container, Row, Col } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.css';
 import About from './About';
+import Workspace from './Workspace';
 
 
 function App() {
 
     return (
         <Container className="App">
-            <h1>Visual Programming Workspace</h1>
-            <About show={false} />
+            <Header />
+            <Workspace />
         </Container>
+    )
+}
+
+
+function Header() {
+    return (
+        <>
+            <Row>
+                <Col md={12}>
+                    <h1>Visual Programming Workspace</h1>
+                </Col>
+                <About show={false} />
+            </Row>
+            <hr />
+        </>
     )
 }
 
