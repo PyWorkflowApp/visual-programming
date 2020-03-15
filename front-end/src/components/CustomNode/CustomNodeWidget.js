@@ -13,7 +13,7 @@ export class CustomNodeWidget extends React.Component {
                 <PortWidget engine={this.props.engine} port={this.props.node.getPort('out')}>
                     <div className="circle-port" />
                 </PortWidget>
-                <div className="custom-node-name">{this.props.node.options.type}</div>
+                <div className="custom-node-name">{this.props.node.options.name}</div>
             </div>
         );
     }
