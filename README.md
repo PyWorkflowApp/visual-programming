@@ -11,7 +11,7 @@ data from `localhost:8000` **where the Django app must be running**.
 - `pip install -r requirements.txt`
 
 **Create dotenv file with app secret**
-- `echo "SECRET_KEY='TEMPORARY SECRET KEY'" > .environment`
+- `echo "SECRET_KEY='TEMPORARY SECRET KEY'" > vp/.environment`
 
 **Start dev server from app root**
 - `cd vp`
