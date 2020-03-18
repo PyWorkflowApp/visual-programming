@@ -68,7 +68,6 @@ TEMPLATES = [
 ]
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.file'
-SESSION_FILE_PATH = os.path.join(BASE_DIR, 'session_tmp')
 
 WSGI_APPLICATION = 'vp.wsgi.application'
 
