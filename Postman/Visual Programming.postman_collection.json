@@ -1,0 +1,28 @@
+{
+	"info": {
+		"_postman_id": "ad8f6a9f-641f-44a5-810d-39ecadfb5a36",
+		"name": "Visual Programming",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get Info",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8000/info",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"info"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}
