@@ -13,13 +13,14 @@ class Workspace extends React.Component {
         super(props);
         this.engine = createEngine();
         this.engine.getNodeFactories().registerFactory(new CustomNodeFactory());
+        this.engine.getLinkFactories().registerFactory(new CustomNodeFactory());
         this.model = new DiagramModel();
         this.engine.setModel(this.model);
     }
 
     render() {
         return (
-            <Row className="Workspace"> 
+            <Row className="Workspace">
                 <Col xs={3} className="node-menu">
                     <div>Drag-and-drop nodes to build a workflow.</div>
                     <hr />
@@ -39,7 +40,7 @@ class Workspace extends React.Component {
                             color="green" />
                     </ul>
                 </Col>
-                <Col xs={9}> 
+                <Col xs={9}>
                     <div style={{position: 'relative', flexGrow: 1}}
                         onDrop={event => {
                             var data = JSON.parse(event.dataTransfer.getData('storm-diagram-node'));
@@ -64,7 +65,7 @@ class Workspace extends React.Component {
 
 function NodeMenuItem(props) {
     return (
-        <li className="NodeMenuItem" 
+        <li className="NodeMenuItem"
             draggable={true}
             onDragStart={event => {
                 event.dataTransfer.setData(
