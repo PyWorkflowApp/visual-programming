@@ -1,4 +1,6 @@
-import { DefaultPortModel, NodeModel } from '@projectstorm/react-diagrams';
+import { NodeModel } from '@projectstorm/react-diagrams';
+import { CustomPortModel } from '../CustomPort/CustomPortModel';
+
 
 /**
  * Example of a custom model using pure javascript
@@ -19,7 +21,7 @@ export class CustomNodeModel extends NodeModel {
         // setup in and out ports
         for (let i = 0; i < nIn; ++i) {
             this.addPort(
-                new DefaultPortModel({
+                new CustomPortModel({
                     in: true,
                     type: 'in',
                     name: `in-${i}`
@@ -28,7 +30,7 @@ export class CustomNodeModel extends NodeModel {
         }
         for (let i = 0; i < nOut; ++i) {
             this.addPort(
-                new DefaultPortModel({
+                new CustomPortModel({
                     in: false,
                     type: 'out',
                     name: `out-${i}`

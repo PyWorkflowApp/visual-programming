@@ -7,7 +7,7 @@ export class CustomLinkModel extends DefaultLinkModel {
       constructor() {
         super({
           type: 'advanced',
-          width: 100
+          width: 5
         });
       }
 }

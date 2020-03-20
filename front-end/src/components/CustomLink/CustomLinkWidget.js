@@ -59,7 +59,7 @@ export class CustomLinkWidget extends React.Component<{ model: CustomLinkModel; 
 					ref={ref => {
 						this.circle = ref;
 					}}
-					r={30}
+					r={5}
 					fill="orange"
 				/>
 			</>
