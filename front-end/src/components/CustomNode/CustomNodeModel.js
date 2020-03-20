@@ -14,8 +14,8 @@ export class CustomNodeModel extends NodeModel {
             options: 'red'
         };
 
-        const nIn = options.numPortsIn || 1;
-        const nOut = options.numPortsOut || 1;
+        const nIn = options.numPortsIn === undefined ? 1 : options.numPortsIn;
+        const nOut = options.numPortsOut === undefined ? 1 : options.numPortsOut;
         // setup in and out ports
         for (let i = 0; i < nIn; ++i) {
             this.addPort(
