@@ -1,4 +1,5 @@
 from django.http import JsonResponse
+from .models import Workflow, WorkflowException
 import networkx as nx
 import json
 import os
@@ -6,59 +7,67 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+# Initialize a Workflow object
+workflow = Workflow()
 
 def open_workflow(request):
-    # Open filename specified
-    file = request.GET.get('file')
+    """Opens a workflow.
 
-    # File requested matches JSON extension
-    if file is not None and file[-5:] == '.json':
-        path = os.path.join(BASE_DIR, file)
+    If file is specified in GET request, that file is opened.
+    Otherwise, a temporary example with 3 nodes is created.
 
-        with open(path, 'r') as json_file:
-            json_data = json.load(json_file)
-            DG = nx.readwrite.json_graph.node_link_graph(json_data)
+    Args:
+        request: Django request Object
 
-    # Create a test graph with 3 nodes
-    else:
+    Returns:
+        JSON response with data.
+    """
+    # Extract file name from GET request
+    file_path = request.GET.get('file')
+
+    # If no file parameter given, create new graph
+    if file_path is None:
         DG = nx.DiGraph()
         DG.add_nodes_from([1, 2, 3])
         DG.add_edges_from([(1, 2), (2, 3)])
 
+        workflow.graph = DG
+    # Otherwise, open the file
+    else:
+        try:
+            workflow.file_path = file_path
+            workflow.read_json()
+        except WorkflowException as e:
+            return JsonResponse({
+                e.action: e.reason
+            })
+
     # Construct response
     data = {
-        'graph': nx.readwrite.node_link_data(DG),
-        'nodes': DG.number_of_nodes(),
-        'message': 'Saving graph to session.',
+        'graph': nx.readwrite.json_graph.node_link_data(workflow.graph),
+        'nodes': workflow.graph.number_of_nodes(),
     }
 
-    # Store in session
-    # Not currently working; DiGraph is not JSON serializable
-    request.session['graph'] = data['graph']
+    workflow.store_in_session(request)
 
     return JsonResponse(data)
 
 
 def save_workflow(request):
-    # Send error message if no graph is in session
-    if request.session.get('graph') is None:
-        return JsonResponse({'message': 'No graph exists.'})
+    """Saves a workflow to disk.
 
-    graph = request.session.get('graph')
+    Args:
+        request: Django request Object
 
-    with open('graph.json', 'w') as outfile:
-        json.dump(graph, outfile)
+    Returns:
+        JSON response with data.
+    """
 
-    # # Create a test graph with 4 nodes
-    # DG = nx.DiGraph()
-    #
-    # DG.add_nodes_from([1, 2, 3, 4])
-    # DG.add_edges_from([(1, 2), (1, 4), (2, 3)])
-    #
-    # # Write to YAML file
-    # nx.write_yaml(DG, 'test.yaml')
+    if workflow.graph is None:
+        return JsonResponse({'message': 'No graph exists.'}, status=404)
+
+    workflow.write_json()
 
     return JsonResponse({
-        'graph': graph,
-        'message': 'Saved the graph to JSON file!'
+        'message': 'Saved the graph to ' + workflow.file_path + '!'
     })
