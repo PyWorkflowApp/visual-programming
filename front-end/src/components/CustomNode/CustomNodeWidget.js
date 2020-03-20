@@ -1,6 +1,7 @@
 import * as React from 'react';
 import * as _ from 'lodash';
 import { PortWidget } from '@projectstorm/react-diagrams';
+import StatusLight from '../StatusLight';
 import '../../styles/CustomNode.css';
 
 
@@ -31,6 +32,7 @@ export class CustomNodeWidget extends React.Component {
                         { portWidgets["out"] }
                     </div>
                 </div>
+                <StatusLight status="unconfigured" />
             </div>
         );
     }
