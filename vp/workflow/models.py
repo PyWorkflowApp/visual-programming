@@ -1,6 +1,8 @@
 import networkx as nx
 import json
 
+from node.models import Node
+
 class WorkflowInterface:
     """ Interface for a Workflow object.
 
@@ -12,6 +14,9 @@ class WorkflowInterface:
     def __init__(self):
         self._file_path = None
         self._graph = None
+
+    def add_node(self, node: Node):
+        pass
 
     def read_json(self):
         pass
@@ -35,6 +40,10 @@ class Workflow(WorkflowInterface):
     """
     def __init__(self):
         super().__init__()
+
+    def add_node(self, node: Node):
+        if node.validate():
+            self._graph.add_node(node._id)
 
     def read_json(self):
         """ Read a Workflow file saved as JSON into a NetworkX graph
@@ -66,6 +75,10 @@ class Workflow(WorkflowInterface):
             Object containing the graph and file path from the session.
         """
         data = request.session['graph']
+
+        self.graph = nx.readwrite.json_graph.node_link_graph(data)
+        self.file_path = request.session['file_path']
+
         return {
             'graph': nx.readwrite.json_graph.node_link_graph(data),
             'file_path': request.session['file_path'],
