@@ -1,0 +1,16 @@
+.StatusLight {
+    width: 40px;
+    height: 15px;
+    margin-top: 5px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background-color: lightgrey;
+}
+
+.StatusLightItem {
+    width: 8px;
+    height: 8px;
+    border-radius: 4px;
+    background-color: white;
+}

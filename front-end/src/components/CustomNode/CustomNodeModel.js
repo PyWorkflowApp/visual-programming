@@ -14,17 +14,27 @@ export class CustomNodeModel extends NodeModel {
             options: 'red'
         };
 
-        // setup an in and out port
-        this.addPort(
-            new DefaultPortModel({ in: true,
-                name: 'in'
-            })
-        );
-        this.addPort(
-            new DefaultPortModel({ in: false,
-                name: 'out'
-            })
-        );
+        const nIn = options.numPortsIn === undefined ? 1 : options.numPortsIn;
+        const nOut = options.numPortsOut === undefined ? 1 : options.numPortsOut;
+        // setup in and out ports
+        for (let i = 0; i < nIn; ++i) {
+            this.addPort(
+                new DefaultPortModel({
+                    in: true,
+                    type: 'in',
+                    name: `in-${i}`
+                })
+            );
+        }
+        for (let i = 0; i < nOut; ++i) {
+            this.addPort(
+                new DefaultPortModel({
+                    in: false,
+                    type: 'out',
+                    name: `out-${i}`
+                })
+            );
+        }
     }
 
     serialize() {
