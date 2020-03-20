@@ -21,5 +21,6 @@ from . import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('info/', views.info),
+    path('node/', include('node.urls')),
     path('workflow/', include('workflow.urls')),
 ]

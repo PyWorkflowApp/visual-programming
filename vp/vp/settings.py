@@ -37,6 +37,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # Project apps
+    'workflow.apps.WorkflowConfig',
+    'node.apps.NodeConfig',
 ]
 
 MIDDLEWARE = [
