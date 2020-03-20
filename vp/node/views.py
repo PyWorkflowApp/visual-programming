@@ -25,7 +25,8 @@ def node(request):
     # Create a new Node with POST info
     # TODO: id is num + 1; rest of info is hard-coded
     num_nodes = workflow.graph.number_of_nodes()
-    new_node = Node(node_id=(num_nodes + 1), node_type="blank", num_ports_in=1, num_ports_out=1)
+    node_id = num_nodes + 1
+    new_node = Node(node_id=node_id, node_type="blank", num_ports_in=1, num_ports_out=1)
 
     # Add Node to graph and re-save workflow to session
     workflow.add_node(new_node)

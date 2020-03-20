@@ -43,7 +43,7 @@ class Workflow(WorkflowInterface):
 
     def add_node(self, node: Node):
         if node.validate():
-            self._graph.add_node(node._id)
+            self._graph.add_node(node.node_id)
 
     def read_json(self):
         """ Read a Workflow file saved as JSON into a NetworkX graph
