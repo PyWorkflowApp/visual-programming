@@ -2,6 +2,7 @@ import React from 'react';
 import { Row, Col } from 'react-bootstrap';
 import createEngine, { DiagramModel } from '@projectstorm/react-diagrams';
 import { CanvasWidget } from '@projectstorm/react-canvas-core';
+import { CustomLinkFactory } from './CustomLink/CustomLinkFactory';
 import { CustomNodeModel } from './CustomNode/CustomNodeModel';
 import { CustomNodeFactory } from './CustomNode/CustomNodeFactory';
 import '../styles/Workspace.css';
@@ -13,7 +14,7 @@ class Workspace extends React.Component {
         super(props);
         this.engine = createEngine();
         this.engine.getNodeFactories().registerFactory(new CustomNodeFactory());
-        this.engine.getLinkFactories().registerFactory(new CustomNodeFactory());
+        this.engine.getLinkFactories().registerFactory(new CustomLinkFactory());
         this.model = new DiagramModel();
         this.engine.setModel(this.model);
     }

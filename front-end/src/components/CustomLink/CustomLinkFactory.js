@@ -1,10 +1,9 @@
 import * as React from 'react';
-import { CustomNodeModel } from './CustomNodeModel';
-import { CustomNodeWidget } from './CustomNodeWidget';
-import { AbstractReactFactory } from '@projectstorm/react-canvas-core';
+import { CustomLinkModel } from './CustomLinkModel';
+import { CustomLinkWidget } from './CustomLinkWidget';
+import { DefaultLinkFactory } from '@projectstorm/react-diagrams';
 
-
-export class CustomNodeFactory extends AbstractReactFactory {
+export class CustomLinkFactory extends DefaultLinkFactory {
     constructor() {
         super('advanced');
     }
@@ -16,7 +15,7 @@ export class CustomNodeFactory extends AbstractReactFactory {
     generateLinkSegment(model: CustomLinkModel, selected: boolean, path: string) {
         return (
           <g>
-            <CustomLinkModel model={model} path={path} />
+            <CustomLinkWidget model={model} path={path} />
           </g>
         );
     }
