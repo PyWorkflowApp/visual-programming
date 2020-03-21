@@ -7,8 +7,6 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# Initialize a Workflow object
-workflow = Workflow()
 
 def new_workflow(request):
     """ Create a new workflow.
@@ -38,33 +36,33 @@ def open_workflow(request):
     """Opens a workflow.
 
     If file is specified in GET request, that file is opened.
-    Otherwise, a temporary example with 3 nodes is created.
 
     Args:
         request: Django request Object
 
     Returns:
-        JSON response with data.
+        200 - JSON response with data.
+        400 - No file specified
+        404 - File specified not found, or not JSON graph
     """
-    # Extract file name from GET request
+    # If file included in request, extract it
     file_path = request.GET.get('file')
-
-    # If no file parameter given, create new graph
     if file_path is None:
-        DG = nx.DiGraph()
-        DG.add_nodes_from([1, 2, 3])
-        DG.add_edges_from([(1, 2), (2, 3)])
+        return JsonResponse({'message': 'File must be specified.'}, status=400)
 
-        workflow.graph = DG
-    # Otherwise, open the file
-    else:
-        try:
-            workflow.file_path = file_path
-            workflow.read_json()
-        except WorkflowException as e:
-            return JsonResponse({
-                e.action: e.reason
-            })
+    # Create Workflow to store info
+    workflow = Workflow()
+
+    # Read info into Workflow object
+    try:
+        workflow.file_path = file_path
+        workflow.graph = workflow.read_json()
+    except OSError as e:
+        return JsonResponse({'message': e.strerror}, status=404)
+    except nx.NetworkXError as e:
+        return JsonResponse({'message': str(e)}, status=404)
+    except WorkflowException as e:
+        return JsonResponse({e.action: e.reason}, status=404)
 
     # Construct response
     data = {
@@ -72,8 +70,8 @@ def open_workflow(request):
         'nodes': workflow.graph.number_of_nodes(),
     }
 
+    # Save Workflow info to session
     workflow.store_in_session(request)
-
     return JsonResponse(data)
 
 
@@ -86,11 +84,18 @@ def save_workflow(request):
     Returns:
         JSON response with data.
     """
-
-    if workflow.graph is None:
+    # Check session for existing graph
+    if request.session['graph'] is None:
         return JsonResponse({'message': 'No graph exists.'}, status=404)
 
-    workflow.write_json()
+    # Load session data into Workflow object
+    workflow = Workflow()
+    try:
+        workflow.retrieve_from_session(request)
+        # Write to disk
+        workflow.write_json()
+    except WorkflowException as e:
+        return JsonResponse({e.action: e.reason}, status=404)
 
     return JsonResponse({
         'message': 'Saved the graph to ' + workflow.file_path + '!'

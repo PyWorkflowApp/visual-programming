@@ -52,37 +52,29 @@ class Workflow(WorkflowInterface):
              NetworkX DiGraph object
 
         Raises:
-            WorkflowException: on file error or NetworkX parsing
+            OSError: on file error
+            NetworkXError: on issue with loading JSON graph data
         """
-        try:
-            with open(self.file_path, 'r') as file:
-                json_data = json.load(file)
-                self.graph = nx.readwrite.json_graph.node_link_graph(json_data)
 
-            return self.graph
-        except OSError as e:
-            raise WorkflowException('read_json', e.strerror)
-        except nx.NetworkXError as e:
-            raise WorkflowException('read_json', e)
+        with open(self.file_path, 'r') as file:
+            json_data = json.load(file)
+            return nx.readwrite.json_graph.node_link_graph(json_data)
 
     def retrieve_from_session(self, request):
         """Store Workflow information in the Django session.
 
         Args:
             request: The Django request object
-
-        Return:
-            Object containing the graph and file path from the session.
         """
-        data = request.session['graph']
-
-        self.graph = nx.readwrite.json_graph.node_link_graph(data)
         self.file_path = request.session['file_path']
 
-        return {
-            'graph': nx.readwrite.json_graph.node_link_graph(data),
-            'file_path': request.session['file_path'],
-        }
+        data = request.session['graph']
+        if data is None:
+            self.graph = None
+        else:
+            self.graph = nx.readwrite.json_graph.node_link_graph(data)
+
+        return
 
     def store_in_session(self, request):
         """Store Workflow information in the Django session.
@@ -106,17 +98,21 @@ class Workflow(WorkflowInterface):
 
         Raises:
             WorkflowException: on file error or NetworkX parsing
+
+        TODO:
+            * Filename save logic isn't great. Need to figure out better way
+              to default to session info, but allow/accept an alternate path.
         """
         if self.file_path is None:
             self.file_path = file_name
 
         try:
-            with open(self.file_path, 'w') as outfile:
+            with open(file_name, 'w') as outfile:
                 json.dump(nx.readwrite.json_graph.node_link_data(self.graph), outfile)
         except OSError as e:
             raise WorkflowException('write_json', e.strerror)
         except nx.NetworkXError as e:
-            raise WorkflowException('read_json', e)
+            raise WorkflowException('write_json', str(e))
 
         return
 
@@ -134,10 +130,10 @@ class Workflow(WorkflowInterface):
 
     @file_path.setter
     def file_path(self, file_path: str):
-        if file_path[-5:] == '.json':
+        if file_path is None or file_path[-5:] == '.json':
             self._file_path = file_path
         else:
-            raise WorkflowException('load_file', 'File is not JSON.')
+            raise WorkflowException('load_file', 'File ' + file_path + ' is not JSON.')
 
 
 class WorkflowException(Exception):

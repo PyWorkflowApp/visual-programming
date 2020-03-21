@@ -5,8 +5,6 @@ import json
 from .models import Node
 from workflow.models import Workflow, WorkflowException
 
-workflow = Workflow()
-
 
 def node(request):
     """ Add new Node to graph
@@ -14,6 +12,7 @@ def node(request):
     """
 
     # Load workflow from session
+    workflow = Workflow()
     workflow.retrieve_from_session(request)
 
     # Check if a graph is present
