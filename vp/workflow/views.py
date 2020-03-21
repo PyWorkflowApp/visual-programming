@@ -1,4 +1,5 @@
 from django.http import JsonResponse
+from .models import Workflow, WorkflowException
 import networkx as nx
 import json
 import os
@@ -7,58 +8,95 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-def open_workflow(request):
-    # Open filename specified
-    file = request.GET.get('file')
+def new_workflow(request):
+    """ Create a new workflow.
 
-    # File requested matches JSON extension
-    if file is not None and file[-5:] == '.json':
-        path = os.path.join(BASE_DIR, file)
+    Initialize a new, empty, NetworkX DiGraph object and store it in
+    the session
 
-        with open(path, 'r') as json_file:
-            json_data = json.load(json_file)
-            DG = nx.readwrite.json_graph.node_link_graph(json_data)
-
-    # Create a test graph with 3 nodes
-    else:
-        DG = nx.DiGraph()
-        DG.add_nodes_from([1, 2, 3])
-        DG.add_edges_from([(1, 2), (2, 3)])
+    Return:
+        200 - Created new DiGraph
+    """
+    # Create new NetworkX graph
+    DG = nx.DiGraph()
+    json_graph = nx.readwrite.json_graph.node_link_data(DG)
 
     # Construct response
     data = {
-        'graph': nx.readwrite.node_link_data(DG),
+        'graph': json_graph,
         'nodes': DG.number_of_nodes(),
-        'message': 'Saving graph to session.',
     }
 
-    # Store in session
-    # Not currently working; DiGraph is not JSON serializable
-    request.session['graph'] = data['graph']
+    # Save to session
+    request.session['graph'] = json_graph
+    return JsonResponse(data)
 
+
+def open_workflow(request):
+    """Opens a workflow.
+
+    If file is specified in GET request, that file is opened.
+
+    Args:
+        request: Django request Object
+
+    Returns:
+        200 - JSON response with data.
+        400 - No file specified
+        404 - File specified not found, or not JSON graph
+    """
+    # If file included in request, extract it
+    file_path = request.GET.get('file')
+    if file_path is None:
+        return JsonResponse({'message': 'File must be specified.'}, status=400)
+
+    # Create Workflow to store info
+    workflow = Workflow()
+
+    # Read info into Workflow object
+    try:
+        workflow.file_path = file_path
+        workflow.graph = workflow.read_json()
+    except OSError as e:
+        return JsonResponse({'message': e.strerror}, status=404)
+    except nx.NetworkXError as e:
+        return JsonResponse({'message': str(e)}, status=404)
+    except WorkflowException as e:
+        return JsonResponse({e.action: e.reason}, status=404)
+
+    # Construct response
+    data = {
+        'graph': nx.readwrite.json_graph.node_link_data(workflow.graph),
+        'nodes': workflow.graph.number_of_nodes(),
+    }
+
+    # Save Workflow info to session
+    workflow.store_in_session(request)
     return JsonResponse(data)
 
 
 def save_workflow(request):
-    # Send error message if no graph is in session
-    if request.session.get('graph') is None:
-        return JsonResponse({'message': 'No graph exists.'})
+    """Saves a workflow to disk.
 
-    graph = request.session.get('graph')
+    Args:
+        request: Django request Object
 
-    with open('graph.json', 'w') as outfile:
-        json.dump(graph, outfile)
+    Returns:
+        JSON response with data.
+    """
+    # Check session for existing graph
+    if request.session['graph'] is None:
+        return JsonResponse({'message': 'No graph exists.'}, status=404)
 
-    # # Create a test graph with 4 nodes
-    # DG = nx.DiGraph()
-    #
-    # DG.add_nodes_from([1, 2, 3, 4])
-    # DG.add_edges_from([(1, 2), (1, 4), (2, 3)])
-    #
-    # # Write to YAML file
-    # nx.write_yaml(DG, 'test.yaml')
+    # Load session data into Workflow object
+    workflow = Workflow()
+    try:
+        workflow.retrieve_from_session(request)
+        # Write to disk
+        workflow.write_json()
+    except WorkflowException as e:
+        return JsonResponse({e.action: e.reason}, status=404)
 
     return JsonResponse({
-        'graph': graph,
-        'message': 'Saved the graph to JSON file!'
+        'message': 'Saved the graph to ' + workflow.file_path + '!'
     })
