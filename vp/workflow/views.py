@@ -10,6 +10,30 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Initialize a Workflow object
 workflow = Workflow()
 
+def new_workflow(request):
+    """ Create a new workflow.
+
+    Initialize a new, empty, NetworkX DiGraph object and store it in
+    the session
+
+    Return:
+        200 - Created new DiGraph
+    """
+    # Create new NetworkX graph
+    DG = nx.DiGraph()
+    json_graph = nx.readwrite.json_graph.node_link_data(DG)
+
+    # Construct response
+    data = {
+        'graph': json_graph,
+        'nodes': DG.number_of_nodes(),
+    }
+
+    # Save to session
+    request.session['graph'] = json_graph
+    return JsonResponse(data)
+
+
 def open_workflow(request):
     """Opens a workflow.
 
