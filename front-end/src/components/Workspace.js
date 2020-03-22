@@ -1,10 +1,12 @@
 import React from 'react';
+import * as _ from 'lodash';
 import { Row, Col } from 'react-bootstrap';
 import createEngine, { DiagramModel } from '@projectstorm/react-diagrams';
 import { CanvasWidget } from '@projectstorm/react-canvas-core';
 import { CustomLinkFactory } from './CustomLink/CustomLinkFactory';
 import { CustomNodeModel } from './CustomNode/CustomNodeModel';
 import { CustomNodeFactory } from './CustomNode/CustomNodeFactory';
+import * as nodeItems from '../nodeItems.json';
 import '../styles/Workspace.css';
 
 
@@ -20,26 +22,22 @@ class Workspace extends React.Component {
     }
 
     render() {
+        // construct menu from JSON of node types
+        const menu = _.map(nodeItems.default, (items, section) =>
+            <div key={`node-menu-${section}`}>
+                <b>{section}</b>
+                <ul>
+                { _.map(items, item => <NodeMenuItem {...item} />) }
+                </ul>
+            </div>
+        );
+
         return (
             <Row className="Workspace">
                 <Col xs={3} className="node-menu">
                     <div>Drag-and-drop nodes to build a workflow.</div>
                     <hr />
-                    <b>I/O</b>
-                    <ul>
-                        <NodeMenuItem model={{type: 'readCsv'}} name="Read CSV"
-                            numPortsIn={0} color="black" />
-                    </ul>
-                    <b>Manipulation</b>
-                    <ul>
-                        <NodeMenuItem model={{type: 'filter'}} name="Filter Rows"
-                            color="red" />
-                        <NodeMenuItem model={{type: 'pivot'}} name="Pivot Table"
-                            color="blue" />
-                        <NodeMenuItem model={{type: 'multi-in'}} name="Multiple Input Example"
-                            numPortsIn={3} numPortsOut={1}
-                            color="green" />
-                    </ul>
+                    { menu }
                 </Col>
                 <Col xs={9}>
                     <div style={{position: 'relative', flexGrow: 1}}
@@ -49,13 +47,14 @@ class Workspace extends React.Component {
                             var point = this.engine.getRelativeMousePoint(event);
                             node.setPosition(point);
                             this.model.addNode(node);
+                            console.log(node);
                             this.forceUpdate();
                         }}
                     onDragOver={event => {
                             event.preventDefault();
                     }}
                     >
-                    <CanvasWidget className="diagram-canvas" engine={this.engine} />
+                        <CanvasWidget className="diagram-canvas" engine={this.engine} />
                     </div>
                 </Col>
             </Row>
