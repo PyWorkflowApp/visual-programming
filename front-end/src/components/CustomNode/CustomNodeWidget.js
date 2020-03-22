@@ -13,6 +13,7 @@ export class CustomNodeWidget extends React.Component {
         this.state = {showConfig: false};
         this.toggleConfig = this.toggleConfig.bind(this);
         this.handleDelete = this.handleDelete.bind(this);
+        this.acceptConfiguration = this.acceptConfiguration.bind(this);
     }
 
     // show/hide node configuration modal
@@ -23,6 +24,11 @@ export class CustomNodeWidget extends React.Component {
     // delete node from diagram model and redraw diagram
     handleDelete() {
         this.props.node.remove();
+        this.props.engine.repaintCanvas();
+    }
+
+    acceptConfiguration(formData) {
+        this.props.node.setDescription(formData.description);
         this.props.engine.repaintCanvas();
     }
 
@@ -48,7 +54,8 @@ export class CustomNodeWidget extends React.Component {
                     <NodeConfig node={this.props.node}
                         show={this.state.showConfig}
                         toggleShow={this.toggleConfig}
-                        handleDelete={this.handleDelete} />
+                        onDelete={this.handleDelete}
+                        onSubmit={this.acceptConfiguration} />
                     <div className="port-col port-col-in">
                         { portWidgets["in"] }
                     </div>
@@ -57,6 +64,7 @@ export class CustomNodeWidget extends React.Component {
                     </div>
                 </div>
                 <StatusLight status="unconfigured" />
+                <div className="custom-node-description">{this.props.node.getDescription()}</div>
             </div>
         );
     }

@@ -47,3 +47,10 @@
     top: 50%;
     transform: translate(-50%, -50%);
 }
+
+.custom-node-description {
+    margin-top: 5px;
+    text-align: center;
+    max-width: 80px;
+    font-size: 0.5rem;
+}
