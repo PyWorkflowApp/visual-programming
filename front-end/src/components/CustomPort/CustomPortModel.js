@@ -7,6 +7,6 @@ export class CustomPortModel extends DefaultPortModel {
       }
 
       canLinkToPort(port: PortModel): boolean {
-        return true;
+        return port instanceof CustomPortModel;
       }
 }
