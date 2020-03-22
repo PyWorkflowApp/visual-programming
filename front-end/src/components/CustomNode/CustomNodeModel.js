@@ -16,6 +16,9 @@ export class CustomNodeModel extends NodeModel {
             options: 'red'
         };
 
+        // user-defined description of node
+        this._description = null;
+
         const nIn = options.numPortsIn === undefined ? 1 : options.numPortsIn;
         const nOut = options.numPortsOut === undefined ? 1 : options.numPortsOut;
         // setup in and out ports
@@ -50,4 +53,13 @@ export class CustomNodeModel extends NodeModel {
         super.deserialize(ob, engine);
         this.color = ob.color;
     }
+
+    getDescription() {
+        return this._description;
+    }
+
+    setDescription(description) {
+        this._description = description;
+    }
+
 }
