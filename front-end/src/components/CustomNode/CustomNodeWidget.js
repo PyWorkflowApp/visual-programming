@@ -1,11 +1,30 @@
-import * as React from 'react';
+import React from 'react';
 import * as _ from 'lodash';
 import { PortWidget } from '@projectstorm/react-diagrams';
 import StatusLight from '../StatusLight';
+import NodeConfig from './NodeConfig';
 import '../../styles/CustomNode.css';
 
 
 export class CustomNodeWidget extends React.Component {
+
+    constructor(props) {
+        super(props);
+        this.state = {showConfig: false};
+        this.toggleConfig = this.toggleConfig.bind(this);
+        this.handleDelete = this.handleDelete.bind(this);
+    }
+
+    // show/hide node configuration modal
+    toggleConfig() {
+        this.setState({showConfig: !this.state.showConfig});
+    }
+
+    // delete node from diagram model and redraw diagram
+    handleDelete() {
+        this.props.node.remove();
+        this.props.engine.repaintCanvas();
+    }
 
     render() {
         const engine = this.props.engine;
@@ -16,7 +35,7 @@ export class CustomNodeWidget extends React.Component {
         const portWidgets = {};
         for (let portType in sortedPorts) {
             portWidgets[portType] = sortedPorts[portType].map(port =>
-                <PortWidget engine={engine} port={port}>
+                <PortWidget engine={engine} port={port} key={port.getID()}>
                         <div className="triangle-port" />
                 </PortWidget>
             );
@@ -25,6 +44,11 @@ export class CustomNodeWidget extends React.Component {
             <div className="custom-node-wrapper">
                 <div className="custom-node-name">{this.props.node.options.name}</div>
                 <div className="custom-node" style={{ borderColor: this.props.node.color }}>
+                    <div className="custom-node-configure" onClick={this.toggleConfig}>&#x2699;</div>
+                    <NodeConfig node={this.props.node}
+                        show={this.state.showConfig}
+                        toggleShow={this.toggleConfig}
+                        handleDelete={this.handleDelete} />
                     <div className="port-col port-col-in">
                         { portWidgets["in"] }
                     </div>
