@@ -9,7 +9,7 @@ export class CustomLinkModel extends DefaultLinkModel {
       }
 
     getSVGPath(): string {
-  		if (this.isLastPositionDefault()) {
+      if (this.isLastPositionDefault()) {
         return;
       }
 
