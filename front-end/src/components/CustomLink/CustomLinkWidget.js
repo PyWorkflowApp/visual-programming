@@ -9,10 +9,12 @@ export class CustomLinkWidget extends React.Component<{ model: CustomLinkModel; 
 	percent: number;
 	handle: any;
 	mounted: boolean;
+  radius: number;
 
 	constructor(props) {
 		super(props);
 		this.percent = 0;
+    this.radius = 5;
 	}
 
 	componentDidMount() {
@@ -55,15 +57,12 @@ export class CustomLinkWidget extends React.Component<{ model: CustomLinkModel; 
 					stroke="rgba(255,0,0,0.5)"
 					d={this.props.path}
 				/>
-				<circle
-					ref={ref => {
-						this.circle = ref;
-					}}
-					r={5}
-					fill="orange"
-				/>
 			</>
 		);
 	}
+
+  isPointDefault(point: Point) {
+    return point.x === 0 && point.y === 0;
+  }
 
 }
