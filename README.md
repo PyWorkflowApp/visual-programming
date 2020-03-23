@@ -8,7 +8,7 @@ data from `localhost:8000` **where the Django app must be running**.
 ## Django
 
 ### Install Dependencies
-1. Install `pipenv`
+1. Install `pipenv` from home directory
 
     - **Homebrew**:
 
