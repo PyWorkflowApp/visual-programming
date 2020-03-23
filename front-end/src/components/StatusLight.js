@@ -10,7 +10,7 @@ function StatusLight(props) {
         "complete": "green"
     };
     const items = _.keys(statuses).map(s =>
-        <StatusLightItem color={statuses[s]} active={props.status === s} />
+        <StatusLightItem color={statuses[s]} active={props.status === s} key={s} />
     );
     return (
         <div className="StatusLight">
