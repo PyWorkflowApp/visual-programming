@@ -42,8 +42,47 @@ class Workflow(WorkflowInterface):
         super().__init__()
 
     def add_node(self, node: Node):
+        """ Add a Node object to the graph.
+
+        Args:
+            node - The Node object to add to the graph
+
+        TODO:
+            * validate() always returns True; this should perform actual validation
+        """
         if node.validate():
+            # Only hashable Python objects can represent a node in a NetworkX graph.
+            # For now, add Node from 'node_id' and iterate through keys to add
+            # attributes. We may want to investigate alternatives.
+            node_dict = node.__dict__
             self._graph.add_node(node.node_id)
+
+            for key in node_dict.keys():
+                # Graph node already includes 'id' for lookup
+                if key is 'node_id':
+                    continue
+
+                # Add attribute to graph node
+                self._graph.nodes[node.node_id][key] = node_dict[key]
+
+        return
+
+    def remove_node(self, node):
+        """ Remove a node from the graph.
+
+        Raises:
+            WorkflowException: on issue with removing node from graph
+
+        TODO:
+            * 'node' passed in is a Dict, not custom Node class
+            * Property accessor will need to be changed
+        """
+        try:
+            self._graph.remove_node(node['node_id'])
+        except nx.NetworkXError:
+            raise WorkflowException('remove_node', 'Node does not exist in graph.')
+
+        return
 
     def read_json(self):
         """ Read a Workflow file saved as JSON into a NetworkX graph
@@ -140,3 +179,6 @@ class WorkflowException(Exception):
     def __init__(self, action: str, reason: str):
         self.action = action
         self.reason = reason
+
+    def __str__(self):
+        return self.action + ': ' + self.reason
