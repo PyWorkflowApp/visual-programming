@@ -1,12 +1,12 @@
 import { DefaultLinkModel } from '@projectstorm/react-diagrams';
 
 export class CustomLinkModel extends DefaultLinkModel {
-      constructor() {
+    constructor() {
         super({
           type: 'advanced',
           width: 5
         });
-      }
+    }
 
     getSVGPath(): string {
       if (this.isLastPositionDefault()) {
@@ -14,9 +14,9 @@ export class CustomLinkModel extends DefaultLinkModel {
       }
 
       return super.getSVGPath();
-	}
+    }
 
-  isLastPositionDefault() {
-    return this.getLastPoint().getX() === 0 && this.getLastPoint().getY() === 0;
-  }
+    isLastPositionDefault() {
+      return this.getLastPoint().getX() === 0 && this.getLastPoint().getY() === 0;
+    }
 }
