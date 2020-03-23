@@ -13,7 +13,7 @@ export class CustomLinkModel extends DefaultLinkModel {
         return;
       }
 
-		  return super.getSVGPath();
+      return super.getSVGPath();
 	}
 
   isLastPositionDefault() {
