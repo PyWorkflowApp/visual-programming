@@ -37,10 +37,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
+    'rest_framework',
     # Project apps
-    'workflow.apps.WorkflowConfig',
-    'node.apps.NodeConfig',
+    'workflow',
+    'node',
+    'ide',
 ]
 
 MIDDLEWARE = [
@@ -83,10 +84,14 @@ WSGI_APPLICATION = 'vp.wsgi.application'
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 ### Not yet setup
 DATABASES = {
-    # 'default': {
-    #     'ENGINE': 'django.db.backends.postgresql',
-    #     'NAME': os.path.join(BASE_DIR, 'db.postgresql'),
-    # }
+     'default': {
+         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+         'NAME': 'sample_database',
+         'USER': 'local_db_user',
+         'PASSWORD': 'local_db_pw',
+         'HOST': 'localhost',
+         'PORT': '5432'
+     }
 }
 
 

@@ -23,4 +23,5 @@ urlpatterns = [
     path('info/', views.info),
     path('node/', include('node.urls')),
     path('workflow/', include('workflow.urls')),
+    path('ide/', include('ide.urls'))
 ]
