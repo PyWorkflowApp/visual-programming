@@ -28,6 +28,15 @@ data from `localhost:8000` **where the Django app must be running**.
 
     - `pipenv install`
 
+4. Activate and exit the shell
+
+    - `pipenv shell`
+    - `exit`
+
+5. Or, run single commands
+
+    - `pipenv run python [COMMAND]`
+
 ### Installing new packages
 - Simply install via: `pipenv install [package-name]`
 
@@ -36,7 +45,7 @@ data from `localhost:8000` **where the Django app must be running**.
 
 ### Start dev server from app root
 - `cd vp`
-- `python manage.py runserver`
+- `pipenv run python manage.py runserver`
 
 ---
 ## React
