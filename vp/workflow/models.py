@@ -1,6 +1,6 @@
 import networkx as nx
 import json
-
+from django.http import HttpResponse
 from django.core.files.storage import FileSystemStorage
 from django.conf import settings
 from node.models import Node
@@ -130,6 +130,12 @@ class Workflow(WorkflowInterface):
         request.session['graph'] = nx.readwrite.node_link_data(self.graph)
         request.session['file_path'] = self.file_path
         return
+
+    def download_json(self):
+        json_str = json.dumps(nx.readwrite.json_graph.node_link_data(self.graph))
+        response = HttpResponse(json_str, content_type='application/json')
+        response['Content-Disposition'] = 'attachment; filename=%s' % self.file_path
+        return response
 
     def write_json(self, file_name='example.json'):
         """ Read a Workflow file saved as JSON into a NetworkX graph

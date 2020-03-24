@@ -80,7 +80,7 @@ def save_workflow(request):
         request: Django request Object
 
     Returns:
-        JSON response with data.
+        Downloads JSON file representing graph.
     """
     # Check session for existing graph
     if request.session['graph'] is None:
@@ -90,14 +90,10 @@ def save_workflow(request):
     workflow = Workflow()
     try:
         workflow.retrieve_from_session(request)
-        # Write to disk
-        workflow.write_json()
+        return workflow.download_json()
     except WorkflowException as e:
         return JsonResponse({e.action: e.reason}, status=404)
 
-    return JsonResponse({
-        'message': 'Saved the graph to ' + workflow.file_path + '!'
-    })
 
 def retrieve_nodes_for_user(request):
     if request.method =='GET':
