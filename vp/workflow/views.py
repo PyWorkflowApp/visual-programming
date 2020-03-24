@@ -1,8 +1,10 @@
 from django.http import JsonResponse
 from .models import Workflow, WorkflowException
 import networkx as nx
-import json
+import json, csv
 import os
+from django.http import HttpResponse
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -100,3 +102,38 @@ def save_workflow(request):
     return JsonResponse({
         'message': 'Saved the graph to ' + workflow.file_path + '!'
     })
+
+def retrieve_nodes_for_user(request):
+    if request.method =='GET':
+        """
+        Retrieve all nodes that a user can have access to in the IDE.
+        Currently returning default set of nodes. 
+        //TODO pick these node files from a file in the system.
+        """
+        data = {
+            "I/O": [
+                {"key": "read-csv", "name": "Read CSV", "numPortsIn": 0, "color": "black"}
+            ],
+            "Manipulation": [
+                {"key": "filter", "name": "Filter Rows", "color": "red"},
+                {"key": "pivot", "name": "Pivot Table", "color": "blue"},
+                {"key": "multi-in", "name": "Multi-Input Example", "numPortsIn": 3, "color": "green"}
+            ]
+        }
+        return JsonResponse(data, safe=False, status=200)
+
+def retrieve_csv(request, node_id):
+    if request.method =='GET':
+        """
+        Retrieves a CSV after the associated node execution and returns it as a json.
+        Currently just using a demo CSV in workspace. 
+        """
+        # Create the HttpResponse object with the appropriate CSV header.
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
+
+        writer = csv.writer(response)
+        writer.writerow(['First row', 'Foo', 'Bar', 'Baz'])
+        writer.writerow(['Second row', 'A', 'B', 'C', '"Testing"', "Here's a quote"])
+
+        return response
