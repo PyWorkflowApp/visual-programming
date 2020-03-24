@@ -72,6 +72,21 @@ class Workflow(WorkflowInterface):
 
         return
 
+    def add_edge(self, node_from: Node, node_to: Node):
+        """ Add a Node object to the graph.
+
+        Args:
+            node_from - The Node the edge originates from
+              node_to - The Node the edge ends at
+
+        TODO:
+            * validate() always returns True; this should perform actual validation
+        """
+        if node_from.validate() and node_to.validate():
+            self._graph.add_edge(node_from.node_id, node_to.node_id)
+
+        return
+
     def remove_node(self, node):
         """ Remove a node from the graph.
 
@@ -174,6 +189,17 @@ class Workflow(WorkflowInterface):
     @graph.setter
     def graph(self, graph):
         self._graph = graph
+
+    def get_node(self, node_id):
+        if self._graph.has_node(node_id) is not True:
+            return None
+
+        json_node = self.graph.nodes[node_id]
+
+        return Node(node_id=node_id,
+                    node_type=json_node['node_type'],
+                    num_ports_in=json_node['num_ports_in'],
+                    num_ports_out=json_node['num_ports_out'])
 
     @property
     def file_path(self):
