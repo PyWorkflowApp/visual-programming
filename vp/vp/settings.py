@@ -88,6 +88,7 @@ DATABASES = {
     # }
 }
 
+MEDIA_ROOT = '/tmp'
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators

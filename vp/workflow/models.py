@@ -1,7 +1,12 @@
 import networkx as nx
 import json
 
+from django.core.files.storage import FileSystemStorage
+from django.conf import settings
 from node.models import Node
+
+fs = FileSystemStorage(location=settings.MEDIA_ROOT)
+
 
 class WorkflowInterface:
     """ Interface for a Workflow object.
@@ -59,7 +64,7 @@ class Workflow(WorkflowInterface):
 
             for key in node_dict.keys():
                 # Graph node already includes 'id' for lookup
-                if key is 'node_id':
+                if key == 'node_id':
                     continue
 
                 # Add attribute to graph node
@@ -94,8 +99,9 @@ class Workflow(WorkflowInterface):
             OSError: on file error
             NetworkXError: on issue with loading JSON graph data
         """
-
-        with open(self.file_path, 'r') as file:
+        print(fs.location)
+        print(self.file_path)
+        with fs.open(self.file_path, 'r') as file:
             json_data = json.load(file)
             return nx.readwrite.json_graph.node_link_graph(json_data)
 
@@ -146,7 +152,7 @@ class Workflow(WorkflowInterface):
             self.file_path = file_name
 
         try:
-            with open(file_name, 'w') as outfile:
+            with fs.open(file_name, 'w') as outfile:
                 json.dump(nx.readwrite.json_graph.node_link_data(self.graph), outfile)
         except OSError as e:
             raise WorkflowException('write_json', e.strerror)
