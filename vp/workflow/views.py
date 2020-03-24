@@ -100,3 +100,22 @@ def save_workflow(request):
     return JsonResponse({
         'message': 'Saved the graph to ' + workflow.file_path + '!'
     })
+
+def retrieve_nodes_for_user(request):
+    if request.method =='GET':
+        """
+        Retrieve all nodes that a user can have access to in the IDE.
+        Currently returning default set of nodes. 
+        //TODO pick these node files from a file in the system.
+        """
+        data = {
+            "I/O": [
+                {"key": "read-csv", "name": "Read CSV", "numPortsIn": 0, "color": "black"}
+            ],
+            "Manipulation": [
+                {"key": "filter", "name": "Filter Rows", "color": "red"},
+                {"key": "pivot", "name": "Pivot Table", "color": "blue"},
+                {"key": "multi-in", "name": "Multi-Input Example", "numPortsIn": 3, "color": "green"}
+            ]
+        }
+        return JsonResponse(data, safe=False)
