@@ -1,3 +1,4 @@
+from json import JSONDecodeError
 from django.http import JsonResponse
 from .models import Workflow, WorkflowException
 import networkx as nx
@@ -103,27 +104,39 @@ def save_workflow(request):
         'message': 'Saved the graph to ' + workflow.file_path + '!'
     })
 
-def retrieve_nodes_for_user(request):
-    if request.method =='GET':
+def retrieve_nodes_for_ide(request):
+    if request.method == 'GET':
+        """Retrieve all nodes that a user can have access to in the IDE from a specified file in request body.
+        
+        Args:
+            request: Django request Object
+       
+         Returns:
+            200 - JSON response with data.
+            400 - No file specified/issues reading json file.
+            404 - File specified not found, or not JSON graph.
         """
-        Retrieve all nodes that a user can have access to in the IDE.
-        Currently returning default set of nodes. 
-        //TODO pick these node files from a file in the system.
-        """
-        data = {
-            "I/O": [
-                {"key": "read-csv", "name": "Read CSV", "numPortsIn": 0, "color": "black"}
-            ],
-            "Manipulation": [
-                {"key": "filter", "name": "Filter Rows", "color": "red"},
-                {"key": "pivot", "name": "Pivot Table", "color": "blue"},
-                {"key": "multi-in", "name": "Multi-Input Example", "numPortsIn": 3, "color": "green"}
-            ]
-        }
+        try:
+            request_body = json.loads(request.body)
+            file_to_load = request_body['file']
+            if file_to_load is None:
+                return JsonResponse({'message': 'Please specify nodes file.'}, status=400)
+            elif not os.path.exists(file_to_load):
+                return JsonResponse({'message': 'Unable to locate nodes file.'}, status=404)
+            f = open(file_to_load)
+            data = json.load(f)
+        except IOError as e:
+            return JsonResponse({e.action: e.reason}, status=404)
+        except JSONDecodeError as e:
+            return JsonResponse({'message': 'Issues decoding json.'}, status=400)
+        else:
+            f.close()
+        
         return JsonResponse(data, safe=False, status=200)
 
+
 def retrieve_csv(request, node_id):
-    if request.method =='GET':
+    if request.method == 'GET':
         """
         Retrieves a CSV after the associated node execution and returns it as a json.
         Currently just using a demo CSV in workspace. 
