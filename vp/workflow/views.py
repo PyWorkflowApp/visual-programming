@@ -4,7 +4,6 @@ import csv
 from django.http import JsonResponse, HttpResponse
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
-import networkx as nx
 
 from pyworkflow import Workflow, WorkflowException
 
@@ -21,18 +20,11 @@ def new_workflow(request):
     Return:
         200 - Created new DiGraph
     """
-    # Create new NetworkX graph
-    DG = nx.DiGraph()
-    json_graph = nx.readwrite.json_graph.node_link_data(DG)
-
-    # Construct response
-    data = {
-        'graph': json_graph,
-        'nodes': DG.number_of_nodes(),
-    }
-
+    # Create new Workflow
+    workflow = Workflow()
     # Save to session
-    request.session['graph'] = json_graph
+    request.session.update(workflow.to_session_dict())
+    data = workflow.to_graph_json()
     return JsonResponse(data)
 
 
