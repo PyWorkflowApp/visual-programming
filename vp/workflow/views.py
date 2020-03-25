@@ -1,5 +1,6 @@
 from json import JSONDecodeError
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from .models import Workflow, WorkflowException
 import networkx as nx
 import json, csv
@@ -134,6 +135,39 @@ def retrieve_nodes_for_ide(request):
         
         return JsonResponse(data, safe=False, status=200)
 
+@csrf_exempt
+def save_nodes_for_ide(request):
+    if request.method == 'POST':
+        """Saves all nodes that a user can have access to in the IDE to a specified file in request body.
+
+        Args:
+            request: Django request Object
+
+         Returns:
+            200 - JSON response with data.
+            400 - No file specified, no nodes specified or issues reading json file.
+            404 - I/O issues
+        """
+        try:
+            request_body = json.loads(request.body)
+            file_to_save = request_body['file']
+            data_to_save = request_body['nodes']
+            if file_to_save is None:
+                return JsonResponse({'message': 'Please specify nodes file.'}, status=400)
+            if data_to_save is None:
+                return JsonResponse({'message': 'Please specify nodes to be saved.'}, status=400)
+            f = open(file_to_save, 'w')
+            with f as outfile:
+               json.dump(data_to_save, outfile)
+
+        except IOError as e:
+            return JsonResponse({e.action: e.reason}, status=404)
+        except JSONDecodeError as e:
+            return JsonResponse({'message': 'Issues decoding json.'}, status=400)
+        else:
+            f.close()
+
+    return JsonResponse({'message': 'Nodes saved.'}, status=200)
 
 def retrieve_csv(request, node_id):
     if request.method == 'GET':
