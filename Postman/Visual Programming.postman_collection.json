@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "ad8f6a9f-641f-44a5-810d-39ecadfb5a36",
+		"_postman_id": "487c19d9-cbf8-4d7b-b8f7-79ed82f51ff4",
 		"name": "Visual Programming",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -19,6 +19,44 @@
 					"path": [
 						"info"
 					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Save IDE Nodes",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"file\": {{file_location}}, \n\t\"nodes\": {\n    \"I/O\": [\n        {\"key\": \"read-csv\", \"name\": \"Read CSV\", \"numPortsIn\": 0, \"color\": \"black\"}\n    ],\n    \"Manipulation\": [\n        {\"key\": \"filter\", \"name\": \"Filter Rows\", \"color\": \"red\"},\n        {\"key\": \"pivot\", \"name\": \"Pivot Table\", \"color\": \"blue\"},\n        {\"key\": \"multi-in\", \"name\": \"Multi-Input Example\", \"numPortsIn\": 3, \"color\": \"green\"}\n    ]\n}\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{environment}}/workflow/save_nodes",
+					"host": [
+						"{{environment}}"
+					],
+					"path": [
+						"workflow",
+						"save_nodes"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get IDE Nodes",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": ""
 				}
 			},
 			"response": []
