@@ -67,7 +67,7 @@ def open_workflow(request):
 
     # Construct response
     data = {
-        'graph': json.loads(workflow.to_graph_json()),
+        'graph': workflow.to_graph_json(),
         'nodes': workflow.graph.number_of_nodes(),
     }
 
@@ -93,7 +93,7 @@ def save_workflow(request):
     # serialized graph
     try:
         workflow = Workflow.from_session(request.session)
-        json_str = workflow.to_graph_json()
+        json_str = json.dumps(workflow.to_graph_json())
         response = HttpResponse(json_str, content_type='application/json')
         response['Content-Disposition'] = 'attachment; filename=%s' % workflow.file_path
         return response

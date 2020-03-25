@@ -145,7 +145,7 @@ class Workflow:
         return cls(graph)
 
     def to_graph_json(self):
-        return json.dumps(nx.readwrite.json_graph.node_link_data(self.graph))
+        return nx.readwrite.json_graph.node_link_data(self.graph)
 
     def to_session_dict(self):
         """Store Workflow information in the Django session.
