@@ -1,9 +1,6 @@
 from django.http import JsonResponse
-import networkx as nx
-import json
 
-from .models import Node
-from workflow.models import Workflow, WorkflowException
+from pyworkflow import Workflow, Node, WorkflowException
 
 
 def node(request):
@@ -16,9 +13,7 @@ def node(request):
     """
 
     # Load workflow from session
-    workflow = Workflow()
-    workflow.retrieve_from_session(request)
-
+    workflow = Workflow.from_session(request.session)
     # Check if a graph is present
     if workflow.graph is None:
         return JsonResponse({
@@ -46,7 +41,7 @@ def node(request):
 
     # Add Node to graph and re-save workflow to session
     workflow.add_node(new_node)
-    workflow.store_in_session(request)
+    request.session.update(workflow.to_session_dict())
 
     return JsonResponse({
         'message': 'Added new node to graph with id: %s' % (node_id)
@@ -58,9 +53,7 @@ def edge(request, node_from_id, node_to_id):
 
     """
     # Load workflow from session
-    workflow = Workflow()
-    workflow.retrieve_from_session(request)
-
+    workflow = Workflow.from_session(request.session)
     # Check if a graph is present
     if workflow.graph is None:
         return JsonResponse({
@@ -78,7 +71,7 @@ def edge(request, node_from_id, node_to_id):
 
     # Add Edge between the Nodes to the graph and re-save workflow to session
     workflow.add_edge(node_from, node_to)
-    workflow.store_in_session(request)
+    request.session.update(workflow.to_session_dict())
 
     return JsonResponse({
         'message': 'Added new edge to graph from node %s to node %s' %
@@ -97,9 +90,7 @@ def handle_node(request, node_id):
     """
 
     # Load workflow from session
-    workflow = Workflow()
-    workflow.retrieve_from_session(request)
-
+    workflow = Workflow.from_session(request.session)
     # Check if a graph is present
     if workflow.graph is None:
         return JsonResponse({
