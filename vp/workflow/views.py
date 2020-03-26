@@ -124,14 +124,12 @@ def retrieve_nodes_for_ide(request):
                 return JsonResponse({'message': 'Please specify nodes file.'}, status=400)
             elif not os.path.exists(file_to_load):
                 return JsonResponse({'message': 'Unable to locate nodes file.'}, status=404)
-            f = open(file_to_load)
-            data = json.load(f)
-        except IOError as e:
+            with open(file_to_load) as f:
+                data = json.load(f)
+        except OSError as e:
             return JsonResponse({e.action: e.reason}, status=404)
         except JSONDecodeError as e:
             return JsonResponse({'message': 'Issues decoding json.'}, status=400)
-        else:
-            f.close()
         
         return JsonResponse(data, safe=False, status=200)
 
@@ -156,16 +154,14 @@ def save_nodes_for_ide(request):
                 return JsonResponse({'message': 'Please specify nodes file.'}, status=400)
             if data_to_save is None:
                 return JsonResponse({'message': 'Please specify nodes to be saved.'}, status=400)
-            f = open(file_to_save, 'w')
-            with f as outfile:
+
+            with open(file_to_save, 'w') as outfile:
                json.dump(data_to_save, outfile)
 
-        except IOError as e:
+        except OSError as e:
             return JsonResponse({e.action: e.reason}, status=404)
         except JSONDecodeError as e:
             return JsonResponse({'message': 'Issues decoding json.'}, status=400)
-        else:
-            f.close()
 
     return JsonResponse({'message': 'Nodes saved.'}, status=200)
 

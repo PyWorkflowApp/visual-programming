@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "487c19d9-cbf8-4d7b-b8f7-79ed82f51ff4",
+		"_postman_id": "2011389b-145f-40c1-91b2-de9ace4486ae",
 		"name": "Visual Programming",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -52,11 +52,33 @@
 		},
 		{
 			"name": "Get IDE Nodes",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "596cc04b-8e25-4703-8bad-ea0ea40e5e03",
+						"exec": [
+							"{",
+							" \"file\": {{file_location}}",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": ""
+					"raw": "{{environment}}/workflow/nodes/",
+					"host": [
+						"{{environment}}"
+					],
+					"path": [
+						"workflow",
+						"nodes",
+						""
+					]
 				}
 			},
 			"response": []
