@@ -1,5 +1,5 @@
 import { NodeModel } from '@projectstorm/react-diagrams';
-import { CustomPortModel } from '../CustomPort/CustomPortModel';
+import { VPPortModel } from '../VPPort/VPPortModel';
 
 
 /**
@@ -24,7 +24,7 @@ export class CustomNodeModel extends NodeModel {
         // setup in and out ports
         for (let i = 0; i < nIn; ++i) {
             this.addPort(
-                new CustomPortModel({
+                new VPPortModel({
                     in: true,
                     type: 'in',
                     name: `in-${i}`
@@ -33,7 +33,7 @@ export class CustomNodeModel extends NodeModel {
         }
         for (let i = 0; i < nOut; ++i) {
             this.addPort(
-                new CustomPortModel({
+                new VPPortModel({
                     in: false,
                     type: 'out',
                     name: `out-${i}`

@@ -3,8 +3,7 @@ import * as _ from 'lodash';
 import { Row, Col } from 'react-bootstrap';
 import createEngine, { DiagramModel } from '@projectstorm/react-diagrams';
 import { CanvasWidget } from '@projectstorm/react-canvas-core';
-import { CustomDeleteItemsAction } from './CustomAction/CustomDeleteItemsAction'
-import { CustomLinkFactory } from './CustomLink/CustomLinkFactory';
+import { VPLinkFactory } from './VPLink/VPLinkFactory';
 import { CustomNodeModel } from './CustomNode/CustomNodeModel';
 import { CustomNodeFactory } from './CustomNode/CustomNodeFactory';
 import * as nodeItems from '../nodeItems.json';
@@ -17,10 +16,10 @@ class Workspace extends React.Component {
         super(props);
         this.engine = createEngine();
         this.engine.getNodeFactories().registerFactory(new CustomNodeFactory());
-        this.engine.getLinkFactories().registerFactory(new CustomLinkFactory());
+        this.engine.getLinkFactories().registerFactory(new VPLinkFactory());
         this.model = new DiagramModel();
         this.engine.setModel(this.model);
-        this.engine.getActionEventBus().registerAction(new CustomDeleteItemsAction());
+        this.engine.setMaxNumberPointsPerLink(0);
     }
 
     render() {

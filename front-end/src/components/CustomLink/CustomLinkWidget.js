@@ -37,6 +37,7 @@ export class CustomLinkWidget extends React.Component<{ model: CustomLinkModel; 
 		this.mounted = false;
 	}
 
+
 	render() {
 		return (
 			<>
