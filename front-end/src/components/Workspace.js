@@ -9,7 +9,6 @@ import { CustomNodeFactory } from './CustomNode/CustomNodeFactory';
 import * as nodeItems from '../nodeItems.json';
 import '../styles/Workspace.css';
 
-
 class Workspace extends React.Component {
 
     constructor(props) {

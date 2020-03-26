@@ -5,7 +5,6 @@ import StatusLight from '../StatusLight';
 import NodeConfig from './NodeConfig';
 import '../../styles/CustomNode.css';
 
-
 export class CustomNodeWidget extends React.Component {
 
     constructor(props) {

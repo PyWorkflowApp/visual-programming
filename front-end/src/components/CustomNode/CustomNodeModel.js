@@ -1,10 +1,6 @@
 import { NodeModel } from '@projectstorm/react-diagrams';
 import { VPPortModel } from '../VPPort/VPPortModel';
 
-
-/**
- * Example of a custom model using pure javascript
- */
 export class CustomNodeModel extends NodeModel {
 
     constructor(options = {}) {
