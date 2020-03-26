@@ -1,38 +1,81 @@
 from django.http import JsonResponse
-import networkx as nx
-import json
 
-from .models import Node
-from workflow.models import Workflow, WorkflowException
+from pyworkflow import Workflow, Node, WorkflowException
 
 
 def node(request):
     """ Add new Node to graph
 
+    Returns:
+        200 - New Node was added to the graph
+        400 - Node with 'id' already exists in the graph
+        404 - Graph or Node does not exist
     """
 
     # Load workflow from session
-    workflow = Workflow()
-    workflow.retrieve_from_session(request)
-
+    workflow = Workflow.from_session(request.session)
     # Check if a graph is present
     if workflow.graph is None:
         return JsonResponse({
             'message': 'A workflow has not been created yet.'
         }, status=404)
 
-    # Create a new Node with POST info
-    # TODO: id is num + 1; rest of info is hard-coded
-    num_nodes = workflow.graph.number_of_nodes()
-    node_id = num_nodes + 1
-    new_node = Node(node_id=node_id, node_type="blank", num_ports_in=1, num_ports_out=1)
+    # Extract request info for node creation
+    # TODO: info is passed via GET, not POST, for easier testing
+    node_id = request.GET.get('id')
+    node_type = request.GET.get('type')
+    num_in = request.GET.get('numPortsIn')
+    num_out = request.GET.get('numPortsOut')
+
+    if workflow.get_node(node_id) is not None:
+        return JsonResponse({
+            'message': 'A node with id %s already exists in the graph.' % node_id
+        }, status=400)
+
+    # Create a new Node with info
+    # TODO: should perform error-checking or add default values if missing
+    new_node = Node(node_id=node_id,
+                    node_type=node_type,
+                    num_ports_in=num_in,
+                    num_ports_out=num_out)
 
     # Add Node to graph and re-save workflow to session
     workflow.add_node(new_node)
-    workflow.store_in_session(request)
+    request.session.update(workflow.to_session_dict())
 
     return JsonResponse({
-        'message': 'Added new node to graph with ID #' + str(num_nodes + 1)
+        'message': 'Added new node to graph with id: %s' % (node_id)
+    })
+
+
+def edge(request, node_from_id, node_to_id):
+    """ Add new edge to the graph
+
+    """
+    # Load workflow from session
+    workflow = Workflow.from_session(request.session)
+    # Check if a graph is present
+    if workflow.graph is None:
+        return JsonResponse({
+            'message': 'A workflow has not been created yet.'
+        }, status=404)
+
+    # Check if the graph contains the requested Node
+    node_from = workflow.get_node(node_from_id)
+    node_to = workflow.get_node(node_to_id)
+
+    if node_from is None or node_to is None:
+        return JsonResponse({
+            'message': 'The workflow does not contain the node(s) requested.'
+        }, status=404)
+
+    # Add Edge between the Nodes to the graph and re-save workflow to session
+    workflow.add_edge(node_from, node_to)
+    request.session.update(workflow.to_session_dict())
+
+    return JsonResponse({
+        'message': 'Added new edge to graph from node %s to node %s' %
+                   (node_from.node_id, node_to.node_id)
     })
 
 
@@ -47,9 +90,7 @@ def handle_node(request, node_id):
     """
 
     # Load workflow from session
-    workflow = Workflow()
-    workflow.retrieve_from_session(request)
-
+    workflow = Workflow.from_session(request.session)
     # Check if a graph is present
     if workflow.graph is None:
         return JsonResponse({
@@ -57,19 +98,18 @@ def handle_node(request, node_id):
         }, status=404)
 
     # Check if the graph contains the requested Node
-    if workflow.graph.has_node(node_id) is not True:
+    node = workflow.get_node(node_id)
+
+    if node is None:
         return JsonResponse({
             'message': 'The workflow does not contain node id ' + str(node_id)
         }, status=404)
 
     # Process request
     try:
-        # Retrieve node - reads in as Dict
-        # TODO: translate to Node class for more complex methods
-        node = workflow.graph.nodes[node_id]
-
         if request.method == 'GET':
-            return JsonResponse(node)
+            # Node class is not JSON serializable, so pass in __dict__
+            return JsonResponse(node.__dict__, safe=False)
         elif request.method == 'DELETE':
             workflow.remove_node(node)
             return JsonResponse({

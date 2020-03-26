@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "ad8f6a9f-641f-44a5-810d-39ecadfb5a36",
+		"_postman_id": "166dfed0-fbb1-48e7-a323-945d862575c4",
 		"name": "Visual Programming",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -18,6 +18,94 @@
 					"port": "8000",
 					"path": [
 						"info"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "New workflow",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8000/workflow/new",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"workflow",
+						"new"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Open file (200)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8000/workflow/open?file=example.json",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"workflow",
+						"open"
+					],
+					"query": [
+						{
+							"key": "file",
+							"value": "example.json"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Open file (400-not specified)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8000/workflow/open",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"workflow",
+						"open"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Open file (404-not found)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8000/workflow/open?file=foobar.json",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"workflow",
+						"open"
+					],
+					"query": [
+						{
+							"key": "file",
+							"value": "foobar.json"
+						}
 					]
 				}
 			},

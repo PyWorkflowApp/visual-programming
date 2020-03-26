@@ -1,13 +1,14 @@
-from django.http import JsonResponse
-from .models import Workflow, WorkflowException
-import networkx as nx
-import json, csv
-import os
-from django.http import HttpResponse
+import json
+import csv
+
+from django.http import JsonResponse, HttpResponse
+from django.conf import settings
+from django.core.files.storage import FileSystemStorage
+
+from pyworkflow import Workflow, WorkflowException
 
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+fs = FileSystemStorage(location=settings.MEDIA_ROOT)
 
 
 def new_workflow(request):
@@ -19,18 +20,11 @@ def new_workflow(request):
     Return:
         200 - Created new DiGraph
     """
-    # Create new NetworkX graph
-    DG = nx.DiGraph()
-    json_graph = nx.readwrite.json_graph.node_link_data(DG)
-
-    # Construct response
-    data = {
-        'graph': json_graph,
-        'nodes': DG.number_of_nodes(),
-    }
-
+    # Create new Workflow
+    workflow = Workflow()
     # Save to session
-    request.session['graph'] = json_graph
+    request.session.update(workflow.to_session_dict())
+    data = workflow.to_graph_json()
     return JsonResponse(data)
 
 
@@ -52,13 +46,10 @@ def open_workflow(request):
     if file_path is None:
         return JsonResponse({'message': 'File must be specified.'}, status=400)
 
-    # Create Workflow to store info
-    workflow = Workflow()
-
     # Read info into Workflow object
     try:
-        workflow.file_path = file_path
-        workflow.graph = workflow.read_json()
+        with fs.open(file_path) as file_like:
+            workflow = Workflow.from_file(file_like)
     except OSError as e:
         return JsonResponse({'message': e.strerror}, status=404)
     except nx.NetworkXError as e:
@@ -68,12 +59,12 @@ def open_workflow(request):
 
     # Construct response
     data = {
-        'graph': nx.readwrite.json_graph.node_link_data(workflow.graph),
+        'graph': workflow.to_graph_json(),
         'nodes': workflow.graph.number_of_nodes(),
     }
 
     # Save Workflow info to session
-    workflow.store_in_session(request)
+    request.session.update(workflow.to_session_dict())
     return JsonResponse(data)
 
 
@@ -84,27 +75,26 @@ def save_workflow(request):
         request: Django request Object
 
     Returns:
-        JSON response with data.
+        Downloads JSON file representing graph.
     """
     # Check session for existing graph
-    if request.session['graph'] is None:
+    if request.session.get('graph') is None:
         return JsonResponse({'message': 'No graph exists.'}, status=404)
 
-    # Load session data into Workflow object
-    workflow = Workflow()
+    # Load session data into Workflow object. If successful, return
+    # serialized graph
     try:
-        workflow.retrieve_from_session(request)
-        # Write to disk
-        workflow.write_json()
+        workflow = Workflow.from_session(request.session)
+        json_str = json.dumps(workflow.to_graph_json())
+        response = HttpResponse(json_str, content_type='application/json')
+        response['Content-Disposition'] = 'attachment; filename=%s' % workflow.file_path
+        return response
     except WorkflowException as e:
         return JsonResponse({e.action: e.reason}, status=404)
 
-    return JsonResponse({
-        'message': 'Saved the graph to ' + workflow.file_path + '!'
-    })
 
 def retrieve_nodes_for_user(request):
-    if request.method =='GET':
+    if request.method == 'GET':
         """
         Retrieve all nodes that a user can have access to in the IDE.
         Currently returning default set of nodes. 
@@ -122,8 +112,9 @@ def retrieve_nodes_for_user(request):
         }
         return JsonResponse(data, safe=False, status=200)
 
+
 def retrieve_csv(request, node_id):
-    if request.method =='GET':
+    if request.method == 'GET':
         """
         Retrieves a CSV after the associated node execution and returns it as a json.
         Currently just using a demo CSV in workspace. 

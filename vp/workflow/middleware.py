@@ -1,4 +1,4 @@
-from .models import Workflow
+from pyworkflow import Workflow
 
 
 class WorkflowMiddleware:
