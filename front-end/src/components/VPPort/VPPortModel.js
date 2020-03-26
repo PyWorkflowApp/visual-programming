@@ -1,7 +1,5 @@
 import { DefaultPortModel } from '@projectstorm/react-diagrams';
 import { VPLinkModel } from '../VPLink/VPLinkModel';
-// import { VPLinkModel } from '@projectstorm/react-diagrams';
-
 
 export class VPPortModel extends DefaultPortModel {
       createLinkModel(): VPLinkModel | null {

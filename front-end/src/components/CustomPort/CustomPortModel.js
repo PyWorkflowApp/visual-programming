@@ -1,11 +1,10 @@
 import { DefaultPortModel } from '@projectstorm/react-diagrams';
-// import { CustomLinkModel } from '../CustomLink/CustomLinkModel';
-import { DefaultLinkModel } from '@projectstorm/react-diagrams';
+import { CustomLinkModel } from '../CustomLink/CustomLinkModel';
 
 
 export class CustomPortModel extends DefaultPortModel {
-      createLinkModel(): DefaultLinkModel | null {
-          return new DefaultLinkModel();
+      createLinkModel(): CustomLinkModel | null {
+          return new CustomLinkModel();
       }
 
       canLinkToPort(port: PortModel): boolean {
