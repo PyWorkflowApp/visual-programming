@@ -111,6 +111,35 @@ def handle_node(request, node_id):
             }, status=405)
     except WorkflowException as e:
         return JsonResponse(e, status=500)
+
+
+def execute_node(request, node_id):
+    """Execute the specified node
+
+    """
+    # Load workflow from session
+    workflow = Workflow.from_session(request.session)
+
+    # Check if the graph contains the requested Node
+    node_to_execute = workflow.get_node(node_id)
+
+    if node_to_execute is None:
+        return JsonResponse({
+            'message': 'The workflow does not contain node id ' + str(node_id)
+        }, status=404)
+
+    # Execute node
+    try:
+        node_to_execute.execute()
+        return JsonResponse({
+            'message': 'Node Execution successful!',
+            'node_type': node_to_execute.node_type,
+            'data': node_to_execute.data,
+        }, safe=False)
+    except NodeException as e:
+        return JsonResponse(e, status=500)
+
+
 def create_node(request):
     """Pass all request info to Node Factory.
 
