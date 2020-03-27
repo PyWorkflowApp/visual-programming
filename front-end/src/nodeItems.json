@@ -6,5 +6,9 @@
         {"key": "filter", "name": "Filter Rows", "color": "red"},
         {"key": "pivot", "name": "Pivot Table", "color": "blue"},
         {"key": "multi-in", "name": "Multi-Input Example", "numPortsIn": 3, "color": "green"}
+    ],
+    "View": [
+      {"key":"tabular", "name": "Tabular View", "color": "orange"},
+      {"key":"graph", "name": "Graph View", "color": "purple"}
     ]
 }
