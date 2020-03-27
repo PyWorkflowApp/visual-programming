@@ -1,9 +1,17 @@
-class NodeInterface:
-    def __init__(self, node_id, node_type, num_ports_in, num_ports_out):
-        self.node_id = node_id
-        self.node_type = node_type
-        self.num_ports_in = num_ports_in
-        self.num_ports_out = num_ports_out
+import pandas as pd
+
+
+class Node:
+    """Node object
+
+    """
+    def __init__(self, node_info):
+        self.node_id = node_info['node_id']
+        self.num_in = node_info['num_in']
+        self.num_out = node_info['num_out']
+        self.node_type = node_info['node_type']
+        self.node_key = node_info['node_key']
+        self.data = None
 
     def execute(self):
         pass
@@ -15,12 +23,18 @@ class NodeInterface:
         return "Test"
 
 
-class Node(NodeInterface):
-    def __init__(self, node_id, node_type, num_ports_in, num_ports_out):
-        super().__init__(node_id, node_type, num_ports_in, num_ports_out)
 
     def execute(self):
         pass
 
     def validate(self):
         return True
+
+
+class NodeException(Exception):
+    def __init__(self, action: str, reason: str):
+        self.action = action
+        self.reason = reason
+
+    def __str__(self):
+        return self.action + ': ' + self.reason

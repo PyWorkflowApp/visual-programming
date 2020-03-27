@@ -1,6 +1,6 @@
 from django.http import JsonResponse
 
-from pyworkflow import Workflow, Node, WorkflowException
+from pyworkflow import Workflow, WorkflowException, node_factory, NodeException
 
 
 def node(request):
@@ -22,29 +22,19 @@ def node(request):
 
     # Extract request info for node creation
     # TODO: info is passed via GET, not POST, for easier testing
-    node_id = request.GET.get('id')
-    node_type = request.GET.get('type')
-    num_in = request.GET.get('numPortsIn')
-    num_out = request.GET.get('numPortsOut')
+    new_node = create_node(request)
 
-    if workflow.get_node(node_id) is not None:
+    if workflow.get_node(new_node.node_id) is not None:
         return JsonResponse({
-            'message': 'A node with id %s already exists in the graph.' % node_id
+            'message': 'A node with id %s already exists in the graph.' % new_node.node_id
         }, status=400)
-
-    # Create a new Node with info
-    # TODO: should perform error-checking or add default values if missing
-    new_node = Node(node_id=node_id,
-                    node_type=node_type,
-                    num_ports_in=num_in,
-                    num_ports_out=num_out)
 
     # Add Node to graph and re-save workflow to session
     workflow.add_node(new_node)
     request.session.update(workflow.to_session_dict())
 
     return JsonResponse({
-        'message': 'Added new node to graph with id: %s' % (node_id)
+        'message': 'Added new node to graph with id: %s' % (new_node.node_id)
     })
 
 
@@ -121,3 +111,27 @@ def handle_node(request, node_id):
             }, status=405)
     except WorkflowException as e:
         return JsonResponse(e, status=500)
+def create_node(request):
+    """Pass all request info to Node Factory.
+
+    Not all Nodes require a file path, but to keep storage/retrieval logic on
+    the Django-side, it tests the file before sending to the Factory. This
+    functionality may change, especially as we consider how we upload files to
+    the server. Also, no test needed if a 'Write CSV' node as a file will be
+    created, but occurs anyway.
+
+    TODO: Currently a GET request for easier testing. Should be a POST request.
+    """
+    node_info = {
+        'node_type': request.GET.get('type'),
+        'node_key': request.GET.get('key'),
+        'node_id': request.GET.get('id'),
+        'num_in': request.GET.get('numPortsIn'),
+        'num_out': request.GET.get('numPortsOut'),
+        'file': request.GET.get('file')
+    }
+
+    try:
+        return node_factory(node_info)
+    except OSError as e:
+        return JsonResponse({'message': e.strerror}, status=404)

@@ -2,6 +2,7 @@ import networkx as nx
 import json
 
 from .node import Node
+from .NodeFactory import node_factory
 
 
 class Workflow:
@@ -36,15 +37,16 @@ class Workflow:
             raise WorkflowException('set_file_path', 'File ' + file_path + ' is not JSON.')
 
     def get_node(self, node_id):
+        """Retrieves Node from workflow, if exists
+
+        Return:
+            Node object, if one exists. Otherwise, None.
+        """
         if self._graph.has_node(node_id) is not True:
             return None
 
-        json_node = self.graph.nodes[node_id]
-
-        return Node(node_id=node_id,
-                    node_type=json_node['node_type'],
-                    num_ports_in=json_node['num_ports_in'],
-                    num_ports_out=json_node['num_ports_out'])
+        node_info = self.graph.nodes[node_id]
+        return node_factory(node_info)
 
     def add_node(self, node: Node):
         """ Add a Node object to the graph.
@@ -64,8 +66,8 @@ class Workflow:
 
             for key in node_dict.keys():
                 # Graph node already includes 'id' for lookup
-                if key == 'node_id':
-                    continue
+                # if key == 'node_id':
+                #     continue
                 # Add attribute to graph node
                 self._graph.nodes[node.node_id][key] = node_dict[key]
 
