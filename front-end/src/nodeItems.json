@@ -8,7 +8,7 @@
         {"key": "multi-in", "name": "Multi-Input Example", "numPortsIn": 3, "color": "green"}
     ],
     "View": [
-      {"key":"tabular", "name": "Tabular View", "color": "orange"},
-      {"key":"graph", "name": "Graph View", "color": "purple"}
+      {"key":"tabular", "name": "Tabular View", "color": "orange", "numPortsOut": 0 },
+      {"key":"graph", "name": "Graph View", "color": "purple", "numPortsOut": 0}
     ]
 }
