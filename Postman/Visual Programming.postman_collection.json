@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "166dfed0-fbb1-48e7-a323-945d862575c4",
+		"_postman_id": "94c6f073-1978-444b-99b3-0123cef01056",
 		"name": "Visual Programming",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -18,6 +18,51 @@
 					"port": "8000",
 					"path": [
 						"info"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add node",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/node?id=1&type=IO&key=read-csv&numPortsIn=0&numPortsOut=1&file=test.csv",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"node"
+					],
+					"query": [
+						{
+							"key": "id",
+							"value": "1"
+						},
+						{
+							"key": "type",
+							"value": "IO"
+						},
+						{
+							"key": "key",
+							"value": "read-csv"
+						},
+						{
+							"key": "numPortsIn",
+							"value": "0"
+						},
+						{
+							"key": "numPortsOut",
+							"value": "1"
+						},
+						{
+							"key": "file",
+							"value": "test.csv"
+						}
 					]
 				}
 			},
