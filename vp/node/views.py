@@ -137,7 +137,7 @@ def execute_node(request, node_id):
             'data': node_to_execute.data,
         }, safe=False)
     except NodeException as e:
-        return JsonResponse(e, status=500)
+        return JsonResponse({e.action: e.reason}, status=500)
 
 
 def create_node(request):

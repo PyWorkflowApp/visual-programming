@@ -47,8 +47,10 @@ class ReadCsvNode(IONode):
     """
     def execute(self):
         try:
-            print(self.file)
-            with open(self.file) as file_like:
+            # TODO: FileStorage implemented in Django to store in /tmp
+            # Right now, /tmp/ is hardcoded, but should be changed as we
+            # further consider file-handling/uploading
+            with open('/tmp/' + self.file) as file_like:
                 df = pd.read_csv(file_like)
                 self.data = df.to_json()
         except Exception as e:
@@ -64,7 +66,7 @@ class WriteCsvNode(IONode):
     """
     def execute(self):
         try:
-            self.data.to_csv(self.file)
+            self.data.to_csv('/tmp/' + self.file)
         except Exception as e:
             raise NodeException('write csv', str(e))
 
