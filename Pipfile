@@ -14,6 +14,7 @@ python-dotenv = "~=0.12.0"
 networkx = "~=2.4"
 pyworkflow = {path = "./pyworkflow",editable = true}
 djangorestframework = "*"
+drf-yasg = "*"
 
 [requires]
 python_version = "3.8"
