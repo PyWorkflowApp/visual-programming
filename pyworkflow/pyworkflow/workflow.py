@@ -93,13 +93,9 @@ class Workflow:
 
         Raises:
             WorkflowException: on issue with removing node from graph
-
-        TODO:
-            * 'node' passed in is a Dict, not custom Node class
-            * Property accessor will need to be changed
         """
         try:
-            self._graph.remove_node(node['node_id'])
+            self._graph.remove_node(node.node_id)
         except nx.NetworkXError:
             raise WorkflowException('remove_node', 'Node does not exist in graph.')
 
