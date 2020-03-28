@@ -1,10 +1,16 @@
 from django.http import JsonResponse
 
 from pyworkflow import Workflow, Node, WorkflowException
+from rest_framework.decorators import api_view
 
+from drf_yasg.utils import swagger_auto_schema
 
+@swagger_auto_schema(method='post', operation_summary='Retrive a node from the graph', operation_description='Retrieves a node from the graph.', responses={200:'Node added to graph', 400: 'Node with id already exists in graph', 404:'Node/graph not found'})
+@api_view(['POST'])
 def node(request):
     """ Add new Node to graph
+
+    Adds a new node with specified data to the graph.
 
     Returns:
         200 - New Node was added to the graph
@@ -47,10 +53,12 @@ def node(request):
         'message': 'Added new node to graph with id: %s' % (node_id)
     })
 
-
+@swagger_auto_schema(method='post', operation_summary='Retrive a node from the graph', operation_description='Retrieves a node from the graph.', responses={200:'Added edge to graph', 404:'Workflow not created yet/Workflow does not contain specified node'})
+@api_view(['POST'])
 def edge(request, node_from_id, node_to_id):
     """ Add new edge to the graph
 
+        Creates a new edge from node_from_id to node_to_id.
     """
     # Load workflow from session
     workflow = Workflow.from_session(request.session)
@@ -78,9 +86,11 @@ def edge(request, node_from_id, node_to_id):
                    (node_from.node_id, node_to.node_id)
     })
 
-
+@swagger_auto_schema(method='get', operation_summary='Retrive a node from the graph', operation_description='Retrieves a node from the graph.', responses={200:'JSON response with data', 400: 'No file specified', 404:'Node/graph not found'})
+@swagger_auto_schema(method='delete', operation_summary='Delete a node from the graph', operation_description='Deletes a node from the graph.', responses={200:'JSON response with data', 400: 'No file specified', 404:'Node/graph not found', 405:'Method not allowed', 500:'Error processing Node change'})
+@api_view(['GET', 'DELETE'])
 def handle_node(request, node_id):
-    """ Retrieve a Node from the graph
+    """ Retrieve/delete a Node from the graph
 
     Returns:
         200 - Node was found; data in JSON format
