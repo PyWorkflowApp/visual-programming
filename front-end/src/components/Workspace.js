@@ -35,13 +35,7 @@ class Workspace extends React.Component {
             <div key={`node-menu-${section}`}>
                 <b>{section}</b>
                 <ul>
-                { _.map(items, item =>
-                    // server sends `num_in` but constructor (which gets
-                    // its options from the props) takes `numPortsIn`
-                    <NodeMenuItem {...item}
-                        numPortsIn={item.num_in}
-                        numPortsOut={item.num_out} />
-                )}
+                { _.map(items, item => <NodeMenuItem {...item} />) }
                 </ul>
             </div>
         );
