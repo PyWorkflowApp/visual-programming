@@ -7,8 +7,8 @@ class Node:
     """
     def __init__(self, node_info):
         self.node_id = node_info.get('node_id')
-        self.num_in = node_info.get('num_in')
-        self.num_out = node_info.get('num_out')
+        # self.num_in = node_info.get('num_in')
+        # self.num_out = node_info.get('num_out')
         self.node_type = node_info.get('node_type')
         self.node_key = node_info.get('node_key')
         self.data = None
@@ -44,7 +44,21 @@ class IONode(Node):
 class ReadCsvNode(IONode):
     """ReadCsvNode
 
+    Reads a CSV file into a pandas DataFrame.
+
+    Raises:
+         NodeException: any error reading CSV file, converting
+            to DataFrame.
     """
+    num_in = 0
+    num_out = 1
+    color = 'black'
+
+    def __init__(self, node_info):
+        super().__init__(node_info)
+        # self.num_in = 0
+        # self.num_out = 1
+
     def execute(self):
         try:
             # TODO: FileStorage implemented in Django to store in /tmp
@@ -63,7 +77,21 @@ class ReadCsvNode(IONode):
 class WriteCsvNode(IONode):
     """WriteCsvNode
 
+    Writes the current DataFrame to a CSV file.
+
+    Raises:
+        NodeException: any error writing CSV file, converting
+            from DataFrame.
     """
+    num_in = 0
+    num_out = 1
+    color = 'green'
+
+    def __init__(self, node_info):
+        super().__init__(node_info)
+        # self.num_in = 1
+        # self.num_out = 0
+
     def execute(self):
         try:
             self.data.to_csv('/tmp/' + self.file)
@@ -79,6 +107,15 @@ class ManipulationNode(Node):
         Filter
         Multi-in
     """
+    num_in = 1
+    num_out = 1
+    color = 'blue'
+
+    def __init__(self, node_info):
+        super().__init__(node_info)
+        # self.num_in = 1
+        # self.num_out = 1
+
     def execute(self):
         print("Executing ManipulationNode")
         pass
