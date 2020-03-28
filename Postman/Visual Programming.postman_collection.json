@@ -70,6 +70,20 @@
 		},
 		{
 			"name": "New workflow",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "f36bfdc4-a83f-4f7f-a91e-af704ea64c2e",
+						"exec": [
+							"const response = pm.response.json()",
+							"",
+							"pm.environment.set('graph', response)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
 				"method": "GET",
 				"header": [],
