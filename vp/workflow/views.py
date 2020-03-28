@@ -5,18 +5,22 @@ import inspect
 from django.http import JsonResponse, HttpResponse
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
+from rest_framework.decorators import api_view
 
 from pyworkflow import Workflow, WorkflowException, Node
 
+from drf_yasg.utils import swagger_auto_schema
 
 fs = FileSystemStorage(location=settings.MEDIA_ROOT)
 
 
+
+@swagger_auto_schema(method='get', responses={200:'Created new DiGraph'})
+@api_view(['GET'])
 def new_workflow(request):
     """ Create a new workflow.
 
-    Initialize a new, empty, NetworkX DiGraph object and store it in
-    the session
+    Initialize a new, empty, NetworkX DiGraph object and store it in the session.
 
     Return:
         200 - Created new DiGraph
@@ -28,9 +32,10 @@ def new_workflow(request):
     data = workflow.to_graph_json()
     return JsonResponse(data)
 
-
+@swagger_auto_schema(method='get', responses={200:'Workflow representation in JSON', 400: 'No file specified', 404:'File specified not found or not JSON graph'})
+@api_view(['GET'])
 def open_workflow(request):
-    """Opens a workflow.
+    """Open a workflow.
 
     If file is specified in GET request, that file is opened.
 
@@ -68,9 +73,12 @@ def open_workflow(request):
     request.session.update(workflow.to_session_dict())
     return JsonResponse(data)
 
-
+@swagger_auto_schema(method='post', responses={200:'Workflow representation in JSON', 400: 'No file specified', 404:'File specified not found or not JSON graph'})
+@api_view(['POST'])
 def save_workflow(request):
-    """Saves a workflow to disk.
+    """Save workflow.
+
+    Saves a workflow to disk.
 
     Args:
         request: Django request Object
