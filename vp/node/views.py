@@ -1,16 +1,23 @@
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
 from pyworkflow import Workflow, WorkflowException, node_factory, NodeException
 
 
+@csrf_exempt
 def node(request):
     """ Add new Node to graph
 
     Returns:
         200 - New Node was added to the graph
-        400 - Node with 'id' already exists in the graph
+        400 - Missing info; Node with 'id' already exists in the graph
         404 - Graph or Node does not exist
+        405 - Method not allowed
     """
+    if request.method != 'POST':
+        return JsonResponse({
+            'message': 'Only POST requests are allowed.'
+        }, status=405)
 
     # Load workflow from session
     workflow = Workflow.from_session(request.session)
@@ -21,9 +28,15 @@ def node(request):
         }, status=404)
 
     # Extract request info for node creation
-    # TODO: info is passed via GET, not POST, for easier testing
     new_node = create_node(request)
 
+    # If None, create_node failed
+    if new_node is None:
+        return JsonResponse({
+            'message': 'Missing required Node information'
+        }, status=400)
+
+    # Check node_id is unique in graph
     if workflow.get_node(new_node.node_id) is not None:
         return JsonResponse({
             'message': 'A node with id %s already exists in the graph.' % new_node.node_id
@@ -68,7 +81,7 @@ def edge(request, node_from_id, node_to_id):
                    (node_from.node_id, node_to.node_id)
     })
 
-
+@csrf_exempt
 def handle_node(request, node_id):
     """ Retrieve a Node from the graph
 
@@ -99,11 +112,11 @@ def handle_node(request, node_id):
     try:
         if request.method == 'GET':
             # Node class is not JSON serializable, so pass in __dict__
-            return JsonResponse(node.__dict__, safe=False)
+            response = JsonResponse(node.__dict__, safe=False)
         elif request.method == 'DELETE':
             workflow.remove_node(node)
-            return JsonResponse({
-                'message': 'Removed node ID #' + str(node['node_id'])
+            response = JsonResponse({
+                'message': 'Removed node ID #' + str(node.node_id)
             })
         else:
             return JsonResponse({
@@ -111,6 +124,10 @@ def handle_node(request, node_id):
             }, status=405)
     except WorkflowException as e:
         return JsonResponse(e, status=500)
+
+    # Save any changes back to session
+    request.session.update(workflow.to_session_dict())
+    return response
 
 
 def execute_node(request, node_id):
@@ -143,24 +160,10 @@ def execute_node(request, node_id):
 def create_node(request):
     """Pass all request info to Node Factory.
 
-    Not all Nodes require a file path, but to keep storage/retrieval logic on
-    the Django-side, it tests the file before sending to the Factory. This
-    functionality may change, especially as we consider how we upload files to
-    the server. Also, no test needed if a 'Write CSV' node as a file will be
-    created, but occurs anyway.
-
-    TODO: Currently a GET request for easier testing. Should be a POST request.
     """
-    node_info = {
-        'node_type': request.GET.get('type'),
-        'node_key': request.GET.get('key'),
-        'node_id': request.GET.get('id'),
-        'num_in': request.GET.get('numPortsIn'),
-        'num_out': request.GET.get('numPortsOut'),
-        'file': request.GET.get('file')
-    }
-
     try:
-        return node_factory(node_info)
+        return node_factory(request.POST)
     except OSError as e:
         return JsonResponse({'message': e.strerror}, status=404)
+    except NodeException as e:
+        return JsonResponse({e.action: e.reason}, status=400)
