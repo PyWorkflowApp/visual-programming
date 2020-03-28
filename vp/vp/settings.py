@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     # Project apps
     'workflow.apps.WorkflowConfig',
     'node.apps.NodeConfig',
+    'drf_yasg'
 ]
 
 MIDDLEWARE = [

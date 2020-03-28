@@ -1,21 +1,26 @@
 import json
 import csv
+import inspect
 
 from django.http import JsonResponse, HttpResponse
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
+from rest_framework.decorators import api_view
 
-from pyworkflow import Workflow, WorkflowException
+from pyworkflow import Workflow, WorkflowException, Node
 
+from drf_yasg.utils import swagger_auto_schema
 
 fs = FileSystemStorage(location=settings.MEDIA_ROOT)
 
 
+
+@swagger_auto_schema(method='get', responses={200:'Created new DiGraph'})
+@api_view(['GET'])
 def new_workflow(request):
     """ Create a new workflow.
 
-    Initialize a new, empty, NetworkX DiGraph object and store it in
-    the session
+    Initialize a new, empty, NetworkX DiGraph object and store it in the session.
 
     Return:
         200 - Created new DiGraph
@@ -27,9 +32,10 @@ def new_workflow(request):
     data = workflow.to_graph_json()
     return JsonResponse(data)
 
-
+@swagger_auto_schema(method='get', responses={200:'Workflow representation in JSON', 400: 'No file specified', 404:'File specified not found or not JSON graph'})
+@api_view(['GET'])
 def open_workflow(request):
-    """Opens a workflow.
+    """Open a workflow.
 
     If file is specified in GET request, that file is opened.
 
@@ -67,9 +73,12 @@ def open_workflow(request):
     request.session.update(workflow.to_session_dict())
     return JsonResponse(data)
 
-
+@swagger_auto_schema(method='post', responses={200:'Workflow representation in JSON', 400: 'No file specified', 404:'File specified not found or not JSON graph'})
+@api_view(['POST'])
 def save_workflow(request):
-    """Saves a workflow to disk.
+    """Save workflow.
+
+    Saves a workflow to disk.
 
     Args:
         request: Django request Object
@@ -94,23 +103,39 @@ def save_workflow(request):
 
 
 def retrieve_nodes_for_user(request):
-    if request.method == 'GET':
-        """
-        Retrieve all nodes that a user can have access to in the IDE.
-        Currently returning default set of nodes. 
-        //TODO pick these node files from a file in the system.
-        """
-        data = {
-            "I/O": [
-                {"key": "read-csv", "name": "Read CSV", "numPortsIn": 0, "color": "black"}
-            ],
-            "Manipulation": [
-                {"key": "filter", "name": "Filter Rows", "color": "red"},
-                {"key": "pivot", "name": "Pivot Table", "color": "blue"},
-                {"key": "multi-in", "name": "Multi-Input Example", "numPortsIn": 3, "color": "green"}
-            ]
-        }
-        return JsonResponse(data, safe=False, status=200)
+    """Assembles list of Nodes accessible to workflows.
+
+    Retrieve a list of classes from the Node module in `pyworkflow`.
+    List is split into 'types' (e.g., 'IO' and 'Manipulation') and
+    'keys', or individual command Nodes (e.g., 'ReadCsv', 'Pivot').
+    """
+    if request.method != 'GET':
+        return JsonResponse({
+            'message': 'Only GET requests are allowed.'
+        }, status=405)
+
+    data = dict()
+
+    # Iterate through node 'types'
+    for parent in Node.__subclasses__():
+        data[parent.__name__] = list()
+
+        # Iterate through node 'keys'
+        for child in parent.__subclasses__():
+            # TODO: check attribute-scope is handled correctly
+            child_node = {
+                'name': child.name,
+                'key': child.__name__,
+                'type': parent.__name__,
+                'num_in': child.num_in,
+                'num_out': child.num_out,
+                'color': child.color,
+                'doc': child.__doc__,
+            }
+
+            data[parent.__name__].append(child_node)
+
+    return JsonResponse(data)
 
 
 def retrieve_csv(request, node_id):
