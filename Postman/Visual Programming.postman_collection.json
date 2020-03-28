@@ -26,43 +26,53 @@
 		{
 			"name": "Add node",
 			"request": {
-				"method": "GET",
+				"method": "POST",
 				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "node_id",
+							"value": "4",
+							"type": "text"
+						},
+						{
+							"key": "node_type",
+							"value": "IO",
+							"type": "text"
+						},
+						{
+							"key": "node_key",
+							"value": "read-csv",
+							"type": "text"
+						},
+						{
+							"key": "num_in",
+							"value": "0",
+							"type": "text"
+						},
+						{
+							"key": "num_out",
+							"value": "1",
+							"type": "text"
+						},
+						{
+							"key": "file",
+							"value": "test.csv",
+							"type": "text"
+						}
+					]
+				},
 				"url": {
-					"raw": "http://localhost:8000/node?id=1&type=IO&key=read-csv&numPortsIn=0&numPortsOut=1&file=test.csv",
+					"raw": "http://localhost:8000/node/",
 					"protocol": "http",
 					"host": [
 						"localhost"
 					],
 					"port": "8000",
 					"path": [
-						"node"
-					],
-					"query": [
-						{
-							"key": "id",
-							"value": "1"
-						},
-						{
-							"key": "type",
-							"value": "IO"
-						},
-						{
-							"key": "key",
-							"value": "read-csv"
-						},
-						{
-							"key": "numPortsIn",
-							"value": "0"
-						},
-						{
-							"key": "numPortsOut",
-							"value": "1"
-						},
-						{
-							"key": "file",
-							"value": "test.csv"
-						}
+						"node",
+						""
 					]
 				}
 			},
@@ -165,6 +175,98 @@
 							"key": "file",
 							"value": "foobar.json"
 						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete node",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{environment}}/node/1",
+					"host": [
+						"{{environment}}"
+					],
+					"path": [
+						"node",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get node",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{environment}}/node/1",
+					"host": [
+						"{{environment}}"
+					],
+					"path": [
+						"node",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Execute node",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{environment}}/node/2/execute",
+					"host": [
+						"{{environment}}"
+					],
+					"path": [
+						"node",
+						"2",
+						"execute"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add edge",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{environment}}/node/2/execute",
+					"host": [
+						"{{environment}}"
+					],
+					"path": [
+						"node",
+						"2",
+						"execute"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Save workflow",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{environment}}/workflow/save",
+					"host": [
+						"{{environment}}"
+					],
+					"path": [
+						"workflow",
+						"save"
 					]
 				}
 			},
