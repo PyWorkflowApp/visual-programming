@@ -1,16 +1,23 @@
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
-from pyworkflow import Workflow, Node, WorkflowException
+from pyworkflow import Workflow, WorkflowException, node_factory, NodeException
 
 
+@csrf_exempt
 def node(request):
     """ Add new Node to graph
 
     Returns:
         200 - New Node was added to the graph
-        400 - Node with 'id' already exists in the graph
+        400 - Missing info; Node with 'id' already exists in the graph
         404 - Graph or Node does not exist
+        405 - Method not allowed
     """
+    if request.method != 'POST':
+        return JsonResponse({
+            'message': 'Only POST requests are allowed.'
+        }, status=405)
 
     # Load workflow from session
     workflow = Workflow.from_session(request.session)
@@ -21,30 +28,26 @@ def node(request):
         }, status=404)
 
     # Extract request info for node creation
-    # TODO: info is passed via GET, not POST, for easier testing
-    node_id = request.GET.get('id')
-    node_type = request.GET.get('type')
-    num_in = request.GET.get('numPortsIn')
-    num_out = request.GET.get('numPortsOut')
+    new_node = create_node(request)
 
-    if workflow.get_node(node_id) is not None:
+    # If None, create_node failed
+    if new_node is None:
         return JsonResponse({
-            'message': 'A node with id %s already exists in the graph.' % node_id
+            'message': 'Missing required Node information'
         }, status=400)
 
-    # Create a new Node with info
-    # TODO: should perform error-checking or add default values if missing
-    new_node = Node(node_id=node_id,
-                    node_type=node_type,
-                    num_ports_in=num_in,
-                    num_ports_out=num_out)
+    # Check node_id is unique in graph
+    if workflow.get_node(new_node.node_id) is not None:
+        return JsonResponse({
+            'message': 'A node with id %s already exists in the graph.' % new_node.node_id
+        }, status=400)
 
     # Add Node to graph and re-save workflow to session
     workflow.add_node(new_node)
     request.session.update(workflow.to_session_dict())
 
     return JsonResponse({
-        'message': 'Added new node to graph with id: %s' % (node_id)
+        'message': 'Added new node to graph with id: %s' % (new_node.node_id)
     })
 
 
@@ -78,7 +81,7 @@ def edge(request, node_from_id, node_to_id):
                    (node_from.node_id, node_to.node_id)
     })
 
-
+@csrf_exempt
 def handle_node(request, node_id):
     """ Retrieve a Node from the graph
 
@@ -109,11 +112,11 @@ def handle_node(request, node_id):
     try:
         if request.method == 'GET':
             # Node class is not JSON serializable, so pass in __dict__
-            return JsonResponse(node.__dict__, safe=False)
+            response = JsonResponse(node.__dict__, safe=False)
         elif request.method == 'DELETE':
             workflow.remove_node(node)
-            return JsonResponse({
-                'message': 'Removed node ID #' + str(node['node_id'])
+            response = JsonResponse({
+                'message': 'Removed node ID #' + str(node.node_id)
             })
         else:
             return JsonResponse({
@@ -121,3 +124,46 @@ def handle_node(request, node_id):
             }, status=405)
     except WorkflowException as e:
         return JsonResponse(e, status=500)
+
+    # Save any changes back to session
+    request.session.update(workflow.to_session_dict())
+    return response
+
+
+def execute_node(request, node_id):
+    """Execute the specified node
+
+    """
+    # Load workflow from session
+    workflow = Workflow.from_session(request.session)
+
+    # Check if the graph contains the requested Node
+    node_to_execute = workflow.get_node(node_id)
+
+    if node_to_execute is None:
+        return JsonResponse({
+            'message': 'The workflow does not contain node id ' + str(node_id)
+        }, status=404)
+
+    # Execute node
+    try:
+        node_to_execute.execute()
+        return JsonResponse({
+            'message': 'Node Execution successful!',
+            'node_type': node_to_execute.node_type,
+            'data': node_to_execute.data,
+        }, safe=False)
+    except NodeException as e:
+        return JsonResponse({e.action: e.reason}, status=500)
+
+
+def create_node(request):
+    """Pass all request info to Node Factory.
+
+    """
+    try:
+        return node_factory(request.POST)
+    except OSError as e:
+        return JsonResponse({'message': e.strerror}, status=404)
+    except NodeException as e:
+        return JsonResponse({e.action: e.reason}, status=400)
