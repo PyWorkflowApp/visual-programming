@@ -10,7 +10,7 @@ from drf_yasg.utils import swagger_auto_schema
                      operation_description='Adds a node to the graph.',
                      responses={
                          200: 'Node added to graph',
-                         400: 'Node with id already exists in graph',
+                         400: 'Node with id already exists in graph, or missing info',
                          404: 'Node/graph not found'
                      })
 @api_view(['POST'])
@@ -26,13 +26,9 @@ def node(request):
         404 - Graph or Node does not exist
         405 - Method not allowed
     """
-    if request.method != 'POST':
-        return JsonResponse({
-            'message': 'Only POST requests are allowed.'
-        }, status=405)
-
     # Load workflow from session
     workflow = Workflow.from_session(request.session)
+
     # Check if a graph is present
     if workflow.graph is None:
         return JsonResponse({
@@ -59,13 +55,13 @@ def node(request):
     request.session.update(workflow.to_session_dict())
 
     return JsonResponse({
-        'message': 'Added new node to graph with id: %s' % (new_node.node_id)
+        'message': 'Added new node to graph with id: %s' % new_node.node_id
     })
 
 
 @swagger_auto_schema(method='post',
-                     operation_summary='Retrive a node from the graph',
-                     operation_description='Retrieves a node from the graph.',
+                     operation_summary='Add an edge to the graph',
+                     operation_description='Adds an edge to the graph.',
                      responses={
                          200: 'Added edge to graph',
                          404: 'Workflow not created yet/Workflow does not contain specified node'
@@ -78,6 +74,7 @@ def edge(request, node_from_id, node_to_id):
     """
     # Load workflow from session
     workflow = Workflow.from_session(request.session)
+
     # Check if a graph is present
     if workflow.graph is None:
         return JsonResponse({
@@ -104,7 +101,7 @@ def edge(request, node_from_id, node_to_id):
 
 
 @swagger_auto_schema(method='get',
-                     operation_summary='Retrive a node from the graph',
+                     operation_summary='Retrieve a node from the graph',
                      operation_description='Retrieves a node from the graph.',
                      responses={
                          200: 'JSON response with data',
@@ -140,7 +137,6 @@ def handle_node(request, node_id):
         405 - Method not allowed
         500 - Error processing Node change
     """
-
     # Load workflow from session
     workflow = Workflow.from_session(request.session)
 
@@ -192,7 +188,14 @@ def handle_node(request, node_id):
     request.session.update(workflow.to_session_dict())
     return response
 
-
+@swagger_auto_schema(method='get',
+                     operation_summary='Execute a node in the graph.',
+                     operation_description='Executes a node in the graph.',
+                     responses={
+                         200: 'Node successfully executed',
+                         404: 'Workflow not created yet/Workflow does not contain specified node'
+                     })
+@api_view(['GET'])
 def execute_node(request, node_id):
     """Execute the specified node
 

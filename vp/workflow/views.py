@@ -13,12 +13,14 @@ fs = FileSystemStorage(location=settings.MEDIA_ROOT)
 
 
 @swagger_auto_schema(method='get',
+                     operation_summary='Create a new workflow.',
+                     operation_description='Creates a new workflow with empty DiGraph.',
                      responses={
                          200: 'Created new DiGraph'
                      })
 @api_view(['GET'])
 def new_workflow(request):
-    """ Create a new workflow.
+    """Create a new workflow.
 
     Initialize a new, empty, NetworkX DiGraph object and store it in the session.
 
@@ -34,6 +36,8 @@ def new_workflow(request):
 
 
 @swagger_auto_schema(method='get',
+                     operation_summary='Open workflow from file.',
+                     operation_description='Loads a JSON file from disk and translates into Workflow object',
                      responses={
                          200: 'Workflow representation in JSON',
                          400: 'No file specified',
@@ -81,6 +85,8 @@ def open_workflow(request):
 
 
 @swagger_auto_schema(method='post',
+                     operation_summary='Save workflow to JSON file',
+                     operation_description='Saves workflow to JSON file for download.',
                      responses={
                          200: 'Workflow representation in JSON',
                          400: 'No file specified',
@@ -114,6 +120,13 @@ def save_workflow(request):
         return JsonResponse({e.action: e.reason}, status=404)
 
 
+@swagger_auto_schema(method='get',
+                     operation_summary='Retrieve a list of installed Nodes',
+                     operation_description='Retrieves a list of installed Nodes, in JSON.',
+                     responses={
+                         200: 'List of installed Nodes, in JSON',
+                     })
+@api_view(['GET'])
 def retrieve_nodes_for_user(request):
     """Assembles list of Nodes accessible to workflows.
 
@@ -121,11 +134,6 @@ def retrieve_nodes_for_user(request):
     List is split into 'types' (e.g., 'IO' and 'Manipulation') and
     'keys', or individual command Nodes (e.g., 'ReadCsv', 'Pivot').
     """
-    if request.method != 'GET':
-        return JsonResponse({
-            'message': 'Only GET requests are allowed.'
-        }, status=405)
-
     data = dict()
 
     # Iterate through node 'types'
