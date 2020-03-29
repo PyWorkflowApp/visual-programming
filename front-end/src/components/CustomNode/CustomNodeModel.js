@@ -15,8 +15,8 @@ export class CustomNodeModel extends NodeModel {
         // user-defined description of node
         this._description = null;
 
-        const nIn = options.numPortsIn === undefined ? 1 : options.numPortsIn;
-        const nOut = options.numPortsOut === undefined ? 1 : options.numPortsOut;
+        const nIn = options.num_in === undefined ? 1 : options.num_in;
+        const nOut = options.num_out === undefined ? 1 : options.num_out;
         // setup in and out ports
         for (let i = 0; i < nIn; ++i) {
             this.addPort(

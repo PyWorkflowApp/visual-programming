@@ -124,6 +124,7 @@ def retrieve_nodes_for_user(request):
         for child in parent.__subclasses__():
             # TODO: check attribute-scope is handled correctly
             child_node = {
+                'name': child.name,
                 'key': child.__name__,
                 'type': parent.__name__,
                 'num_in': child.num_in,

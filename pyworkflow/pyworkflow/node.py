@@ -6,9 +6,8 @@ class Node:
 
     """
     def __init__(self, node_info):
+        self.name = node_info.get('name')
         self.node_id = node_info.get('node_id')
-        # self.num_in = node_info.get('num_in')
-        # self.num_out = node_info.get('num_out')
         self.node_type = node_info.get('node_type')
         self.node_key = node_info.get('node_key')
         self.data = None
@@ -50,14 +49,13 @@ class ReadCsvNode(IONode):
          NodeException: any error reading CSV file, converting
             to DataFrame.
     """
+    name = "Read CSV"
     num_in = 0
     num_out = 1
     color = 'black'
 
     def __init__(self, node_info):
         super().__init__(node_info)
-        # self.num_in = 0
-        # self.num_out = 1
 
     def execute(self):
         try:
@@ -83,14 +81,13 @@ class WriteCsvNode(IONode):
         NodeException: any error writing CSV file, converting
             from DataFrame.
     """
-    num_in = 0
-    num_out = 1
+    name = "Write CSV"
+    num_in = 1
+    num_out = 0
     color = 'green'
 
     def __init__(self, node_info):
         super().__init__(node_info)
-        # self.num_in = 1
-        # self.num_out = 0
 
     def execute(self):
         try:

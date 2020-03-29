@@ -6,7 +6,6 @@ import { CanvasWidget } from '@projectstorm/react-canvas-core';
 import { VPLinkFactory } from './VPLink/VPLinkFactory';
 import { CustomNodeModel } from './CustomNode/CustomNodeModel';
 import { CustomNodeFactory } from './CustomNode/CustomNodeFactory';
-import * as nodeItems from '../nodeItems.json';
 import '../styles/Workspace.css';
 
 class Workspace extends React.Component {
@@ -19,11 +18,20 @@ class Workspace extends React.Component {
         this.model = new DiagramModel();
         this.engine.setModel(this.model);
         this.engine.setMaxNumberPointsPerLink(0);
+        this.state = {nodes: []};
+    }
+
+    componentDidMount() {
+        async function getNodes() {
+            const resp = await fetch("/workflow/nodes");
+            return resp.json();
+        }
+        getNodes().then(nodes => this.setState({nodes: nodes}));
     }
 
     render() {
         // construct menu from JSON of node types
-        const menu = _.map(nodeItems.default, (items, section) =>
+        const menu = _.map(this.state.nodes, (items, section) =>
             <div key={`node-menu-${section}`}>
                 <b>{section}</b>
                 <ul>
@@ -47,7 +55,6 @@ class Workspace extends React.Component {
                             var point = this.engine.getRelativeMousePoint(event);
                             node.setPosition(point);
                             this.model.addNode(node);
-                            console.log(node);
                             this.forceUpdate();
                         }}
                     onDragOver={event => {
