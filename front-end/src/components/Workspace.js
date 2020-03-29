@@ -136,6 +136,7 @@ function NodeMenuItem(props) {
 function FileUpload(props) {
     const input = useRef(null);
     const readFile = file => {
+        if (!file) return;
         const fr = new FileReader();
         fr.addEventListener("load", () => {
             const data = JSON.parse(fr.result);
