@@ -6,6 +6,7 @@ import { CanvasWidget } from '@projectstorm/react-canvas-core';
 import { VPLinkFactory } from './VPLink/VPLinkFactory';
 import { CustomNodeModel } from './CustomNode/CustomNodeModel';
 import { CustomNodeFactory } from './CustomNode/CustomNodeFactory';
+import { VPPortFactory } from './VPPort/VPPortFactory';
 import '../styles/Workspace.css';
 
 class Workspace extends React.Component {
@@ -15,6 +16,7 @@ class Workspace extends React.Component {
         this.engine = createEngine();
         this.engine.getNodeFactories().registerFactory(new CustomNodeFactory());
         this.engine.getLinkFactories().registerFactory(new VPLinkFactory());
+        this.engine.getPortFactories().registerFactory(new VPPortFactory());
         this.model = new DiagramModel();
         this.engine.setModel(this.model);
         this.engine.setMaxNumberPointsPerLink(0);

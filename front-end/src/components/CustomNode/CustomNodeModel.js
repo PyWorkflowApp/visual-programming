@@ -8,9 +8,6 @@ export class CustomNodeModel extends NodeModel {
             ...options,
             type: 'custom-node'
         });
-        this.color = options.color || {
-            options: 'red'
-        };
 
         // user-defined description of node
         this._description = null;
@@ -22,7 +19,7 @@ export class CustomNodeModel extends NodeModel {
             this.addPort(
                 new VPPortModel({
                     in: true,
-                    type: 'in',
+                    type: 'vp-port',
                     name: `in-${i}`
                 })
             );
@@ -31,7 +28,7 @@ export class CustomNodeModel extends NodeModel {
             this.addPort(
                 new VPPortModel({
                     in: false,
-                    type: 'out',
+                    type: 'vp-port',
                     name: `out-${i}`
                 })
             );
@@ -41,13 +38,12 @@ export class CustomNodeModel extends NodeModel {
     serialize() {
         return {
             ...super.serialize(),
-            color: this.options.color
-        };
+            options: this.options,
+        }
     }
 
     deserialize(ob, engine) {
         super.deserialize(ob, engine);
-        this.color = ob.color;
     }
 
     getDescription() {
