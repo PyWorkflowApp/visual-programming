@@ -2,7 +2,7 @@ import networkx as nx
 import json
 
 from .node import Node
-from .NodeFactory import node_factory
+from .node_factory import node_factory
 
 
 class Workflow:
