@@ -1,3 +1,5 @@
+import json
+
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from pyworkflow import Workflow, WorkflowException, Node, NodeException, node_factory
@@ -36,7 +38,7 @@ def node(request):
         }, status=404)
 
     # Extract request info for node creation
-    new_node = create_node(request.POST)
+    new_node = create_node(request.body)
 
     # If None, create_node failed
     if new_node is None:
@@ -160,12 +162,14 @@ def handle_node(request, node_id):
         if request.method == 'GET':
             response = JsonResponse(retrieved_node.__dict__, safe=False)
         elif request.method == 'POST':
-            updated_node = create_node(request.POST)
+            updated_node = create_node(request.body)
 
             # Nodes need to be the same type to update
             if type(retrieved_node) != type(updated_node):
                 return JsonResponse({
-                    'message': 'Node types do not match. Need correct info.'
+                    'message': 'Node types do not match. Need correct info.',
+                    'retrieve_node': str(type(retrieved_node)),
+                    'updated_node': str(type(updated_node)),
                 }, status=500)
 
             workflow.update_or_add_node(updated_node)
@@ -187,6 +191,7 @@ def handle_node(request, node_id):
     # Save any changes back to session
     request.session.update(workflow.to_session_dict())
     return response
+
 
 @swagger_auto_schema(method='get',
                      operation_summary='Execute a node in the graph.',
@@ -227,8 +232,10 @@ def create_node(node_info):
     """Pass all request info to Node Factory.
 
     """
+    json_data = json.loads(node_info)
+
     try:
-        return node_factory(node_info)
+        return node_factory(json_data)
     except OSError as e:
         return JsonResponse({'message': e.strerror}, status=404)
     except NodeException as e:
