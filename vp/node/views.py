@@ -1,14 +1,18 @@
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-
-
 from pyworkflow import Workflow, WorkflowException, Node, NodeException, node_factory
 from rest_framework.decorators import api_view
-
 from drf_yasg.utils import swagger_auto_schema
 
 
-@swagger_auto_schema(method='post', operation_summary='Add a node to the graph', operation_description='Adds a node to the graph.', responses={200: 'Node added to graph', 400: 'Node with id already exists in graph', 404: 'Node/graph not found'})
+@swagger_auto_schema(method='post',
+                     operation_summary='Add a node to the graph',
+                     operation_description='Adds a node to the graph.',
+                     responses={
+                         200: 'Node added to graph',
+                         400: 'Node with id already exists in graph',
+                         404: 'Node/graph not found'
+                     })
 @api_view(['POST'])
 @csrf_exempt
 def node(request):
@@ -58,7 +62,14 @@ def node(request):
         'message': 'Added new node to graph with id: %s' % (new_node.node_id)
     })
 
-@swagger_auto_schema(method='post', operation_summary='Retrive a node from the graph', operation_description='Retrieves a node from the graph.', responses={200:'Added edge to graph', 404:'Workflow not created yet/Workflow does not contain specified node'})
+
+@swagger_auto_schema(method='post',
+                     operation_summary='Retrive a node from the graph',
+                     operation_description='Retrieves a node from the graph.',
+                     responses={
+                         200: 'Added edge to graph',
+                         404: 'Workflow not created yet/Workflow does not contain specified node'
+                     })
 @api_view(['POST'])
 def edge(request, node_from_id, node_to_id):
     """ Add new edge to the graph
@@ -92,9 +103,32 @@ def edge(request, node_from_id, node_to_id):
     })
 
 
-@swagger_auto_schema(method='get', operation_summary='Retrive a node from the graph', operation_description='Retrieves a node from the graph.', responses={200:'JSON response with data', 400: 'No file specified', 404:'Node/graph not found'})
-@swagger_auto_schema(method='post', operation_summary='Update a node from the graph', operation_description='Updates a node from the graph.', responses={200:'JSON response with data', 400: 'No file specified', 404:'Node/graph not found'})
-@swagger_auto_schema(method='delete', operation_summary='Delete a node from the graph', operation_description='Deletes a node from the graph.', responses={200:'JSON response with data', 400: 'No file specified', 404:'Node/graph not found', 405:'Method not allowed', 500:'Error processing Node change'})
+@swagger_auto_schema(method='get',
+                     operation_summary='Retrive a node from the graph',
+                     operation_description='Retrieves a node from the graph.',
+                     responses={
+                         200: 'JSON response with data',
+                         400: 'No file specified',
+                         404: 'Node/graph not found'
+                     })
+@swagger_auto_schema(method='post',
+                     operation_summary='Update a node from the graph',
+                     operation_description='Updates a node from the graph.',
+                     responses={
+                         200: 'JSON response with data',
+                         400: 'No file specified',
+                         404: 'Node/graph not found'
+                     })
+@swagger_auto_schema(method='delete',
+                     operation_summary='Delete a node from the graph',
+                     operation_description='Deletes a node from the graph.',
+                     responses={
+                         200: 'JSON response with data',
+                         400: 'No file specified',
+                         404: 'Node/graph not found',
+                         405: 'Method not allowed',
+                         500: 'Error processing Node change'
+                     })
 @api_view(['GET', 'POST', 'DELETE'])
 @csrf_exempt
 def handle_node(request, node_id):

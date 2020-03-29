@@ -6,16 +6,16 @@ from django.http import JsonResponse, HttpResponse
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from rest_framework.decorators import api_view
-
 from pyworkflow import Workflow, WorkflowException, Node
-
 from drf_yasg.utils import swagger_auto_schema
 
 fs = FileSystemStorage(location=settings.MEDIA_ROOT)
 
 
-
-@swagger_auto_schema(method='get', responses={200:'Created new DiGraph'})
+@swagger_auto_schema(method='get',
+                     responses={
+                         200: 'Created new DiGraph'
+                     })
 @api_view(['GET'])
 def new_workflow(request):
     """ Create a new workflow.
@@ -32,7 +32,13 @@ def new_workflow(request):
     data = workflow.to_graph_json()
     return JsonResponse(data)
 
-@swagger_auto_schema(method='get', responses={200:'Workflow representation in JSON', 400: 'No file specified', 404:'File specified not found or not JSON graph'})
+
+@swagger_auto_schema(method='get',
+                     responses={
+                         200: 'Workflow representation in JSON',
+                         400: 'No file specified',
+                         404: 'File specified not found or not JSON graph'
+                     })
 @api_view(['GET'])
 def open_workflow(request):
     """Open a workflow.
@@ -73,7 +79,13 @@ def open_workflow(request):
     request.session.update(workflow.to_session_dict())
     return JsonResponse(data)
 
-@swagger_auto_schema(method='post', responses={200:'Workflow representation in JSON', 400: 'No file specified', 404:'File specified not found or not JSON graph'})
+
+@swagger_auto_schema(method='post',
+                     responses={
+                         200: 'Workflow representation in JSON',
+                         400: 'No file specified',
+                         404: 'File specified not found or not JSON graph'
+                     })
 @api_view(['POST'])
 def save_workflow(request):
     """Save workflow.
