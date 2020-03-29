@@ -110,8 +110,6 @@ class ManipulationNode(Node):
 
     def __init__(self, node_info):
         super().__init__(node_info)
-        # self.num_in = 1
-        # self.num_out = 1
 
     def execute(self):
         print("Executing ManipulationNode")

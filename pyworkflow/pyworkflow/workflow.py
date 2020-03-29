@@ -48,27 +48,23 @@ class Workflow:
         node_info = self.graph.nodes[node_id]
         return node_factory(node_info)
 
-    def add_node(self, node: Node):
-        """ Add a Node object to the graph.
+    def update_or_add_node(self, node: Node):
+        """ Update or add a Node object to the graph.
 
         Args:
-            node - The Node object to add to the graph
+            node - The Node object to update or add to the graph
 
         TODO:
             * validate() always returns True; this should perform actual validation
         """
         if node.validate():
-            # Only hashable Python objects can represent a node in a NetworkX graph.
-            # For now, add Node from 'node_id' and iterate through keys to add
-            # attributes. We may want to investigate alternatives.
-            node_dict = node.__dict__
-            self._graph.add_node(node.node_id)
+            # If Node not in graph yet, add it
+            if self._graph.has_node(node.node_id) is False:
+                self._graph.add_node(node.node_id)
 
+            # Iterate through all Node attributes to add to graph
+            node_dict = node.__dict__
             for key in node_dict.keys():
-                # Graph node already includes 'id' for lookup
-                # if key == 'node_id':
-                #     continue
-                # Add attribute to graph node
                 self._graph.nodes[node.node_id][key] = node_dict[key]
 
         return
