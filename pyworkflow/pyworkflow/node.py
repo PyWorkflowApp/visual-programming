@@ -119,6 +119,25 @@ class ManipulationNode(Node):
         return True
 
 
+class PivotNode(ManipulationNode):
+    name = "Pivoting"
+    num_in = 1
+    num_out = 3
+
+
+    def __init__(self, node_info):
+        super().__init__(node_info)
+
+
+class JoinNode(ManipulationNode):
+    name = "Joiner"
+    num_in = 2
+    num_out = 1
+
+    def __init__(self, node_info):
+        super().__init__(node_info)
+
+
 class NodeException(Exception):
     def __init__(self, action: str, reason: str):
         self.action = action

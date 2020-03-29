@@ -27,10 +27,10 @@ def io_node(node_key, node_info):
 
 
 def manipulation_node(node_key, node_info):
-    if node_key == 'filter':
-        return ManipulationNode(node_info)
+    if node_key == 'join':
+        return JoinNode(node_info)
     elif node_key == 'pivot':
-        return ManipulationNode(node_info)
+        return PivotNode(node_info)
     elif node_key == 'multi-in':
         return ManipulationNode(node_info)
     else:
