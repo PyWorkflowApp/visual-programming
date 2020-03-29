@@ -35,7 +35,7 @@ export class CustomNodeWidget extends React.Component {
         const engine = this.props.engine;
         const ports = _.values(this.props.node.getPorts());
         // group ports by type (in/out)
-        const sortedPorts = _.groupBy(ports, p => p.options.type);
+        const sortedPorts = _.groupBy(ports, p => p.options.in === true ? "in" : "out");
         // create PortWidget array for each type
         const portWidgets = {};
         for (let portType in sortedPorts) {
@@ -48,7 +48,7 @@ export class CustomNodeWidget extends React.Component {
         return (
             <div className="custom-node-wrapper">
                 <div className="custom-node-name">{this.props.node.options.name}</div>
-                <div className="custom-node" style={{ borderColor: this.props.node.color }}>
+                <div className="custom-node" style={{ borderColor: this.props.node.options.color }}>
                     <div className="custom-node-configure" onClick={this.toggleConfig}>&#x2699;</div>
                     <NodeConfig node={this.props.node}
                         show={this.state.showConfig}

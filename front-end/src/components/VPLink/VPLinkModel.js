@@ -9,7 +9,7 @@ export class VPLinkModel extends DefaultLinkModel {
         });
     }
 
-    getSVGPath(): string {
+    getSVGPath() {
       if (this.isLastPositionDefault()) {
         return;
       }

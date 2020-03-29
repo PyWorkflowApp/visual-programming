@@ -2,11 +2,11 @@ import { DefaultPortModel } from '@projectstorm/react-diagrams';
 import { VPLinkModel } from '../VPLink/VPLinkModel';
 
 export class VPPortModel extends DefaultPortModel {
-      createLinkModel(): VPLinkModel | null {
+      createLinkModel() {
           return new VPLinkModel();
       }
 
-      canLinkToPort(port: PortModel): boolean {
+      canLinkToPort(port) {
         return port instanceof VPPortModel;
       }
 }
