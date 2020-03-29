@@ -11,6 +11,7 @@ class Node:
         self.node_type = node_info.get('node_type')
         self.node_key = node_info.get('node_key')
         self.data = None
+        self.options = None
 
     def execute(self):
         pass
@@ -29,9 +30,15 @@ class IONode(Node):
         Read CSV
         Write CSV
     """
-    def __init__(self, node_info):
+    color = 'black'
+
+    options = {
+        'file': None,
+    }
+
+    def __init__(self, node_info, options=options):
         super().__init__(node_info)
-        self.file = node_info.get('file')
+        self.options.update(options)
 
     def execute(self):
         pass
@@ -52,18 +59,28 @@ class ReadCsvNode(IONode):
     name = "Read CSV"
     num_in = 0
     num_out = 1
-    color = 'black'
 
-    def __init__(self, node_info):
+    options = {
+        'delimiter': None,
+    }
+
+    def __init__(self, node_info, options=options):
         super().__init__(node_info)
+
+        node_options = node_info.get('options')
+
+        if node_options is not None:
+            self.options.update(node_options)
+        else:
+            self.options.update(options)
 
     def execute(self):
         try:
             # TODO: FileStorage implemented in Django to store in /tmp
             # Right now, /tmp/ is hardcoded, but should be changed as we
             # further consider file-handling/uploading
-            with open('/tmp/' + self.file) as file_like:
-                df = pd.read_csv(file_like)
+            with open('/tmp/' + self.options['file']) as file_like:
+                df = pd.read_csv(file_like, delimiter=self.options['delimiter'])
                 self.data = df.to_json()
         except Exception as e:
             raise NodeException('read csv', str(e))
@@ -84,14 +101,24 @@ class WriteCsvNode(IONode):
     name = "Write CSV"
     num_in = 1
     num_out = 0
-    color = 'green'
+    options = {
+        'index': True,
+    }
 
-    def __init__(self, node_info):
+    def __init__(self, node_info, options=options):
         super().__init__(node_info)
+
+        node_options = node_info.get('options')
+
+        if node_options is not None:
+            self.options.update(node_options)
+        else:
+            self.options.update(options)
 
     def execute(self):
         try:
-            self.data.to_csv('/tmp/' + self.file)
+            file_path = '/tmp/' + self.file
+            self.data.to_csv(file_path, index=self.index)
         except Exception as e:
             raise NodeException('write csv', str(e))
 
@@ -104,15 +131,15 @@ class ManipulationNode(Node):
         Filter
         Multi-in
     """
-    num_in = 1
-    num_out = 1
-    color = 'blue'
+    color = 'yellow'
 
-    def __init__(self, node_info):
+    options = {}
+
+    def __init__(self, node_info, options=options):
         super().__init__(node_info)
+        self.options.update(options)
 
     def execute(self):
-        print("Executing ManipulationNode")
         pass
 
     def validate(self):
@@ -123,7 +150,6 @@ class PivotNode(ManipulationNode):
     name = "Pivoting"
     num_in = 1
     num_out = 3
-
 
     def __init__(self, node_info):
         super().__init__(node_info)
