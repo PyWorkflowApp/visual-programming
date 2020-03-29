@@ -29,39 +29,13 @@
 				"method": "POST",
 				"header": [],
 				"body": {
-					"mode": "formdata",
-					"formdata": [
-						{
-							"key": "node_id",
-							"value": "4",
-							"type": "text"
-						},
-						{
-							"key": "node_type",
-							"value": "IO",
-							"type": "text"
-						},
-						{
-							"key": "node_key",
-							"value": "read-csv",
-							"type": "text"
-						},
-						{
-							"key": "num_in",
-							"value": "0",
-							"type": "text"
-						},
-						{
-							"key": "num_out",
-							"value": "1",
-							"type": "text"
-						},
-						{
-							"key": "file",
-							"value": "test.csv",
-							"type": "text"
+					"mode": "raw",
+					"raw": "{\n    \"name\": null,\n    \"node_id\": \"1\",\n    \"node_type\": \"IO\",\n    \"node_key\": \"read-csv\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
 						}
-					]
+					}
 				},
 				"url": {
 					"raw": "http://localhost:8000/node/",
@@ -217,18 +191,45 @@
 			"response": []
 		},
 		{
-			"name": "Execute node",
+			"name": "Update node",
 			"request": {
-				"method": "GET",
+				"method": "POST",
 				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": null,\n    \"node_id\": \"1\",\n    \"node_type\": \"IO\",\n    \"node_key\": \"read-csv\",\n    \"options\": {\n    \t\"file\": \"test.csv\",\n    \t\"delimiter\": \"\\n\"\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
 				"url": {
-					"raw": "{{environment}}/node/2/execute",
+					"raw": "{{environment}}/node/1",
 					"host": [
 						"{{environment}}"
 					],
 					"path": [
 						"node",
-						"2",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Execute node",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{environment}}/node/1/execute",
+					"host": [
+						"{{environment}}"
+					],
+					"path": [
+						"node",
+						"1",
 						"execute"
 					]
 				}
@@ -241,14 +242,33 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{environment}}/node/2/execute",
+					"raw": "{{environment}}/node/edge/2/3",
 					"host": [
 						"{{environment}}"
 					],
 					"path": [
 						"node",
+						"edge",
 						"2",
-						"execute"
+						"3"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Retrieve node list",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{environment}}/workflow/nodes",
+					"host": [
+						"{{environment}}"
+					],
+					"path": [
+						"workflow",
+						"nodes"
 					]
 				}
 			},
@@ -257,7 +277,7 @@
 		{
 			"name": "Save workflow",
 			"request": {
-				"method": "GET",
+				"method": "POST",
 				"header": [],
 				"url": {
 					"raw": "{{environment}}/workflow/save",
