@@ -1,12 +1,8 @@
 import * as React from 'react';
 
-export class CustomLinkWidget extends React.Component<{ model: CustomLinkModel; path: string }> {
+export class CustomLinkWidget extends React.Component {
 
-  path: SVGPathElement;
-	callback: () => any;
-	percent: number;
-	handle: any;
-	mounted: boolean;
+	path;
 
 	constructor(props) {
 		super(props);
