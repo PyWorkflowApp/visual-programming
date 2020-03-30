@@ -160,7 +160,6 @@ class TabularViewNode(ViewNode):
 
     def __init__(self, node_info):
         super().__init__(node_info)
-        self.url = node_info.get('url')
 
     def execute(self):
         pass
@@ -181,7 +180,6 @@ class GraphicalViewNode(ViewNode):
 
     def __init__(self, node_info):
         super().__init__(node_info)
-        self.url = node_info.get('url')
 
     def execute(self):
         pass
