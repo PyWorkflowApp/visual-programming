@@ -13,6 +13,7 @@ export class CustomNodeWidget extends React.Component {
         this.toggleConfig = this.toggleConfig.bind(this);
         this.handleDelete = this.handleDelete.bind(this);
         this.acceptConfiguration = this.acceptConfiguration.bind(this);
+        this.icon = '9881';
     }
 
     // show/hide node configuration modal
@@ -49,7 +50,7 @@ export class CustomNodeWidget extends React.Component {
             <div className="custom-node-wrapper">
                 <div className="custom-node-name">{this.props.node.options.name}</div>
                 <div className="custom-node" style={{ borderColor: this.props.node.options.color }}>
-                    <div className="custom-node-configure" onClick={this.toggleConfig}>&#x2699;</div>
+                    <div className="custom-node-configure" onClick={this.toggleConfig}>{String.fromCharCode(this.icon)}</div>
                     <NodeConfig node={this.props.node}
                         show={this.state.showConfig}
                         toggleShow={this.toggleConfig}
