@@ -5,13 +5,19 @@ class Node:
     """Node object
 
     """
-    def __init__(self, node_info):
+    def __init__(self, node_info, options=None):
         self.name = node_info.get('name')
         self.node_id = node_info.get('node_id')
         self.node_type = node_info.get('node_type')
         self.node_key = node_info.get('node_key')
         self.data = None
-        self.options = None
+
+        # Execution options are passed up from children
+        self.options = options or dict()
+
+        # User-override takes precedence
+        if node_info.get("options"):
+            self.options.update(node_info["options"])
 
     def execute(self):
         pass
@@ -32,13 +38,12 @@ class IONode(Node):
     """
     color = 'black'
 
-    options = {
-        'file': None,
+    DEFAULT_OPTIONS = {
+        # 'file': None,
     }
 
-    def __init__(self, node_info, options=options):
-        super().__init__(node_info)
-        self.options.update(options)
+    def __init__(self, node_info, options=dict()):
+        super().__init__(node_info, {**IONode.DEFAULT_OPTIONS, **options})
 
     def execute(self):
         pass
@@ -59,29 +64,24 @@ class ReadCsvNode(IONode):
     name = "Read CSV"
     num_in = 0
     num_out = 1
+    color = 'purple'
 
-    options = {
-        'delimiter': None,
+    DEFAULT_OPTIONS = {
+        'filepath_or_buffer': None,
+        'sep': ',',
+        'header': 'infer',
     }
 
-    def __init__(self, node_info, options=options):
-        super().__init__(node_info)
-
-        node_options = node_info.get('options')
-
-        if node_options is not None:
-            self.options.update(node_options)
-        else:
-            self.options.update(options)
+    def __init__(self, node_info, options=dict()):
+        super().__init__(node_info, {**self.DEFAULT_OPTIONS, **options})
 
     def execute(self):
         try:
             # TODO: FileStorage implemented in Django to store in /tmp
-            # Right now, /tmp/ is hardcoded, but should be changed as we
-            # further consider file-handling/uploading
-            with open('/tmp/' + self.options['file']) as file_like:
-                df = pd.read_csv(file_like, delimiter=self.options['delimiter'])
-                self.data = df.to_json()
+            #       Better filename/path handling should be implemented.
+
+            df = pd.read_csv(**self.options)
+            self.data = df.to_json()
         except Exception as e:
             raise NodeException('read csv', str(e))
 
@@ -101,24 +101,24 @@ class WriteCsvNode(IONode):
     name = "Write CSV"
     num_in = 1
     num_out = 0
-    options = {
+    DEFAULT_OPTIONS = {
+        'path_or_buf': None,
+        'sep': ',',
         'index': True,
     }
 
-    def __init__(self, node_info, options=options):
-        super().__init__(node_info)
-
-        node_options = node_info.get('options')
-
-        if node_options is not None:
-            self.options.update(node_options)
-        else:
-            self.options.update(options)
+    def __init__(self, node_info, options=dict()):
+        super().__init__(node_info, {**self.DEFAULT_OPTIONS, **options})
 
     def execute(self):
         try:
-            file_path = '/tmp/' + self.file
-            self.data.to_csv(file_path, index=self.index)
+            # TODO: DataFrame would be stored from prior Node execution
+            # Create empty DataFrame
+            self.data = pd.DataFrame().to_json()
+
+            # Read in empty DataFrame to export
+            df = pd.read_json(self.data)
+            df.to_csv(**self.options)
         except Exception as e:
             raise NodeException('write csv', str(e))
 
@@ -133,11 +133,10 @@ class ManipulationNode(Node):
     """
     color = 'yellow'
 
-    options = {}
+    DEFAULT_OPTIONS = {}
 
-    def __init__(self, node_info, options=options):
-        super().__init__(node_info)
-        self.options.update(options)
+    def __init__(self, node_info, options=dict()):
+        super().__init__(node_info, {**ManipulationNode.DEFAULT_OPTIONS, **options})
 
     def execute(self):
         pass
@@ -151,8 +150,10 @@ class PivotNode(ManipulationNode):
     num_in = 1
     num_out = 3
 
-    def __init__(self, node_info):
-        super().__init__(node_info)
+    DEFAULT_OPTIONS = {}
+
+    def __init__(self, node_info, options=dict()):
+        super().__init__(node_info, {**self.DEFAULT_OPTIONS, **options})
 
 
 class JoinNode(ManipulationNode):
@@ -160,8 +161,10 @@ class JoinNode(ManipulationNode):
     num_in = 2
     num_out = 1
 
-    def __init__(self, node_info):
-        super().__init__(node_info)
+    DEFAULT_OPTIONS = {}
+
+    def __init__(self, node_info, options=dict()):
+        super().__init__(node_info, {**self.DEFAULT_OPTIONS, **options})
 
 
 class NodeException(Exception):

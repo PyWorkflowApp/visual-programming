@@ -149,9 +149,9 @@ def retrieve_nodes_for_user(request):
                 'type': parent.__name__,
                 'num_in': child.num_in,
                 'num_out': child.num_out,
-                'color': parent.color,
+                'color': child.color or parent.color,
                 'doc': child.__doc__,
-                'options': child.options,
+                'options': {**parent.DEFAULT_OPTIONS, **child.DEFAULT_OPTIONS},
             }
 
             data[parent.__name__].append(child_node)
