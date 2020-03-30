@@ -49,7 +49,7 @@ export class CustomNodeWidget extends React.Component {
         return (
             <div className="custom-node-wrapper">
                 <div className="custom-node-name">{this.props.node.options.name}</div>
-                <div className="custom-node" style={{ borderColor: this.props.node.color }}>
+                <div className="custom-node" style={{ borderColor: this.props.node.options.color }}>
                     <div className="custom-node-configure" onClick={this.toggleConfig}>{String.fromCharCode(this.icon)}</div>
                     <NodeConfig node={this.props.node}
                         show={this.state.showConfig}
