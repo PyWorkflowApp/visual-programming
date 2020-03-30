@@ -5,12 +5,19 @@ class Node:
     """Node object
 
     """
-    def __init__(self, node_info):
+    def __init__(self, node_info, options=None):
         self.name = node_info.get('name')
         self.node_id = node_info.get('node_id')
         self.node_type = node_info.get('node_type')
         self.node_key = node_info.get('node_key')
         self.data = None
+
+        # Execution options are passed up from children
+        self.options = options or dict()
+
+        # User-override takes precedence
+        if node_info.get("options"):
+            self.options.update(node_info["options"])
 
     def execute(self):
         pass
@@ -29,9 +36,14 @@ class IONode(Node):
         Read CSV
         Write CSV
     """
-    def __init__(self, node_info):
-        super().__init__(node_info)
-        self.file = node_info.get('file')
+    color = 'black'
+
+    DEFAULT_OPTIONS = {
+        # 'file': None,
+    }
+
+    def __init__(self, node_info, options=dict()):
+        super().__init__(node_info, {**IONode.DEFAULT_OPTIONS, **options})
 
     def execute(self):
         pass
@@ -52,19 +64,24 @@ class ReadCsvNode(IONode):
     name = "Read CSV"
     num_in = 0
     num_out = 1
-    color = 'black'
+    color = 'purple'
 
-    def __init__(self, node_info):
-        super().__init__(node_info)
+    DEFAULT_OPTIONS = {
+        'filepath_or_buffer': None,
+        'sep': ',',
+        'header': 'infer',
+    }
+
+    def __init__(self, node_info, options=dict()):
+        super().__init__(node_info, {**self.DEFAULT_OPTIONS, **options})
 
     def execute(self):
         try:
             # TODO: FileStorage implemented in Django to store in /tmp
-            # Right now, /tmp/ is hardcoded, but should be changed as we
-            # further consider file-handling/uploading
-            with open('/tmp/' + self.file) as file_like:
-                df = pd.read_csv(file_like)
-                self.data = df.to_json()
+            #       Better filename/path handling should be implemented.
+
+            df = pd.read_csv(**self.options)
+            self.data = df.to_json()
         except Exception as e:
             raise NodeException('read csv', str(e))
 
@@ -84,14 +101,24 @@ class WriteCsvNode(IONode):
     name = "Write CSV"
     num_in = 1
     num_out = 0
-    color = 'green'
+    DEFAULT_OPTIONS = {
+        'path_or_buf': None,
+        'sep': ',',
+        'index': True,
+    }
 
-    def __init__(self, node_info):
-        super().__init__(node_info)
+    def __init__(self, node_info, options=dict()):
+        super().__init__(node_info, {**self.DEFAULT_OPTIONS, **options})
 
     def execute(self):
         try:
-            self.data.to_csv('/tmp/' + self.file)
+            # TODO: DataFrame would be stored from prior Node execution
+            # Create empty DataFrame
+            self.data = pd.DataFrame().to_json()
+
+            # Read in empty DataFrame to export
+            df = pd.read_json(self.data)
+            df.to_csv(**self.options)
         except Exception as e:
             raise NodeException('write csv', str(e))
 
@@ -104,21 +131,40 @@ class ManipulationNode(Node):
         Filter
         Multi-in
     """
-    num_in = 1
-    num_out = 1
-    color = 'blue'
+    color = 'yellow'
 
-    def __init__(self, node_info):
-        super().__init__(node_info)
-        # self.num_in = 1
-        # self.num_out = 1
+    DEFAULT_OPTIONS = {}
+
+    def __init__(self, node_info, options=dict()):
+        super().__init__(node_info, {**ManipulationNode.DEFAULT_OPTIONS, **options})
 
     def execute(self):
-        print("Executing ManipulationNode")
         pass
 
     def validate(self):
         return True
+
+
+class PivotNode(ManipulationNode):
+    name = "Pivoting"
+    num_in = 1
+    num_out = 3
+
+    DEFAULT_OPTIONS = {}
+
+    def __init__(self, node_info, options=dict()):
+        super().__init__(node_info, {**self.DEFAULT_OPTIONS, **options})
+
+
+class JoinNode(ManipulationNode):
+    name = "Joiner"
+    num_in = 2
+    num_out = 1
+
+    DEFAULT_OPTIONS = {}
+
+    def __init__(self, node_info, options=dict()):
+        super().__init__(node_info, {**self.DEFAULT_OPTIONS, **options})
 
 
 class NodeException(Exception):
