@@ -125,6 +125,20 @@ class Workflow:
         except nx.NetworkXError:
             raise WorkflowException('remove_node', 'Node does not exist in graph.')
 
+    def get_node_successors(self, node_id):
+        try:
+            return list(self._graph.successors(node_id))
+        except nx.NetworkXError as e:
+            raise WorkflowException('get node successors', str(e))
+
+    def execution_order(self):
+        try:
+            return list(nx.topological_sort(self._graph))
+        except (nx.NetworkXError, nx.NetworkXUnfeasible) as e:
+            raise WorkflowException('execution order', str(e))
+        except RuntimeError as e:
+            raise WorkflowException('execution order', 'The graph was changed while generating the execution order')
+
     @staticmethod
     def read_graph_json(file_like):
         """Deserialize JSON NetworkX graph
