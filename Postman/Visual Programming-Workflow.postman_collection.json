@@ -1,0 +1,239 @@
+{
+	"info": {
+		"_postman_id": "94c6f073-1978-444b-99b3-0123cef01056",
+		"name": "Visual Programming-Workflow",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get Info",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8000/info",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"info"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "New workflow",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "f36bfdc4-a83f-4f7f-a91e-af704ea64c2e",
+						"exec": [
+							"const response = pm.response.json()",
+							"",
+							"pm.environment.set('graph', response)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8000/workflow/new",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"workflow",
+						"new"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Open file (200)",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/Users/mthomas/Desktop/combined.json"
+						}
+					],
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8000/workflow/open",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"workflow",
+						"open"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Open file (404)",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": []
+						}
+					],
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8000/workflow/open",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"workflow",
+						"open"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Save workflow",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": \"d6a3e610-4b4b-4455-b9da-d5dba9b4d948\",\n    \"offsetX\": 0,\n    \"offsetY\": 0,\n    \"zoom\": 100,\n    \"gridSize\": 0,\n    \"layers\": [{\n        \"id\": \"1163e2c6-99b2-45d2-a0e3-40edc9bb816d\",\n        \"type\": \"diagram-links\",\n        \"isSvg\": true,\n        \"transformed\": true,\n        \"models\": {\n            \"4e9075df-0538-4fb0-9d3e-45a47d981c7e\": {\n                \"id\": \"4e9075df-0538-4fb0-9d3e-45a47d981c7e\",\n                \"type\": \"default\",\n                \"selected\": true,\n                \"source\": \"e7f27af1-e0ce-4c6c-8609-e5b494c7b713\",\n                \"sourcePort\": \"5be5cc4f-1f35-4ed8-b143-b52597dd93a4\",\n                \"target\": null,\n                \"targetPort\": null,\n                \"points\": [{\n                    \"id\": \"c8253115-d3b6-44c5-b45d-69ae6ca26ec9\",\n                    \"type\": \"point\",\n                    \"x\": 191.20001220703125,\n                    \"y\": 174.58750915527344\n                }, {\n                    \"id\": \"07070038-8b29-4bc8-b0b9-c0c1c887f88a\",\n                    \"type\": \"point\",\n                    \"x\": 332.79998779296875,\n                    \"y\": 213.59999084472656\n                }],\n                \"labels\": [],\n                \"width\": 5,\n                \"color\": \"orange\",\n                \"curvyness\": 50,\n                \"selectedColor\": \"rgb(0,192,255)\"\n            }\n        }\n    }, {\n        \"id\": \"ef159b45-93f1-44a3-804a-d35fe7f15f21\",\n        \"type\": \"diagram-nodes\",\n        \"isSvg\": false,\n        \"transformed\": true,\n        \"models\": {\n            \"e7f27af1-e0ce-4c6c-8609-e5b494c7b713\": {\n                \"id\": \"e7f27af1-e0ce-4c6c-8609-e5b494c7b713\",\n                \"type\": \"custom-node\",\n                \"x\": 131.79998779296875,\n                \"y\": 130.59999084472656,\n                \"ports\": [{\n                    \"id\": \"5be5cc4f-1f35-4ed8-b143-b52597dd93a4\",\n                    \"type\": \"vp-port\",\n                    \"x\": 186.20001220703125,\n                    \"y\": 168.58750915527344,\n                    \"name\": \"out-0\",\n                    \"alignment\": \"right\",\n                    \"parentNode\": \"e7f27af1-e0ce-4c6c-8609-e5b494c7b713\",\n                    \"links\": [\"4e9075df-0538-4fb0-9d3e-45a47d981c7e\"],\n                    \"in\": false,\n                    \"label\": \"out-0\"\n                }],\n                \"options\": {\n                    \"id\": \"e7f27af1-e0ce-4c6c-8609-e5b494c7b713\",\n                    \"name\": \"Read CSV\",\n                    \"type\": \"custom-node\",\n                    \"num_in\": 0,\n                    \"num_out\": 1,\n                    \"color\": \"black\",\n                    \"doc\": \"ReadCsvNode\\n\\n    Reads a CSV file into a pandas DataFrame.\\n\\n    Raises:\\n         NodeException: any error reading CSV file, converting\\n            to DataFrame.\\n    \"\n                }\n            },\n            \"d9d4485c-847c-4514-9caa-628cf1999c06\": {\n                \"id\": \"d9d4485c-847c-4514-9caa-628cf1999c06\",\n                \"type\": \"custom-node\",\n                \"x\": 314.79998779296875,\n                \"y\": 167.59999084472656,\n                \"ports\": [{\n                    \"id\": \"e2c88ded-3969-4231-8b47-85c82730e4f0\",\n                    \"type\": \"vp-port\",\n                    \"x\": 322.7874755859375,\n                    \"y\": 205.58750915527344,\n                    \"name\": \"in-0\",\n                    \"alignment\": \"left\",\n                    \"parentNode\": \"d9d4485c-847c-4514-9caa-628cf1999c06\",\n                    \"links\": [],\n                    \"in\": true,\n                    \"label\": \"in-0\"\n                }],\n                \"options\": {\n                    \"id\": \"d9d4485c-847c-4514-9caa-628cf1999c06\",\n                    \"name\": \"Write CSV\",\n                    \"type\": \"custom-node\",\n                    \"num_in\": 1,\n                    \"num_out\": 0,\n                    \"color\": \"green\",\n                    \"doc\": \"WriteCsvNode\\n\\n    Writes the current DataFrame to a CSV file.\\n\\n    Raises:\\n        NodeException: any error writing CSV file, converting\\n            from DataFrame.\\n    \"\n                }\n            }\n        }\n    }]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{environment}}/workflow/save",
+					"host": [
+						"{{environment}}"
+					],
+					"path": [
+						"workflow",
+						"save"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Workflow execution order",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "f36bfdc4-a83f-4f7f-a91e-af704ea64c2e",
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{environment}}/workflow/execute",
+					"host": [
+						"{{environment}}"
+					],
+					"path": [
+						"workflow",
+						"execute"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Node successors",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "f36bfdc4-a83f-4f7f-a91e-af704ea64c2e",
+						"exec": [
+							"const response = pm.response.json()",
+							"",
+							"pm.environment.set('graph', response)"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8000/workflow/execute/1/successors",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"workflow",
+						"execute",
+						"1",
+						"successors"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Retrieve node list",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{environment}}/workflow/nodes",
+					"host": [
+						"{{environment}}"
+					],
+					"path": [
+						"workflow",
+						"nodes"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}
