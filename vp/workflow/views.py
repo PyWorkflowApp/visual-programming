@@ -35,48 +35,62 @@ def new_workflow(request):
     return JsonResponse(data)
 
 
-@swagger_auto_schema(method='get',
+@swagger_auto_schema(method='post',
                      operation_summary='Open workflow from file.',
-                     operation_description='Loads a JSON file from disk and translates into Workflow object',
+                     operation_description='Loads a JSON file from disk and translates into Workflow object and JSON object of front-end',
                      responses={
                          200: 'Workflow representation in JSON',
                          400: 'No file specified',
                          404: 'File specified not found or not JSON graph'
                      })
-@api_view(['GET'])
+@api_view(['POST'])
 def open_workflow(request):
     """Open a workflow.
 
-    If file is specified in GET request, that file is opened.
+    User uploads a JSON file to the front-end that passes JSON data to be
+    parsed and validated on the back-end.
 
     Args:
-        request: Django request Object
+        request: Django request Object, should follow the pattern:
+            {
+                react: {react-diagrams JSON},
+                networkx: {networkx graph as JSON},
+            }
+
+    Raises:
+        JSONDecodeError: invalid JSON data
+        KeyError: request missing either 'react' or 'networkx' data
+        WorkflowException: error loading JSON into NetworkX DiGraph
 
     Returns:
         200 - JSON response with data.
         400 - No file specified
         404 - File specified not found, or not JSON graph
+        500 - Missing JSON data or
     """
-    # If file included in request, extract it
-    file_path = request.GET.get('file')
-    if file_path is None:
-        return JsonResponse({'message': 'File must be specified.'}, status=400)
-
-    # Read info into Workflow object
     try:
-        with fs.open(file_path) as file_like:
-            workflow = Workflow.from_file(file_like)
-    except OSError as e:
-        return JsonResponse({'message': e.strerror}, status=404)
-    except nx.NetworkXError as e:
-        return JsonResponse({'message': str(e)}, status=404)
+        # If multi-part form-data, use this
+        # TODO: file is parsed into JSON in memory;
+        #       may want to save to 'fs' for large files
+        uploaded_file = request.FILES['file']
+        combined_json = json.load(uploaded_file)
+
+        # If file is passed in as raw JSON, use this
+        # combined_json = json.loads(request.body)
+
+        workflow = Workflow.from_request(combined_json['networkx'])
+        react = combined_json['react']
+    except KeyError as e:
+        return JsonResponse({'open_workflow': 'Missing data for ' + str(e)}, status=500)
+    except json.JSONDecodeError as e:
+        return JsonResponse({'No React JSON provided': str(e)}, status=500)
     except WorkflowException as e:
         return JsonResponse({e.action: e.reason}, status=404)
 
     # Construct response
     data = {
-        'graph': workflow.to_graph_json(),
-        'nodes': workflow.graph.number_of_nodes(),
+        'react': react,
+        'networkx': workflow.to_graph_json(),
     }
 
     # Save Workflow info to session
@@ -104,18 +118,26 @@ def save_workflow(request):
     Returns:
         Downloads JSON file representing graph.
     """
-    # Check session for existing graph
-    if request.session.get('graph') is None:
+    # Retrieve stored workflow
+    workflow = Workflow.from_session(request.session)
+
+    # Check for existing graph
+    if workflow.graph is None:
         return JsonResponse({'message': 'No graph exists.'}, status=404)
 
     # Load session data into Workflow object. If successful, return
     # serialized graph
     try:
-        workflow = Workflow.from_session(request.session)
-        json_str = json.dumps(workflow.to_graph_json())
-        response = HttpResponse(json_str, content_type='application/json')
+        combined_json = json.dumps({
+            'react': json.loads(request.body),
+            'networkx': workflow.to_graph_json(),
+        })
+
+        response = HttpResponse(combined_json, content_type='application/json')
         response['Content-Disposition'] = 'attachment; filename=%s' % workflow.file_path
         return response
+    except json.JSONDecodeError as e:
+        return JsonResponse({'No React JSON provided': str(e)}, status=500)
     except WorkflowException as e:
         return JsonResponse({e.action: e.reason}, status=404)
 

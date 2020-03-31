@@ -183,6 +183,8 @@ class ViewNode(Node):
         Tabular view
         Graphical view
     """
+    DEFAULT_OPTIONS = {}
+
     def __init__(self, node_info):
         super().__init__(node_info)
         self.url = node_info.get('url')
@@ -204,6 +206,8 @@ class TabularViewNode(ViewNode):
     num_out = 0
     color = 'orange'
 
+    DEFAULT_OPTIONS = {}
+
     def __init__(self, node_info):
         super().__init__(node_info)
 
@@ -223,6 +227,8 @@ class GraphicalViewNode(ViewNode):
     num_in = 1
     num_out = 0
     color = 'purple'
+
+    DEFAULT_OPTIONS = {}
 
     def __init__(self, node_info):
         super().__init__(node_info)
