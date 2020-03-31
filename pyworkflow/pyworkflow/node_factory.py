@@ -6,7 +6,6 @@ def node_factory(node_info):
     # TODO: should perform error-checking or add default values if missing
     node_type = node_info.get('node_type')
     node_key = node_info.get('node_key')
-    print("node factory sees", node_type, node_key)
 
     if node_type == 'IONode':
         new_node = io_node(node_key, node_info)
