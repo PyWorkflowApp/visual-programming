@@ -159,6 +159,7 @@ function FileUpload(props) {
             const respData = await resp.json();
             props.handleData(respData.react);
         }
+        input.current.value = null;
     };
     const onFileSelect = e => {
         e.preventDefault();
