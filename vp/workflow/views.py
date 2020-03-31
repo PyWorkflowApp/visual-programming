@@ -69,7 +69,14 @@ def open_workflow(request):
         500 - Missing JSON data or
     """
     try:
-        combined_json = json.loads(request.body)
+        # If multi-part form-data, use this
+        # TODO: file is parsed into JSON in memory;
+        #       may want to save to 'fs' for large files
+        uploaded_file = request.FILES['file']
+        combined_json = json.load(uploaded_file)
+
+        # If file is passed in as raw JSON, use this
+        # combined_json = json.loads(request.body)
 
         workflow = Workflow.from_request(combined_json['networkx'])
         react = combined_json['react']
