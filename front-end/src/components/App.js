@@ -8,7 +8,7 @@ import Workspace from './Workspace';
 function App() {
 
     return (
-        <Container className="App">
+        <Container fluid={true} className="App">
             <Header />
             <Workspace />
         </Container>

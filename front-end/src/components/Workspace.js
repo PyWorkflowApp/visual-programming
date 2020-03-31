@@ -88,12 +88,12 @@ class Workspace extends React.Component {
                     </Col>
                 </Row>
                 <Row className="Workspace">
-                    <Col xs={3} className="node-menu">
+                    <Col xs={2} className="node-menu">
                         <div>Drag-and-drop nodes to build a workflow.</div>
                         <hr />
                         { menu }
                     </Col>
-                    <Col xs={9}>
+                    <Col xs={10}>
                         <div style={{position: 'relative', flexGrow: 1}}
                             onDrop={event => {
                                 var data = JSON.parse(event.dataTransfer.getData('storm-diagram-node'));
