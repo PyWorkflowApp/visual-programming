@@ -35,16 +35,27 @@ class Workspace extends React.Component {
     }
 
     /**
-     * serialize model and download as JSON file
+     * serialize model, POST to server, download response as JSON file
      */
-    save() {
+    async save() {
         const data = JSON.stringify(this.model.serialize());
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(data)
-        const anchor = document.createElement("a")
-        anchor.href = dataStr;
-        anchor.download = "diagram.json";
-        anchor.click();
-        anchor.remove();
+        const resp = await fetch("/workflow/save", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: data
+        });
+        if (resp.status !== 200) {
+            console.log(await resp.json());
+        } else {
+            const downloadData = await resp.json();
+            const dataStr = "data:text/json;charset=utf-8,"
+                + encodeURIComponent(JSON.stringify(downloadData));
+            const anchor = document.createElement("a")
+            anchor.href = dataStr;
+            anchor.download = downloadData.filename || "diagram.json";
+            anchor.click();
+            anchor.remove();
+        }
     }
 
     /**
@@ -83,7 +94,7 @@ class Workspace extends React.Component {
                 <Row className="mb-3">
                     <Col md={12}>
                         <Button size="sm" onClick={this.save}>Save</Button>{' '}
-                        <FileUpload handleFile={this.load}/>{' '}
+                        <FileUpload handleData={this.load}/>{' '}
                         <Button size="sm" onClick={this.clear}>Clear</Button>
                     </Col>
                 </Row>
@@ -135,18 +146,20 @@ function NodeMenuItem(props) {
 
 function FileUpload(props) {
     const input = useRef(null);
-    const readFile = file => {
-        if (!file) return;
-        const fr = new FileReader();
-        fr.addEventListener("load", () => {
-            const data = JSON.parse(fr.result);
-            props.handleFile(data);
+    const uploadFile = async file => {
+        const form = new FormData();
+        form.append("file", file);
+        const resp = await fetch("/workflow/open", {
+            method: "POST",
+            body: form
         });
-        fr.readAsText(file);
+        const respData = await resp.json();
+        props.handleData(respData.react);
     };
     const onFileSelect = e => {
         e.preventDefault();
-        readFile(input.current.files[0]);
+        if (!input.current.files) return;
+        uploadFile(input.current.files[0]);
     };
     return (
         <>
