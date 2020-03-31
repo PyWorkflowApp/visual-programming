@@ -138,6 +138,14 @@ class Workflow:
         graph = cls.read_graph_json(file_like)
         return cls(graph)
 
+    @classmethod
+    def from_request(cls, json_data):
+        """
+
+        """
+        graph = nx.readwrite.json_graph.node_link_graph(json_data)
+        return cls(graph)
+
     def to_graph_json(self):
         return nx.readwrite.json_graph.node_link_data(self.graph)
 
