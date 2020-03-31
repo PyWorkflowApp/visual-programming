@@ -31,7 +31,12 @@ class Workspace extends React.Component {
             const resp = await fetch("/workflow/nodes");
             return resp.json();
         }
+        async function startWorkflow() {
+            const resp = await fetch("/workflow/new");
+            return resp.json();
+        }
         getNodes().then(nodes => this.setState({nodes: nodes}));
+        startWorkflow().then(resp => console.log(resp));
     }
 
     /**
