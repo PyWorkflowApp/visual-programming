@@ -104,7 +104,8 @@ def open_workflow(request):
                      responses={
                          200: 'Workflow representation in JSON',
                          400: 'No file specified',
-                         404: 'File specified not found or not JSON graph'
+                         404: 'File specified not found or not JSON graph',
+                         500: 'No valid JSON in request body'
                      })
 @api_view(['POST'])
 def save_workflow(request):
@@ -131,6 +132,7 @@ def save_workflow(request):
         combined_json = json.dumps({
             'react': json.loads(request.body),
             'networkx': workflow.to_graph_json(),
+            'filename': workflow.file_path
         })
 
         response = HttpResponse(combined_json, content_type='application/json')
