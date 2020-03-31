@@ -66,10 +66,19 @@ def node(request):
                      operation_description='Adds an edge to the graph.',
                      responses={
                          200: 'Added edge to graph',
-                         404: 'Workflow not created yet/Workflow does not contain specified node'
+                         404: 'Workflow not created yet/Workflow does not contain specified node',
+                         500: 'Error processing Edge request in NetworkX'
                      })
-@api_view(['POST'])
-def edge(request, node_from_id, node_to_id):
+@swagger_auto_schema(method='delete',
+                     operation_summary='Remove an edge from the graph',
+                     operation_description='Removes an edge from the graph.',
+                     responses={
+                         200: 'Removed edge from graph',
+                         404: 'Workflow not created yet/Workflow does not contain specified node',
+                         500: 'Error processing Edge request in NetworkX'
+                     })
+@api_view(['POST', 'DELETE'])
+def handle_edge(request, node_from_id, node_to_id):
     """ Add new edge to the graph
 
         Creates a new edge from node_from_id to node_to_id.
@@ -92,14 +101,26 @@ def edge(request, node_from_id, node_to_id):
             'message': 'The workflow does not contain the node(s) requested.'
         }, status=404)
 
-    # Add Edge between the Nodes to the graph and re-save workflow to session
-    workflow.add_edge(node_from, node_to)
+    try:
+        if request.method == 'POST':
+            response = JsonResponse({
+                'edge_added': workflow.add_edge(node_from, node_to)
+            })
+        elif request.method == 'DELETE':
+            response = JsonResponse({
+                'removed_edge': workflow.remove_edge(node_from, node_to)
+            })
+        else:
+            return JsonResponse({
+                'message': request.method + ' not yet handled.'
+            }, status=405)
+    except WorkflowException as e:
+        return JsonResponse({e.action: e.reason}, status=500)
+
+    # Re-save workflow to session
     request.session.update(workflow.to_session_dict())
 
-    return JsonResponse({
-        'message': 'Added new edge to graph from node %s to node %s' %
-                   (node_from.node_id, node_to.node_id)
-    })
+    return response
 
 
 @swagger_auto_schema(method='get',

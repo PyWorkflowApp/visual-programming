@@ -76,13 +76,43 @@ class Workflow:
             node_from - The Node the edge originates from
               node_to - The Node the edge ends at
 
+        Returns:
+            Tuple representing the new Edge (from, to)
+
         TODO:
             * validate() always returns True; this should perform actual validation
         """
-        if node_from.validate() and node_to.validate():
-            self._graph.add_edge(node_from.node_id, node_to.node_id)
+        # Prevent duplicate edges between the same two nodes
+        # TODO: This may be incorrect usage for a `node_to` that has multi-in
+        from_id = node_from.node_id
+        to_id = node_to.node_id
 
-        return
+        if self._graph.has_edge(from_id, to_id):
+            raise WorkflowException('add_node', 'Edge between nodes already exists.')
+
+        if node_from.validate() and node_to.validate():
+            self._graph.add_edge(from_id, to_id)
+
+        return (from_id, to_id)
+
+    def remove_edge(self, node_from: Node, node_to: Node):
+        """ Remove a node from the graph.
+
+        Returns:
+            Tuple representing the removed Edge (from, to)
+
+        Raises:
+            WorkflowException: on issue with removing node from graph
+        """
+        from_id = node_from.node_id
+        to_id = node_to.node_id
+
+        try:
+            self._graph.remove_edge(from_id, to_id)
+        except nx.NetworkXError:
+            raise WorkflowException('remove_edge', 'Edge from %s to %s does not exist in graph.' % (from_id, to_id))
+
+        return (from_id, to_id)
 
     def remove_node(self, node):
         """ Remove a node from the graph.
