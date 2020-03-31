@@ -153,8 +153,12 @@ function FileUpload(props) {
             method: "POST",
             body: form
         });
-        const respData = await resp.json();
-        props.handleData(respData.react);
+        if (resp.status !== 200) {
+            console.log("Failed to open workflow.");
+        } else {
+            const respData = await resp.json();
+            props.handleData(respData.react);
+        }
     };
     const onFileSelect = e => {
         e.preventDefault();
