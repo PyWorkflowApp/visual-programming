@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "a12d9d94-4fc7-4c59-ad13-03b2bf6cb73b",
+		"_postman_id": "94c6f073-1978-444b-99b3-0123cef01056",
 		"name": "Visual Programming-Workflow",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -222,11 +222,12 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{environment}}/nodes",
+					"raw": "{{environment}}/workflow/nodes",
 					"host": [
 						"{{environment}}"
 					],
 					"path": [
+						"workflow",
 						"nodes"
 					]
 				}
