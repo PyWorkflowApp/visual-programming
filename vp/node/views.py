@@ -220,11 +220,9 @@ def execute_node(request, node_id):
     try:
         node_to_execute.execute()
 
-        print(node_to_execute.data)
-
         # save node_to_execute to a file
         # TODO: currently hard coding the name of the file as workflow + node id;
-        #       will need to change the word workflow for the workflow name
+        #       will need to change the word workflow for the workflow name. Switch to FileStorageAPi
         file_name = 'workflow-'+str(node_id)
         with open(file_name, 'w') as json_file:
             json_file.write(node_to_execute.data)
