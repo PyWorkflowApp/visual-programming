@@ -152,6 +152,25 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "Retrieve data",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{environment}}/node/1/retrieve_data",
+					"host": [
+						"{{environment}}"
+					],
+					"path": [
+						"node",
+						"1",
+						"retrieve_data"
+					]
+				}
+			},
+			"response": []
 		}
 	],
 	"protocolProfileBehavior": {}
