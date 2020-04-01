@@ -28,11 +28,9 @@ def new_workflow(request):
         200 - Created new DiGraph
     """
     # Create new Workflow
-    workflow = Workflow()
-    # Save to session
-    request.session.update(workflow.to_session_dict())
-    data = workflow.to_graph_json()
-    return JsonResponse(data)
+    request.pyworkflow = Workflow()
+
+    return JsonResponse(request.pyworkflow.to_graph_json())
 
 
 @swagger_auto_schema(method='post',
@@ -78,7 +76,7 @@ def open_workflow(request):
         # If file is passed in as raw JSON, use this
         # combined_json = json.loads(request.body)
 
-        workflow = Workflow.from_request(combined_json['networkx'])
+        request.pyworkflow = Workflow.from_request(combined_json['networkx'])
         react = combined_json['react']
     except KeyError as e:
         return JsonResponse({'open_workflow': 'Missing data for ' + str(e)}, status=500)
@@ -88,14 +86,10 @@ def open_workflow(request):
         return JsonResponse({e.action: e.reason}, status=404)
 
     # Construct response
-    data = {
+    return JsonResponse({
         'react': react,
-        'networkx': workflow.to_graph_json(),
-    }
-
-    # Save Workflow info to session
-    request.session.update(workflow.to_session_dict())
-    return JsonResponse(data)
+        'networkx': request.pyworkflow.to_graph_json(),
+    })
 
 
 @swagger_auto_schema(method='post',
@@ -119,24 +113,17 @@ def save_workflow(request):
     Returns:
         Downloads JSON file representing graph.
     """
-    # Retrieve stored workflow
-    workflow = Workflow.from_session(request.session)
-
-    # Check for existing graph
-    if workflow.graph is None:
-        return JsonResponse({'message': 'No graph exists.'}, status=404)
-
     # Load session data into Workflow object. If successful, return
     # serialized graph
     try:
         combined_json = json.dumps({
             'react': json.loads(request.body),
-            'networkx': workflow.to_graph_json(),
-            'filename': workflow.file_path
+            'networkx': request.pyworkflow.to_graph_json(),
+            'filename': request.pyworkflow.file_path
         })
 
         response = HttpResponse(combined_json, content_type='application/json')
-        response['Content-Disposition'] = 'attachment; filename=%s' % workflow.file_path
+        response['Content-Disposition'] = 'attachment; filename=%s' % request.pyworkflow.file_path
         return response
     except json.JSONDecodeError as e:
         return JsonResponse({'No React JSON provided': str(e)}, status=500)
@@ -161,15 +148,8 @@ def execute_workflow(request):
     Returns:
         List of nodes, sorted in execution order.
     """
-    # Retrieve stored workflow
-    workflow = Workflow.from_session(request.session)
-
-    # Check for existing graph
-    if workflow.graph is None:
-        return JsonResponse({'message': 'No graph exists.'}, status=404)
-
     try:
-        order = workflow.execution_order()
+        order = request.pyworkflow.execution_order()
     except WorkflowException as e:
         return JsonResponse({e.action: e.reason}, status=500)
 
@@ -192,15 +172,8 @@ def get_successors(request, node_id):
     Returns:
         List of nodes, sorted in execution order.
     """
-    # Retrieve stored workflow
-    workflow = Workflow.from_session(request.session)
-
-    # Check for existing graph
-    if workflow.graph is None:
-        return JsonResponse({'message': 'No graph exists.'}, status=404)
-
     try:
-        order = workflow.get_node_successors(node_id)
+        order = request.pyworkflow.get_node_successors(node_id)
     except WorkflowException as e:
         return JsonResponse({e.action: e.reason}, status=500)
 
