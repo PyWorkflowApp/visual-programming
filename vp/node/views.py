@@ -241,8 +241,7 @@ def execute_node(request, node_id):
                      operation_summary='Gets the data frame at the executed node.',
                      operation_description='Retrieves the state of data at that point in the graph.',
                      responses={
-                         200: 'Data successfully retrieved',
-                         404: 'No node/data at that node'
+                         200: 'Data successfully retrieved'
                      })
 @api_view(['GET'])
 def retrieve_data(request, node_id):

@@ -6,5 +6,5 @@ urlpatterns = [
     path('<str:node_id>', views.handle_node, name='handle node'),
     path('<str:node_id>/execute', views.execute_node, name='execute node'),
     path('edge/<str:node_from_id>/<str:node_to_id>', views.edge, name='add edge'),
-    path('<str:node_id>/retrieve_data', views.retrieve_data, name='retrieve csv')
+    path('<str:node_id>/retrieve_data', views.retrieve_data, name='retrieve data')
 ]
