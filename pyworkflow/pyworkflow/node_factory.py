@@ -7,9 +7,9 @@ def node_factory(node_info):
     node_type = node_info.get('node_type')
     node_key = node_info.get('node_key')
 
-    if node_type == 'IO':
+    if node_type == 'IONode':
         new_node = io_node(node_key, node_info)
-    elif node_type == 'Manipulation':
+    elif node_type == 'ManipulationNode':
         new_node = manipulation_node(node_key, node_info)
     else:
         new_node = None
@@ -18,18 +18,18 @@ def node_factory(node_info):
 
 
 def io_node(node_key, node_info):
-    if node_key == 'read-csv':
+    if node_key == 'ReadCsvNode':
         return ReadCsvNode(node_info)
-    elif node_key == 'write-csv':
+    elif node_key == 'WriteCsvNode':
         return WriteCsvNode(node_info)
     else:
         return None
 
 
 def manipulation_node(node_key, node_info):
-    if node_key == 'join':
+    if node_key == 'JoinNode':
         return JoinNode(node_info)
-    elif node_key == 'pivot':
+    elif node_key == 'PivotNode':
         return PivotNode(node_info)
     elif node_key == 'multi-in':
         return ManipulationNode(node_info)

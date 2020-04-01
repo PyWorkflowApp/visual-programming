@@ -22,9 +22,18 @@ export class CustomNodeWidget extends React.Component {
     }
 
     // delete node from diagram model and redraw diagram
-    handleDelete() {
-        this.props.node.remove();
-        this.props.engine.repaintCanvas();
+    async handleDelete() {
+        const id = this.props.node.options.id;
+        const resp = await fetch(`/node/${id}`, {
+            method: "DELETE"
+        });
+        if (resp.status !== 200) {
+            console.log("Failed to delete node on back end.")
+        } else {
+            this.props.node.remove();
+            this.props.engine.repaintCanvas();
+            console.log(await resp.json());
+        }
     }
 
     acceptConfiguration(formData) {
