@@ -232,8 +232,8 @@ def retrieve_nodes_for_user(request):
             # TODO: check attribute-scope is handled correctly
             child_node = {
                 'name': child.name,
-                'key': child.__name__,
-                'type': parent.__name__,
+                'node_key': child.__name__,
+                'node_type': parent.__name__,
                 'num_in': child.num_in,
                 'num_out': child.num_out,
                 'color': child.color or parent.color,
