@@ -145,6 +145,69 @@ def save_workflow(request):
 
 
 @swagger_auto_schema(method='get',
+                     operation_summary='Retrieve sorted list of node execution.',
+                     operation_description='Retrieves a list of nodes, sorted in execution order.',
+                     responses={
+                         200: 'List of nodes, sorted in execution order.',
+                         404: 'No graph exists.',
+                         500: 'Error generating the topological sort for the graph.'
+                     })
+@api_view(['GET'])
+def execute_workflow(request):
+    """Execute workflow.
+
+    Generates a list of all nodes in the NetworkX DiGraph topologically sorted.
+
+    Returns:
+        List of nodes, sorted in execution order.
+    """
+    # Retrieve stored workflow
+    workflow = Workflow.from_session(request.session)
+
+    # Check for existing graph
+    if workflow.graph is None:
+        return JsonResponse({'message': 'No graph exists.'}, status=404)
+
+    try:
+        order = workflow.execution_order()
+    except WorkflowException as e:
+        return JsonResponse({e.action: e.reason}, status=500)
+
+    return JsonResponse(order, safe=False)
+
+@swagger_auto_schema(method='get',
+                     operation_summary='Retrieve sorted list of successors from a node.',
+                     operation_description='Retrieves a list of successor nodes, sorted in execution order.',
+                     responses={
+                         200: 'List of successor nodes, sorted in execution order.',
+                         404: 'No graph exists.',
+                         500: 'Error retrieving list of successors for the graph.'
+                     })
+@api_view(['GET'])
+def get_successors(request, node_id):
+    """Get sorted list of Node successors.
+
+    Generates a list of all nodes in the NetworkX DiGraph topologically sorted.
+
+    Returns:
+        List of nodes, sorted in execution order.
+    """
+    # Retrieve stored workflow
+    workflow = Workflow.from_session(request.session)
+
+    # Check for existing graph
+    if workflow.graph is None:
+        return JsonResponse({'message': 'No graph exists.'}, status=404)
+
+    try:
+        order = workflow.get_node_successors(node_id)
+    except WorkflowException as e:
+        return JsonResponse({e.action: e.reason}, status=500)
+
+    return JsonResponse(order, safe=False)
+
+
+@swagger_auto_schema(method='get',
                      operation_summary='Retrieve a list of installed Nodes',
                      operation_description='Retrieves a list of installed Nodes, in JSON.',
                      responses={
