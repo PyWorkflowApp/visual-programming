@@ -71,20 +71,23 @@ class ReadCsvNode(IONode):
         'sep': ',',
         'header': 'infer',
     }
+
     OPTION_TYPES = {
         'filepath_or_buffer': {
             "type": "file",
             "name": "File",
             "desc": "File to read"
-            },
-        'sep': {"type": "string",
-                "name": "Delimiter",
-                "desc": "column delimiter, default ','"
-            },
-        'header': {"type": "string",
-                   "name": "Column Name Row",
-                   "desc": "Row number with column names (0-indexed) or 'infer'"
-            }
+        },
+        'sep': {
+            "type": "string",
+            "name": "Delimiter",
+            "desc": "column delimiter, default ','"
+        },
+        'header': {
+            "type": "string",
+            "name": "Column Name Row",
+            "desc": "Row number with column names (0-indexed) or 'infer'"
+        }
     }
 
     def __init__(self, node_info, options=dict()):
