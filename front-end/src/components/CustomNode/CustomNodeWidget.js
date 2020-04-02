@@ -36,10 +36,22 @@ export class CustomNodeWidget extends React.Component {
         }
     }
 
-    acceptConfiguration(formData) {
+    async acceptConfiguration(formData) {
         this.props.node.config = formData;
-        this.forceUpdate();
-        this.props.engine.repaintCanvas();
+        console.log(formData);
+        const node = this.props.node;
+        const payload = {...node.options, options: node.config};
+        const resp = await fetch(`/node/${node.options.id}`, {
+            method: "POST",
+            body: JSON.stringify(payload)
+        });
+        if (resp.status !== 200) {
+            console.log("Failed to update node on back end.")
+        } else {
+            console.log(await resp.json());
+            this.forceUpdate();
+            this.props.engine.repaintCanvas();
+        }
     }
 
     render() {
