@@ -9,7 +9,7 @@ export class CustomNodeFactory extends AbstractReactFactory {
     }
 
     generateModel(event) {
-        return new CustomNodeModel(event.initialConfig.options);
+        return new CustomNodeModel(event.initialConfig.options, event.initialConfig.config);
     }
 
     generateReactWidget(event) {

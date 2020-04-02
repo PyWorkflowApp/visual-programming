@@ -29,6 +29,7 @@ def new_workflow(request):
     """
     # Create new Workflow
     request.pyworkflow = Workflow()
+    request.session.update(request.pyworkflow.to_session_dict())
 
     return JsonResponse(request.pyworkflow.to_graph_json())
 
@@ -77,6 +78,7 @@ def open_workflow(request):
         # combined_json = json.loads(request.body)
 
         request.pyworkflow = Workflow.from_request(combined_json['networkx'])
+        request.session.update(request.pyworkflow.to_session_dict())
         react = combined_json['react']
     except KeyError as e:
         return JsonResponse({'open_workflow': 'Missing data for ' + str(e)}, status=500)
