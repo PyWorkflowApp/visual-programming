@@ -94,7 +94,7 @@ class Workspace extends React.Component {
         data.node_id = node.options.id;
         const resp = await fetch("/node/", {
             method: "POST",
-            body: JSON.stringify(data)
+            body: JSON.stringify({node_info: data, config: config})
         });
         if (resp.status === 200) {
             this.model.addNode(node);
