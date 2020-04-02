@@ -78,6 +78,9 @@ export class CustomNodeWidget extends React.Component {
                         toggleShow={this.toggleConfig}
                         onDelete={this.handleDelete}
                         onSubmit={this.acceptConfiguration} />
+                    <div className="custom-node-tabular">
+                      <img src="tabular-icon.png" alt="Tabular" style={{width:25, height:25}}></img>
+                    </div>
                     <div className="port-col port-col-in">
                         { portWidgets["in"] }
                     </div>
