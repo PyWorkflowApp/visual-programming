@@ -8,6 +8,7 @@ export class CustomNodeModel extends NodeModel {
             ...options,
             type: 'custom-node'
         });
+        this.options.node_id = this.options.id;
         this.config = config;
         this.configParams = options.option_types;
 
