@@ -54,6 +54,7 @@ def retrieve_nodes_for_user(request):
                 'color': child.color or parent.color,
                 'doc': child.__doc__,
                 'options': {**parent.DEFAULT_OPTIONS, **child.DEFAULT_OPTIONS},
+                'option_types': getattr(child, "OPTION_TYPES", dict()),
             }
 
             data[parent.__name__].append(child_node)
