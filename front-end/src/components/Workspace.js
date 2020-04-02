@@ -89,10 +89,10 @@ class Workspace extends React.Component {
         const node = new CustomNodeModel(data.nodeInfo, data.config),
             point = this.engine.getRelativeMousePoint(event);
         node.setPosition(point);
-        data.node_id = node.options.id;
+        const payload = {...node.options, options: node.config};
         const resp = await fetch("/node/", {
             method: "POST",
-            body: JSON.stringify({node_info: data, config: config})
+            body: JSON.stringify(payload)
         });
         if (resp.status === 200) {
             this.model.addNode(node);
