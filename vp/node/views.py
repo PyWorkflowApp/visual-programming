@@ -28,15 +28,6 @@ def node(request):
         404 - Graph or Node does not exist
         405 - Method not allowed
     """
-    # Load workflow from session
-    workflow = Workflow.from_session(request.session)
-
-    # Check if a graph is present
-    if workflow.graph is None:
-        return JsonResponse({
-            'message': 'A workflow has not been created yet.'
-        }, status=404)
-
     # Extract request info for node creation
     new_node = create_node(request.body)
 
@@ -47,14 +38,13 @@ def node(request):
         }, status=400)
 
     # Check node_id is unique in graph
-    if workflow.get_node(new_node.node_id) is not None:
+    if request.pyworkflow.get_node(new_node.node_id) is not None:
         return JsonResponse({
             'message': 'A node with id %s already exists in the graph.' % new_node.node_id
         }, status=400)
 
-    # Add Node to graph and re-save workflow to session
-    workflow.update_or_add_node(new_node)
-    request.session.update(workflow.to_session_dict())
+    # Add Node to graph
+    request.pyworkflow.update_or_add_node(new_node)
 
     return JsonResponse({
         'message': 'Added new node to graph with id: %s' % new_node.node_id
@@ -83,18 +73,9 @@ def handle_edge(request, node_from_id, node_to_id):
 
         Creates a new edge from node_from_id to node_to_id.
     """
-    # Load workflow from session
-    workflow = Workflow.from_session(request.session)
-
-    # Check if a graph is present
-    if workflow.graph is None:
-        return JsonResponse({
-            'message': 'A workflow has not been created yet.'
-        }, status=404)
-
     # Check if the graph contains the requested Node
-    node_from = workflow.get_node(node_from_id)
-    node_to = workflow.get_node(node_to_id)
+    node_from = request.pyworkflow.get_node(node_from_id)
+    node_to = request.pyworkflow.get_node(node_to_id)
 
     if node_from is None or node_to is None:
         return JsonResponse({
@@ -104,11 +85,11 @@ def handle_edge(request, node_from_id, node_to_id):
     try:
         if request.method == 'POST':
             response = JsonResponse({
-                'edge_added': workflow.add_edge(node_from, node_to)
+                'edge_added': request.pyworkflow.add_edge(node_from, node_to)
             })
         elif request.method == 'DELETE':
             response = JsonResponse({
-                'removed_edge': workflow.remove_edge(node_from, node_to)
+                'removed_edge': request.pyworkflow.remove_edge(node_from, node_to)
             })
         else:
             return JsonResponse({
@@ -116,9 +97,6 @@ def handle_edge(request, node_from_id, node_to_id):
             }, status=405)
     except WorkflowException as e:
         return JsonResponse({e.action: e.reason}, status=500)
-
-    # Re-save workflow to session
-    request.session.update(workflow.to_session_dict())
 
     return response
 
@@ -160,17 +138,8 @@ def handle_node(request, node_id):
         405 - Method not allowed
         500 - Error processing Node change
     """
-    # Load workflow from session
-    workflow = Workflow.from_session(request.session)
-
-    # Check if a graph is present
-    if workflow.graph is None:
-        return JsonResponse({
-            'message': 'A workflow has not been created yet.'
-        }, status=404)
-
     # Check if the graph contains the requested Node
-    retrieved_node = workflow.get_node(node_id)
+    retrieved_node = request.pyworkflow.get_node(node_id)
 
     if retrieved_node is None:
         return JsonResponse({
@@ -189,14 +158,14 @@ def handle_node(request, node_id):
             if type(retrieved_node) != type(updated_node):
                 return JsonResponse({
                     'message': 'Node types do not match. Need correct info.',
-                    'retrieve_node': str(type(retrieved_node)),
+                    'retrieved_node': str(type(retrieved_node)),
                     'updated_node': str(type(updated_node)),
                 }, status=500)
 
-            workflow.update_or_add_node(updated_node)
+            request.pyworkflow.update_or_add_node(updated_node)
             response = JsonResponse(updated_node.__dict__, safe=False)
         elif request.method == 'DELETE':
-            workflow.remove_node(retrieved_node)
+            request.pyworkflow.remove_node(retrieved_node)
             response = JsonResponse({
                 'message': 'Removed node ID #' + str(retrieved_node.node_id)
             })
@@ -209,8 +178,6 @@ def handle_node(request, node_id):
     except NodeException as e:
         return JsonResponse({e.action: e.reason}, status=500)
 
-    # Save any changes back to session
-    request.session.update(workflow.to_session_dict())
     return response
 
 
@@ -226,11 +193,8 @@ def execute_node(request, node_id):
     """Execute the specified node
 
     """
-    # Load workflow from session
-    workflow = Workflow.from_session(request.session)
-
     # Check if the graph contains the requested Node
-    node_to_execute = workflow.get_node(node_id)
+    node_to_execute = request.pyworkflow.get_node(node_id)
 
     if node_to_execute is None:
         return JsonResponse({

@@ -28,7 +28,7 @@ class Workspace extends React.Component {
 
     componentDidMount() {
         async function getNodes() {
-            const resp = await fetch("/workflow/nodes");
+            const resp = await fetch("/nodes");
             return resp.json();
         }
         async function startWorkflow() {

@@ -1,4 +1,5 @@
 from pyworkflow import Workflow
+from django.http import JsonResponse
 
 
 class WorkflowMiddleware:
@@ -10,14 +11,35 @@ class WorkflowMiddleware:
         self.get_response = get_response
 
         # One-time configuration and initialization.
-        self.workflow = Workflow()
 
     def __call__(self, request):
-        # Code to be executed for each request before
-        # the view (and later middleware) are called.
+        # Code executed each request before view (and later middleware) called
+
+        path = request.path
+
+        if not path.startswith('/workflow/') and not path.startswith('/node/'):
+            # Workflow needed only for /workflow and /node routes
+            pass
+        elif path == '/workflow/open' or path == '/workflow/new':
+            # 'open' loads from file upload, 'new' inits new Workflow
+            pass
+        else:
+            # All other cases, load workflow from session
+            request.pyworkflow = Workflow.from_session(request.session)
+
+            # Check if a graph is present
+            if request.pyworkflow.graph is None:
+                return JsonResponse({
+                    'message': 'A workflow has not been created yet.'
+                }, status=404)
 
         response = self.get_response(request)
 
-        # Code to be executed for each request/response after
-        # the view is called.
+        # Code executed for each request/response after the view is called
+
+        # Request should have 'pyworkflow' attribute, but do not crash if not
+        if hasattr(request, 'pyworkflow'):
+            # Save Workflow back to session
+            request.session.update(request.pyworkflow.to_session_dict())
+
         return response

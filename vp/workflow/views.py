@@ -6,7 +6,7 @@ from django.http import JsonResponse, HttpResponse
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from rest_framework.decorators import api_view
-from pyworkflow import Workflow, WorkflowException, Node
+from pyworkflow import Workflow, WorkflowException
 from drf_yasg.utils import swagger_auto_schema
 
 fs = FileSystemStorage(location=settings.MEDIA_ROOT)
@@ -28,11 +28,9 @@ def new_workflow(request):
         200 - Created new DiGraph
     """
     # Create new Workflow
-    workflow = Workflow()
-    # Save to session
-    request.session.update(workflow.to_session_dict())
-    data = workflow.to_graph_json()
-    return JsonResponse(data)
+    request.pyworkflow = Workflow()
+
+    return JsonResponse(request.pyworkflow.to_graph_json())
 
 
 @swagger_auto_schema(method='post',
@@ -78,7 +76,7 @@ def open_workflow(request):
         # If file is passed in as raw JSON, use this
         # combined_json = json.loads(request.body)
 
-        workflow = Workflow.from_request(combined_json['networkx'])
+        request.pyworkflow = Workflow.from_request(combined_json['networkx'])
         react = combined_json['react']
     except KeyError as e:
         return JsonResponse({'open_workflow': 'Missing data for ' + str(e)}, status=500)
@@ -88,14 +86,10 @@ def open_workflow(request):
         return JsonResponse({e.action: e.reason}, status=404)
 
     # Construct response
-    data = {
+    return JsonResponse({
         'react': react,
-        'networkx': workflow.to_graph_json(),
-    }
-
-    # Save Workflow info to session
-    request.session.update(workflow.to_session_dict())
-    return JsonResponse(data)
+        'networkx': request.pyworkflow.to_graph_json(),
+    })
 
 
 @swagger_auto_schema(method='post',
@@ -119,24 +113,17 @@ def save_workflow(request):
     Returns:
         Downloads JSON file representing graph.
     """
-    # Retrieve stored workflow
-    workflow = Workflow.from_session(request.session)
-
-    # Check for existing graph
-    if workflow.graph is None:
-        return JsonResponse({'message': 'No graph exists.'}, status=404)
-
     # Load session data into Workflow object. If successful, return
     # serialized graph
     try:
         combined_json = json.dumps({
             'react': json.loads(request.body),
-            'networkx': workflow.to_graph_json(),
-            'filename': workflow.file_path
+            'networkx': request.pyworkflow.to_graph_json(),
+            'filename': request.pyworkflow.file_path
         })
 
         response = HttpResponse(combined_json, content_type='application/json')
-        response['Content-Disposition'] = 'attachment; filename=%s' % workflow.file_path
+        response['Content-Disposition'] = 'attachment; filename=%s' % request.pyworkflow.file_path
         return response
     except json.JSONDecodeError as e:
         return JsonResponse({'No React JSON provided': str(e)}, status=500)
@@ -161,15 +148,8 @@ def execute_workflow(request):
     Returns:
         List of nodes, sorted in execution order.
     """
-    # Retrieve stored workflow
-    workflow = Workflow.from_session(request.session)
-
-    # Check for existing graph
-    if workflow.graph is None:
-        return JsonResponse({'message': 'No graph exists.'}, status=404)
-
     try:
-        order = workflow.execution_order()
+        order = request.pyworkflow.execution_order()
     except WorkflowException as e:
         return JsonResponse({e.action: e.reason}, status=500)
 
@@ -192,58 +172,12 @@ def get_successors(request, node_id):
     Returns:
         List of nodes, sorted in execution order.
     """
-    # Retrieve stored workflow
-    workflow = Workflow.from_session(request.session)
-
-    # Check for existing graph
-    if workflow.graph is None:
-        return JsonResponse({'message': 'No graph exists.'}, status=404)
-
     try:
-        order = workflow.get_node_successors(node_id)
+        order = request.pyworkflow.get_node_successors(node_id)
     except WorkflowException as e:
         return JsonResponse({e.action: e.reason}, status=500)
 
     return JsonResponse(order, safe=False)
-
-
-@swagger_auto_schema(method='get',
-                     operation_summary='Retrieve a list of installed Nodes',
-                     operation_description='Retrieves a list of installed Nodes, in JSON.',
-                     responses={
-                         200: 'List of installed Nodes, in JSON',
-                     })
-@api_view(['GET'])
-def retrieve_nodes_for_user(request):
-    """Assembles list of Nodes accessible to workflows.
-
-    Retrieve a list of classes from the Node module in `pyworkflow`.
-    List is split into 'types' (e.g., 'IO' and 'Manipulation') and
-    'keys', or individual command Nodes (e.g., 'ReadCsv', 'Pivot').
-    """
-    data = dict()
-
-    # Iterate through node 'types'
-    for parent in Node.__subclasses__():
-        data[parent.__name__] = list()
-
-        # Iterate through node 'keys'
-        for child in parent.__subclasses__():
-            # TODO: check attribute-scope is handled correctly
-            child_node = {
-                'name': child.name,
-                'node_key': child.__name__,
-                'node_type': parent.__name__,
-                'num_in': child.num_in,
-                'num_out': child.num_out,
-                'color': child.color or parent.color,
-                'doc': child.__doc__,
-                'options': {**parent.DEFAULT_OPTIONS, **child.DEFAULT_OPTIONS},
-            }
-
-            data[parent.__name__].append(child_node)
-
-    return JsonResponse(data)
 
 
 def retrieve_csv(request, node_id):
