@@ -238,11 +238,11 @@ def retrieve_data(request, node_id):
 
     return JsonResponse(data, safe=False, status=200)
 
-def create_node(node_info):
+def create_node(payload):
     """Pass all request info to Node Factory.
 
     """
-    json_data = json.loads(node_info)
+    json_data = json.loads(payload)
 
     try:
         return node_factory(json_data)
