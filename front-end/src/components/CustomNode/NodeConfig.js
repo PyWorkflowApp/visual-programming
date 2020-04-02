@@ -13,14 +13,17 @@ function NodeConfig(props) {
             props.onDelete();
             props.toggleShow();
         }
-    }
+    };
 
-    // fire submit callback, close modal
+    // collect config data, fire submit callback, close modal
     const handleSubmit = (e) => {
         e.preventDefault();
-        props.onSubmit({description: description});
+        const fd = new FormData(form.current);
+        const data = {};
+        fd.forEach((value, key) => {data[key] = value;});
+        props.onSubmit(data);
         props.toggleShow();
-    }
+    };
 
     return (
             <Modal show={props.show} onHide={props.toggleShow} centered>

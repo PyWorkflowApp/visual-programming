@@ -37,7 +37,8 @@ export class CustomNodeWidget extends React.Component {
     }
 
     acceptConfiguration(formData) {
-        this.props.node.setDescription(formData.description);
+        this.props.node.config = formData;
+        this.forceUpdate();
         this.props.engine.repaintCanvas();
     }
 
@@ -73,7 +74,7 @@ export class CustomNodeWidget extends React.Component {
                     </div>
                 </div>
                 <StatusLight status="unconfigured" />
-                <div className="custom-node-description">{this.props.node.getDescription()}</div>
+                <div className="custom-node-description">{this.props.node.config.description}</div>
             </div>
         );
     }
