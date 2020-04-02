@@ -86,9 +86,7 @@ class Workspace extends React.Component {
     async handleNodeCreation(event) {
         const data = JSON.parse(event.dataTransfer.getData('storm-diagram-node'));
         if (!data) return;
-        const config = data.options;
-        delete data.options;
-        const node = new CustomNodeModel(data, config),
+        const node = new CustomNodeModel(data.nodeInfo, data.config),
             point = this.engine.getRelativeMousePoint(event);
         node.setPosition(point);
         data.node_id = node.options.id;
@@ -111,7 +109,13 @@ class Workspace extends React.Component {
             <div key={`node-menu-${section}`}>
                 <b>{section}</b>
                 <ul>
-                { _.map(items, item => <NodeMenuItem {...item} key={item.node_key} />) }
+                { _.map(items, item => {
+                    const config = item.options;
+                    delete item.options;
+                    return (
+                        <NodeMenuItem key={item.node_key} nodeInfo={item} config={config} />
+                    )}
+                )}
                 </ul>
             </div>
         );
@@ -154,8 +158,8 @@ function NodeMenuItem(props) {
                     'storm-diagram-node',
                     JSON.stringify(props));
             }}
-            style={{ color: props.color }}>
-            {props.name}
+            style={{ color: props.nodeInfo.color }}>
+            {props.nodeInfo.name}
         </li>
     )
 }
