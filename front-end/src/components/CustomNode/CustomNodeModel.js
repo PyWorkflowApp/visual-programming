@@ -3,14 +3,13 @@ import { VPPortModel } from '../VPPort/VPPortModel';
 
 export class CustomNodeModel extends NodeModel {
 
-    constructor(options = {}) {
+    constructor(options = {}, config = {}) {
         super({
             ...options,
             type: 'custom-node'
         });
-
-        // user-defined description of node
-        this._description = null;
+        this.config = config;
+        this.configParams = options.option_types;
 
         const nIn = options.num_in === undefined ? 1 : options.num_in;
         const nOut = options.num_out === undefined ? 1 : options.num_out;
@@ -39,19 +38,11 @@ export class CustomNodeModel extends NodeModel {
         return {
             ...super.serialize(),
             options: this.options,
+            config: this.config
         }
     }
 
     deserialize(ob, engine) {
         super.deserialize(ob, engine);
     }
-
-    getDescription() {
-        return this._description;
-    }
-
-    setDescription(description) {
-        this._description = description;
-    }
-
 }

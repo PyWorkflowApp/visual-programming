@@ -86,7 +86,9 @@ class Workspace extends React.Component {
     async handleNodeCreation(event) {
         const data = JSON.parse(event.dataTransfer.getData('storm-diagram-node'));
         if (!data) return;
-        const node = new CustomNodeModel(data),
+        const config = data.options;
+        delete data.options;
+        const node = new CustomNodeModel(data, config),
             point = this.engine.getRelativeMousePoint(event);
         node.setPosition(point);
         data.node_id = node.options.id;
