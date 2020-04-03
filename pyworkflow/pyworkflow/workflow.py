@@ -71,7 +71,7 @@ class Workflow:
 
         return
 
-    def workflow_name(self):
+    def get_workflow_name(self):
         return self._workflow_name
 
     def add_edge(self, node_from: Node, node_to: Node):

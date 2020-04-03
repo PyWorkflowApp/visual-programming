@@ -211,7 +211,7 @@ def execute_node(request, node_id):
         node_to_execute.execute()
 
         # save node_to_execute to a file
-        fs.save(Workflow.generate_file_name(request.pyworkflow.workflow_name(), node_id),
+        fs.save(Workflow.generate_file_name(request.pyworkflow.get_workflow_name(), node_id),
                 ContentFile(node_to_execute.data))
 
         return JsonResponse({
@@ -231,7 +231,7 @@ def execute_node(request, node_id):
 @api_view(['GET'])
 def retrieve_data(request, node_id):
     # TODO: need to add validation probably
-    file_name = Workflow.generate_file_name(request.pyworkflow.workflow_name(), node_id)
+    file_name = Workflow.generate_file_name(request.pyworkflow.get_workflow_name(), node_id)
     with open(file_name) as f:
         data = json.load(f)
 
