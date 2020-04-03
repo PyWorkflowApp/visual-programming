@@ -192,6 +192,25 @@ class JoinNode(ManipulationNode):
     def __init__(self, node_info, options=dict()):
         super().__init__(node_info, {**self.DEFAULT_OPTIONS, **options})
 
+    def execute(self, predecessor_data):
+        # Join cannot accept more than 2 input DataFrames
+        # TODO: Add more error-checking if 1, or no, DataFrames passed through
+        try:
+            if len(predecessor_data) > self.num_in:
+                raise NodeException(
+                    'execute',
+                    'JoinNode can take up to %d inputs. %d were provided' % (self.num_in, len(predecessor_data))
+                )
+
+            first_df = pd.DataFrame.from_dict(predecessor_data[0])
+            second_df = pd.DataFrame.from_dict(predecessor_data[1])
+
+            combined_df = first_df.join(second_df, lsuffix='_caller', rsuffix='_other')
+
+            return combined_df.to_json()
+        except Exception as e:
+            raise NodeException('join', str(e))
+
 
 class NodeException(Exception):
     def __init__(self, action: str, reason: str):
