@@ -4,6 +4,12 @@ import json
 from .node import Node
 from .node_factory import node_factory
 
+from django.conf import settings
+from django.core.files.base import ContentFile
+from django.core.files.storage import FileSystemStorage
+
+fs = FileSystemStorage(location=settings.MEDIA_ROOT)
+
 
 class Workflow:
     """ Workflow object
@@ -136,6 +142,41 @@ class Workflow:
         except nx.NetworkXError as e:
             raise WorkflowException('get node successors', str(e))
 
+    def get_node_predecessors(self, node_id):
+        try:
+            return list(self._graph.predecessors(node_id))
+        except nx.NetworkXError as e:
+            raise WorkflowException('get node predecessors', str(e))
+
+    def execute(self, node_id):
+        """Execute a single Node in the graph.
+
+        Reads any stored data from preceding Nodes and passes in to
+        'node_to_execute` as a list(). After execution, the new/updated
+        DataFrame is returned as a JSON object that is written to a new
+        file, with the file name saved to the executed Node.
+
+        Returns:
+            Executed Node object
+
+        """
+        node_to_execute = self.get_node(node_id)
+
+        if node_to_execute is None:
+            raise WorkflowException('execute', 'The workflow does not contain node %s' % node_id)
+
+        # Read in any data from predecessor nodes
+        preceding_data = list()
+        for predecessor in self.get_node_predecessors(node_id):
+            preceding_data.append(self.retrieve_node_data(self, predecessor))
+
+        # Pass in data to current Node to use in execution
+        output = node_to_execute.execute(preceding_data)
+
+        # Save new execution data to disk
+        node_to_execute.data = self.store_node_data(self, node_id, output)
+        return node_to_execute
+
     def execution_order(self):
         try:
             return list(nx.topological_sort(self._graph))
@@ -143,6 +184,21 @@ class Workflow:
             raise WorkflowException('execution order', str(e))
         except RuntimeError as e:
             raise WorkflowException('execution order', 'The graph was changed while generating the execution order')
+
+    @staticmethod
+    def store_node_data(workflow, node_id, data):
+        # TODO: Add exception handling
+        file_name = Workflow.generate_file_name(workflow.get_workflow_name(), node_id)
+
+        return fs.save(file_name, ContentFile(data))
+
+    @staticmethod
+    def retrieve_node_data(workflow, node_id):
+        # TODO: Add exception handling
+        node_to_retrieve = workflow.get_node(node_id)
+
+        with fs.open(node_to_retrieve.data) as f:
+            return json.load(f)
 
     @staticmethod
     def read_graph_json(file_like):
