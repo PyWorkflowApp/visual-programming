@@ -1,10 +1,15 @@
 import json
 
+from django.core.files.base import ContentFile
+from django.core.files.storage import FileSystemStorage
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from pyworkflow import Workflow, WorkflowException, Node, NodeException, node_factory
 from rest_framework.decorators import api_view
 from drf_yasg.utils import swagger_auto_schema
+from django.conf import settings
+
+fs = FileSystemStorage(location=settings.MEDIA_ROOT)
 
 
 @swagger_auto_schema(method='post',
@@ -206,11 +211,8 @@ def execute_node(request, node_id):
         node_to_execute.execute()
 
         # save node_to_execute to a file
-        # TODO: currently hard coding the name of the file as workflow + node id;
-        #       will need to change the word workflow for the workflow name. Switch to FileStorageAPi
-        file_name = 'workflow-'+str(node_id)
-        with open(file_name, 'w') as json_file:
-            json_file.write(node_to_execute.data)
+        fs.save(Workflow.generate_file_name(request.pyworkflow.get_workflow_name(), node_id),
+                ContentFile(node_to_execute.data))
 
         return JsonResponse({
             'message': 'Node Execution successful!',
@@ -228,11 +230,8 @@ def execute_node(request, node_id):
                      })
 @api_view(['GET'])
 def retrieve_data(request, node_id):
-    # TODO: currently hard coding the name of the file as workflow + node id;
-    #       will need to change the word workflow for the workflow name. Will also need to add some exceptions.
-    #
-    file_name = 'workflow-' + str(node_id)
-
+    # TODO: need to add validation probably
+    file_name = Workflow.generate_file_name(request.pyworkflow.get_workflow_name(), node_id)
     with open(file_name) as f:
         data = json.load(f)
 

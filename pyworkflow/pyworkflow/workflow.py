@@ -13,9 +13,11 @@ class Workflow:
         file_path: Location of a workflow file
     """
 
-    def __init__(self, graph=nx.DiGraph(), file_path=None):
+    def __init__(self, graph=nx.DiGraph(), file_path=None, workflow_name='a-name'):
+        #TODO: need to discuss a way to generating the workflow name. For now passing a default name.
         self._graph = graph
         self._file_path = file_path
+        self._workflow_name = workflow_name
 
     @property
     def graph(self):
@@ -68,6 +70,9 @@ class Workflow:
                 self._graph.nodes[node.node_id][key] = node_dict[key]
 
         return
+
+    def get_workflow_name(self):
+        return self._workflow_name
 
     def add_edge(self, node_from: Node, node_to: Node):
         """ Add a Node object to the graph.
@@ -156,6 +161,19 @@ class Workflow:
         json_data = json.load(file_like)
         return nx.readwrite.json_graph.node_link_graph(json_data)
 
+    @staticmethod
+    def generate_file_name(workflow_name, node_id):
+        """Generates a file name for saving intermediate execution data.
+
+        Current format is workflow_name - node_id
+
+        Args:
+            workflow_name: the name of the workflow
+            node_id: the id of the workflow
+        """
+        #TODO: need to add validation
+        return workflow_name + '-' + str(node_id)
+
     @classmethod
     def from_session(cls, data):
         """Create instance from graph (JSON) data and filename
@@ -168,6 +186,7 @@ class Workflow:
         """
         file_path = data.get('file_path')
         graph_data = data.get('graph')
+        workflow_name = data.get('workflow_name')
         if graph_data is None:
             graph = None
         else:
@@ -199,6 +218,7 @@ class Workflow:
         out = dict()
         out['graph'] = self.to_graph_json()
         out['file_path'] = self.file_path
+        out['workflow_name'] = self._workflow_name
         return out
 
 
