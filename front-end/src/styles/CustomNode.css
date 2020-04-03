@@ -7,7 +7,7 @@
 .custom-node{
     border: solid 2px gray;
     border-radius: 4px;
-    width: 40px;
+    width: 80px;
     height: 40px;
     display: flex;
     justify-content: space-between;
@@ -43,9 +43,17 @@
 .custom-node-configure {
     cursor: pointer;
     position: absolute;
-    left: 50%;
-    top: 50%;
+    left: 25%;
+    top: 25%;
     transform: translate(-50%, -50%);
+}
+
+.custom-node-tabular {
+    cursor: pointer;
+    position: absolute;
+    right: 25%;
+    top: 25%;
+    transform: translate(50%, -25%);
 }
 
 .custom-node-description {
