@@ -208,7 +208,7 @@ def execute_node(request, node_id):
 
         return JsonResponse({
             'message': 'Node Execution successful!',
-            'data': executed_node.data,
+            'data_file': executed_node.data,
         }, safe=False)
     except (NodeException, WorkflowException) as e:
         return JsonResponse({e.action: e.reason}, status=500)
