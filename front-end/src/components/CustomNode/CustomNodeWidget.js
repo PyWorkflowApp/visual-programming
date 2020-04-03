@@ -2,6 +2,7 @@ import React from 'react';
 import * as _ from 'lodash';
 import { PortWidget } from '@projectstorm/react-diagrams';
 import StatusLight from '../StatusLight';
+import GraphView from './GraphView';
 import NodeConfig from './NodeConfig';
 import '../../styles/CustomNode.css';
 
@@ -9,8 +10,9 @@ export class CustomNodeWidget extends React.Component {
 
     constructor(props) {
         super(props);
-        this.state = {showConfig: false};
+        this.state = {showConfig: false, showGraph: false};
         this.toggleConfig = this.toggleConfig.bind(this);
+        this.toggleGraph = this.toggleGraph.bind(this);
         this.handleDelete = this.handleDelete.bind(this);
         this.acceptConfiguration = this.acceptConfiguration.bind(this);
         this.icon = '9881';
@@ -19,6 +21,11 @@ export class CustomNodeWidget extends React.Component {
     // show/hide node configuration modal
     toggleConfig() {
         this.setState({showConfig: !this.state.showConfig});
+    }
+
+    // show/hide node graph modal
+    toggleGraph() {
+      this.setState({showGraph: !this.state.showGraph});
     }
 
     // delete node from diagram model and redraw diagram
@@ -78,9 +85,14 @@ export class CustomNodeWidget extends React.Component {
                         toggleShow={this.toggleConfig}
                         onDelete={this.handleDelete}
                         onSubmit={this.acceptConfiguration} />
-                    <div className="custom-node-tabular">
+                    <div className="custom-node-tabular"  onClick={this.toggleGraph}>
                       <img src="tabular-icon.png" alt="Tabular" style={{width:25, height:25}}></img>
                     </div>
+                    <GraphView node={this.props.node}
+                        show={this.state.showGraph}
+                        toggleShow={this.toggleGraph}
+                        onDelete={this.handleDelete}
+                        onSubmit={this.acceptConfiguration} />
                     <div className="port-col port-col-in">
                         { portWidgets["in"] }
                     </div>
