@@ -168,13 +168,21 @@ class Workflow:
         # Read in any data from predecessor nodes
         preceding_data = list()
         for predecessor in self.get_node_predecessors(node_id):
-            preceding_data.append(self.retrieve_node_data(self, predecessor))
+            try:
+                preceding_data.append(self.retrieve_node_data(self, predecessor))
+            except WorkflowException:
+                # TODO: Should this append None, skip reading, or raise exception to view?
+                preceding_data.append(None)
 
         # Pass in data to current Node to use in execution
         output = node_to_execute.execute(preceding_data)
 
         # Save new execution data to disk
         node_to_execute.data = self.store_node_data(self, node_id, output)
+
+        if node_to_execute.data is None:
+            raise WorkflowException('execute', 'There was a problem saving node output.')
+
         return node_to_execute
 
     def execution_order(self):
@@ -187,18 +195,57 @@ class Workflow:
 
     @staticmethod
     def store_node_data(workflow, node_id, data):
-        # TODO: Add exception handling
+        """Store Node data
+
+        Writes the current DataFrame to disk in JSON format.
+
+        Args:
+            workflow: The Workflow that stores the graph.
+            node_id: The Node which contains a DataFrame to save.
+            data: A pandas DataFrame converted to JSON.
+
+        Returns:
+
+        """
         file_name = Workflow.generate_file_name(workflow.get_workflow_name(), node_id)
 
-        return fs.save(file_name, ContentFile(data))
+        try:
+            return fs.save(file_name, ContentFile(data))
+        except Exception as e:
+            return None
 
     @staticmethod
     def retrieve_node_data(workflow, node_id):
-        # TODO: Add exception handling
+        """Retrieve Node data
+
+        Gets the Node specified by 'node_id' and attempts to read a saved
+        DataFrame if one exists.
+
+        Args:
+            workflow: The workflow containing the Node.
+            node_id: The Node containing a DataFrame saved to disk.
+
+        Returns:
+            Contents of the file (a DataFrame) in a JSON object.
+
+        Raises:
+            WorkflowException: Node does not exist, file does not exist, or
+                problem parsing the file.
+        """
         node_to_retrieve = workflow.get_node(node_id)
 
-        with fs.open(node_to_retrieve.data) as f:
-            return json.load(f)
+        if node_to_retrieve is None:
+            raise WorkflowException('retrieve node data', 'The workflow does not contain node %s' % node_id)
+
+        try:
+            with fs.open(node_to_retrieve.data) as f:
+                return json.load(f)
+        except OSError as e:
+            raise WorkflowException('retrieve node data', str(e))
+        except TypeError as e:
+            raise WorkflowException('retrieve node data', str(e))
+        except json.JSONDecodeError as e:
+            raise WorkflowException('retrieve node data', str(e))
 
     @staticmethod
     def read_graph_json(file_like):

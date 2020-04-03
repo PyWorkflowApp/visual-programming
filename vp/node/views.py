@@ -178,9 +178,7 @@ def handle_node(request, node_id):
             return JsonResponse({
                 'message': request.method + ' not yet handled.'
             }, status=405)
-    except WorkflowException as e:
-        return JsonResponse({e.action: e.reason}, status=500)
-    except NodeException as e:
+    except (NodeException, WorkflowException) as e:
         return JsonResponse({e.action: e.reason}, status=500)
 
     return response
@@ -215,6 +213,7 @@ def execute_node(request, node_id):
     except (NodeException, WorkflowException) as e:
         return JsonResponse({e.action: e.reason}, status=500)
 
+
 @swagger_auto_schema(method='get',
                      operation_summary='Gets the data frame at the executed node.',
                      operation_description='Retrieves the state of data at that point in the graph.',
@@ -223,9 +222,12 @@ def execute_node(request, node_id):
                      })
 @api_view(['GET'])
 def retrieve_data(request, node_id):
-    # TODO: need to add validation probably
-    data = Workflow.retrieve_node_data(request.pyworkflow, node_id)
-    return JsonResponse(data, safe=False, status=200)
+    try:
+        data = Workflow.retrieve_node_data(request.pyworkflow, node_id)
+        return JsonResponse(data, safe=False, status=200)
+    except WorkflowException as e:
+        return JsonResponse({e.action: e.reason}, status=500)
+
 
 def create_node(payload):
     """Pass all request info to Node Factory.
