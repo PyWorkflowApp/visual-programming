@@ -9,6 +9,9 @@ function GraphView(props) {
         props.toggleShow();
     };
 
+    /*
+    * Dummy example taken from https://react-window.now.sh/#/examples/grid/variable-size
+    */
     const columnWidths = new Array(1000)
       .fill(true)
       .map(() => 75 + Math.round(Math.random() * 50));
