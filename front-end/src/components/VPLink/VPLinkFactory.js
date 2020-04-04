@@ -4,6 +4,6 @@ import { DefaultLinkFactory } from '@projectstorm/react-diagrams';
 export class VPLinkFactory extends DefaultLinkFactory {
 
     generateModel() {
-      return new VPLinkModel();
+        return new VPLinkModel();
     }
 }
