@@ -178,9 +178,7 @@ def handle_node(request, node_id):
             return JsonResponse({
                 'message': request.method + ' not yet handled.'
             }, status=405)
-    except WorkflowException as e:
-        return JsonResponse({e.action: e.reason}, status=500)
-    except NodeException as e:
+    except (NodeException, WorkflowException) as e:
         return JsonResponse({e.action: e.reason}, status=500)
 
     return response
@@ -197,30 +195,24 @@ def handle_node(request, node_id):
 def execute_node(request, node_id):
     """Execute the specified node
 
+    Uses Workflow to handle preceding Nodes and reading/writing data. Returns
+    an updated Node, with the filename for any new data written to disk stored
+    in the 'data' attribute, for later access.
     """
-    # Check if the graph contains the requested Node
-    node_to_execute = request.pyworkflow.get_node(node_id)
-
-    if node_to_execute is None:
-        return JsonResponse({
-            'message': 'The workflow does not contain node id ' + str(node_id)
-        }, status=404)
-
-    # Execute node
     try:
-        node_to_execute.execute()
+        # Use Workflow to load preceding Node data and execute
+        executed_node = request.pyworkflow.execute(node_id)
 
-        # save node_to_execute to a file
-        fs.save(Workflow.generate_file_name(request.pyworkflow.get_workflow_name(), node_id),
-                ContentFile(node_to_execute.data))
+        # Save executed Node, with new data, back to Workflow
+        request.pyworkflow.update_or_add_node(executed_node)
 
         return JsonResponse({
             'message': 'Node Execution successful!',
-            'node_type': node_to_execute.node_type,
-            'data': node_to_execute.data,
+            'data_file': executed_node.data,
         }, safe=False)
-    except NodeException as e:
+    except (NodeException, WorkflowException) as e:
         return JsonResponse({e.action: e.reason}, status=500)
+
 
 @swagger_auto_schema(method='get',
                      operation_summary='Gets the data frame at the executed node.',
@@ -230,12 +222,12 @@ def execute_node(request, node_id):
                      })
 @api_view(['GET'])
 def retrieve_data(request, node_id):
-    # TODO: need to add validation probably
-    file_name = Workflow.generate_file_name(request.pyworkflow.get_workflow_name(), node_id)
-    with open(file_name) as f:
-        data = json.load(f)
+    try:
+        data = Workflow.retrieve_node_data(request.pyworkflow, node_id)
+        return JsonResponse(data, safe=False, status=200)
+    except WorkflowException as e:
+        return JsonResponse({e.action: e.reason}, status=500)
 
-    return JsonResponse(data, safe=False, status=200)
 
 def create_node(payload):
     """Pass all request info to Node Factory.

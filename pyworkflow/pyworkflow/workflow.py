@@ -4,6 +4,12 @@ import json
 from .node import Node
 from .node_factory import node_factory
 
+from django.conf import settings
+from django.core.files.base import ContentFile
+from django.core.files.storage import FileSystemStorage
+
+fs = FileSystemStorage(location=settings.MEDIA_ROOT)
+
 
 class Workflow:
     """ Workflow object
@@ -136,6 +142,49 @@ class Workflow:
         except nx.NetworkXError as e:
             raise WorkflowException('get node successors', str(e))
 
+    def get_node_predecessors(self, node_id):
+        try:
+            return list(self._graph.predecessors(node_id))
+        except nx.NetworkXError as e:
+            raise WorkflowException('get node predecessors', str(e))
+
+    def execute(self, node_id):
+        """Execute a single Node in the graph.
+
+        Reads any stored data from preceding Nodes and passes in to
+        'node_to_execute` as a list(). After execution, the new/updated
+        DataFrame is returned as a JSON object that is written to a new
+        file, with the file name saved to the executed Node.
+
+        Returns:
+            Executed Node object
+
+        """
+        node_to_execute = self.get_node(node_id)
+
+        if node_to_execute is None:
+            raise WorkflowException('execute', 'The workflow does not contain node %s' % node_id)
+
+        # Read in any data from predecessor nodes
+        preceding_data = list()
+        for predecessor in self.get_node_predecessors(node_id):
+            try:
+                preceding_data.append(self.retrieve_node_data(self, predecessor))
+            except WorkflowException:
+                # TODO: Should this append None, skip reading, or raise exception to view?
+                preceding_data.append(None)
+
+        # Pass in data to current Node to use in execution
+        output = node_to_execute.execute(preceding_data)
+
+        # Save new execution data to disk
+        node_to_execute.data = self.store_node_data(self, node_id, output)
+
+        if node_to_execute.data is None:
+            raise WorkflowException('execute', 'There was a problem saving node output.')
+
+        return node_to_execute
+
     def execution_order(self):
         try:
             return list(nx.topological_sort(self._graph))
@@ -143,6 +192,60 @@ class Workflow:
             raise WorkflowException('execution order', str(e))
         except RuntimeError as e:
             raise WorkflowException('execution order', 'The graph was changed while generating the execution order')
+
+    @staticmethod
+    def store_node_data(workflow, node_id, data):
+        """Store Node data
+
+        Writes the current DataFrame to disk in JSON format.
+
+        Args:
+            workflow: The Workflow that stores the graph.
+            node_id: The Node which contains a DataFrame to save.
+            data: A pandas DataFrame converted to JSON.
+
+        Returns:
+
+        """
+        file_name = Workflow.generate_file_name(workflow.get_workflow_name(), node_id)
+
+        try:
+            return fs.save(file_name, ContentFile(data))
+        except Exception as e:
+            return None
+
+    @staticmethod
+    def retrieve_node_data(workflow, node_id):
+        """Retrieve Node data
+
+        Gets the Node specified by 'node_id' and attempts to read a saved
+        DataFrame if one exists.
+
+        Args:
+            workflow: The workflow containing the Node.
+            node_id: The Node containing a DataFrame saved to disk.
+
+        Returns:
+            Contents of the file (a DataFrame) in a JSON object.
+
+        Raises:
+            WorkflowException: Node does not exist, file does not exist, or
+                problem parsing the file.
+        """
+        node_to_retrieve = workflow.get_node(node_id)
+
+        if node_to_retrieve is None:
+            raise WorkflowException('retrieve node data', 'The workflow does not contain node %s' % node_id)
+
+        try:
+            with fs.open(node_to_retrieve.data) as f:
+                return json.load(f)
+        except OSError as e:
+            raise WorkflowException('retrieve node data', str(e))
+        except TypeError as e:
+            raise WorkflowException('retrieve node data', str(e))
+        except json.JSONDecodeError as e:
+            raise WorkflowException('retrieve node data', str(e))
 
     @staticmethod
     def read_graph_json(file_like):

@@ -124,9 +124,7 @@ def save_workflow(request):
             'filename': request.pyworkflow.file_path
         })
 
-        response = HttpResponse(combined_json, content_type='application/json')
-        response['Content-Disposition'] = 'attachment; filename=%s' % request.pyworkflow.file_path
-        return response
+        return HttpResponse(combined_json, content_type='application/json')
     except json.JSONDecodeError as e:
         return JsonResponse({'No React JSON provided': str(e)}, status=500)
     except WorkflowException as e:

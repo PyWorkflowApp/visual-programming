@@ -1,5 +1,7 @@
 import pandas as pd
 
+# from .workflow import Workflow
+
 
 class Node:
     """Node object
@@ -10,7 +12,7 @@ class Node:
         self.node_id = node_info.get('node_id')
         self.node_type = node_info.get('node_type')
         self.node_key = node_info.get('node_key')
-        self.data = None
+        self.data = node_info.get('data')
 
         # Execution options are passed up from children
         self.options = options or dict()
@@ -19,7 +21,7 @@ class Node:
         if node_info.get("options"):
             self.options.update(node_info["options"])
 
-    def execute(self):
+    def execute(self, predecessor_data):
         pass
 
     def validate(self):
@@ -45,7 +47,7 @@ class IONode(Node):
     def __init__(self, node_info, options=dict()):
         super().__init__(node_info, {**IONode.DEFAULT_OPTIONS, **options})
 
-    def execute(self):
+    def execute(self, predecessor_data):
         pass
 
     def validate(self):
@@ -93,13 +95,13 @@ class ReadCsvNode(IONode):
     def __init__(self, node_info, options=dict()):
         super().__init__(node_info, {**self.DEFAULT_OPTIONS, **options})
 
-    def execute(self):
+    def execute(self, predecessor_data):
         try:
             # TODO: FileStorage implemented in Django to store in /tmp
             #       Better filename/path handling should be implemented.
 
             df = pd.read_csv(**self.options)
-            self.data = df.to_json()
+            return df.to_json()
         except Exception as e:
             raise NodeException('read csv', str(e))
 
@@ -128,15 +130,21 @@ class WriteCsvNode(IONode):
     def __init__(self, node_info, options=dict()):
         super().__init__(node_info, {**self.DEFAULT_OPTIONS, **options})
 
-    def execute(self):
+    def execute(self, predecessor_data):
         try:
-            # TODO: DataFrame would be stored from prior Node execution
-            # Create empty DataFrame
-            self.data = pd.DataFrame().to_json()
+            # Write CSV needs exactly 1 input DataFrame
+            if len(predecessor_data) != self.num_in:
+                raise NodeException(
+                    'execute',
+                    'WriteCsv needs %d inputs. %d were provided' % (self.num_in, len(predecessor_data))
+                )
 
-            # Read in empty DataFrame to export
-            df = pd.read_json(self.data)
+            # Convert JSON data to DataFrame
+            df = pd.DataFrame.from_dict(predecessor_data[0])
+
+            # Write to CSV and save
             df.to_csv(**self.options)
+            return df.to_json()
         except Exception as e:
             raise NodeException('write csv', str(e))
 
@@ -156,7 +164,7 @@ class ManipulationNode(Node):
     def __init__(self, node_info, options=dict()):
         super().__init__(node_info, {**ManipulationNode.DEFAULT_OPTIONS, **options})
 
-    def execute(self):
+    def execute(self, predecessor_data):
         pass
 
     def validate(self):
@@ -183,6 +191,25 @@ class JoinNode(ManipulationNode):
 
     def __init__(self, node_info, options=dict()):
         super().__init__(node_info, {**self.DEFAULT_OPTIONS, **options})
+
+    def execute(self, predecessor_data):
+        # Join cannot accept more than 2 input DataFrames
+        # TODO: Add more error-checking if 1, or no, DataFrames passed through
+        try:
+            if len(predecessor_data) > self.num_in:
+                raise NodeException(
+                    'execute',
+                    'JoinNode can take up to %d inputs. %d were provided' % (self.num_in, len(predecessor_data))
+                )
+
+            first_df = pd.DataFrame.from_dict(predecessor_data[0])
+            second_df = pd.DataFrame.from_dict(predecessor_data[1])
+
+            combined_df = first_df.join(second_df, lsuffix='_caller', rsuffix='_other')
+
+            return combined_df.to_json()
+        except Exception as e:
+            raise NodeException('join', str(e))
 
 
 class NodeException(Exception):

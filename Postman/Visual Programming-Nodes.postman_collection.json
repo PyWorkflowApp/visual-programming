@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "f166b8cb-8fb3-4c12-8709-e2b1ba28d53d",
+		"_postman_id": "2abea1fb-028c-4b16-8bd1-4c9898e0f383",
 		"name": "Visual Programming-Nodes",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -24,13 +24,71 @@
 			"response": []
 		},
 		{
-			"name": "Add node",
+			"name": "Add ReadCsvNode",
 			"request": {
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"name\": null,\n    \"node_id\": \"4\",\n    \"node_type\": \"IONode\",\n    \"node_key\": \"ReadCsvNode\"\n    \"options\": {\n    \t\"filepath_or_buffer\": \"/tmp/test.csv\"\n    }\n}",
+					"raw": "{\n    \"name\": null,\n    \"node_id\": \"1\",\n    \"node_type\": \"IONode\",\n    \"node_key\": \"ReadCsvNode\",\n    \"options\": {\n    \t\"filepath_or_buffer\": \"/tmp/join1.csv\"\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/node/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"node",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add JoinNode",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": null,\n    \"node_id\": \"3\",\n    \"node_type\": \"ManipulationNode\",\n    \"node_key\": \"JoinNode\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/node/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"node",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add WriteCsvNode",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": null,\n    \"node_id\": \"4\",\n    \"node_type\": \"IONode\",\n    \"node_key\": \"WriteCsvNode\",\n    \"options\": {\n    \t\"path_or_buf\": \"/tmp/join_test_output.csv\"\n    }\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -120,6 +178,43 @@
 			"name": "Add edge",
 			"request": {
 				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "node_from_id",
+							"value": "1",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "node_to_id",
+							"value": "2",
+							"type": "text",
+							"disabled": true
+						}
+					]
+				},
+				"url": {
+					"raw": "{{environment}}/node/edge/1/2",
+					"host": [
+						"{{environment}}"
+					],
+					"path": [
+						"node",
+						"edge",
+						"1",
+						"2"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Remove edge",
+			"request": {
+				"method": "DELETE",
 				"header": [],
 				"body": {
 					"mode": "formdata",
