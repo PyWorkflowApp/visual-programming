@@ -176,10 +176,34 @@ class PivotNode(ManipulationNode):
     num_in = 1
     num_out = 3
 
-    DEFAULT_OPTIONS = {}
+    DEFAULT_OPTIONS = {
+        'index': None,
+        'values': None,
+        'columns': None,
+        'aggfunc': 'mean',
+        'fill_value': None,
+        'margins': False,
+        'dropna': True,
+        'margins_name': 'All',
+        'observed': False
+
+    }
 
     def __init__(self, node_info, options=dict()):
         super().__init__(node_info, {**self.DEFAULT_OPTIONS, **options})
+
+    def execute(self, predecessor_data):
+        try:
+            if len(predecessor_data) > self.num_in:
+                raise NodeException(
+                    'execute',
+                    'PivotNode can take up to %d inputs. %d were provided' % (self.num_in, len(predecessor_data))
+                )
+            input_df = pd.DataFrame.from_dict(predecessor_data[0])
+            output_df = pd.DataFrame.pivot_table(input_df, **self.options)
+            return output_df.to_json()
+        except Exception as e:
+            raise NodeException('pivot', str(e))
 
 
 class JoinNode(ManipulationNode):
