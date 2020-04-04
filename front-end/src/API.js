@@ -1,22 +1,37 @@
 /**
+ * Sends request to server via fetch API and handles error cases
+ * @param {string} endpoint - server endpoint
+ * @param {Object} options - options parameter for `fetch` call
+ * @returns {Promise<Object>} - server response or error
+ */
+function fetchWrapper(endpoint, options = {}) {
+       return new Promise((resolve, reject) => {
+        fetch(endpoint, options)
+            .then(async resp => {
+                const data = await resp.json();
+                console.log(data);
+                if (resp.ok) return resolve(data);
+                else return reject(data);
+            })
+            .catch(err => {
+                return reject(err);
+            });
+    });
+}
+
+
+/**
  * Add node to server-side workflow
  * @param {CustomNodeModel} node - JS node to add
  * @returns {Promise<Object>} - server response
  */
 export async function addNode(node) {
     const payload = {...node.options, options: node.config};
-    const resp = await fetch("/node/", {
+    const options = {
         method: "POST",
         body: JSON.stringify(payload)
-    });
-    const json = await resp.json();
-    if (resp.ok) {
-        console.log(json);
-        return json;
-    } else {
-        console.log("Failed to create node on back end.")
-        return Promise.resolve(json);
-    }
+    };
+    return fetchWrapper("/node/", options);
 }
 
 
@@ -27,17 +42,10 @@ export async function addNode(node) {
  */
 export async function deleteNode(node) {
     const id = node.options.id;
-    const resp = await fetch(`/node/${id}`, {
+    const options = {
         method: "DELETE"
-    });
-    const json = await resp.json();
-    if (resp.ok) {
-        console.log(json);
-        return json
-    } else {
-        console.log("Failed to delete node on back end.")
-        return Promise.reject(json);
-    }
+    };
+    return fetchWrapper(`/node/${id}`, options);
 }
 
 
@@ -50,18 +58,11 @@ export async function deleteNode(node) {
 export async function updateNode(node, config) {
     node.config = config;
     const payload = {...node.options, options: node.config};
-    const resp = await fetch(`/node/${node.options.id}`, {
+    const options = {
         method: "POST",
         body: JSON.stringify(payload)
-    });
-    const json = await resp.json();
-    if (!resp.ok) {
-        console.log("Failed to update node on back end.");
-        return Promise.reject(JSON);
-    } else {
-        console.log(json);
-        return json
-    }
+    };
+    return fetchWrapper(`/node/${node.options.id}`, options)
 }
 
 
@@ -71,23 +72,20 @@ export async function updateNode(node, config) {
  */
 export async function save(diagramData) {
     const payload = JSON.stringify(diagramData);
-    const resp = await fetch("/workflow/save", {
+    const options = {
         method: "POST",
-        headers: {"Content-Type": "application/json"},
         body: payload
-    });
-    const json = await resp.json();
-    if (!resp.ok) {
-        return Promise.reject(json);
-    } else {
-        const dataStr = "data:text/json;charset=utf-8,"
-            + encodeURIComponent(JSON.stringify(json));
-        const anchor = document.createElement("a")
-        anchor.href = dataStr;
-        anchor.download = json.filename || "diagram.json";
-        anchor.click();
-        anchor.remove();
-    }
+    };
+    fetchWrapper("/workflow/save", options)
+        .then(json => {
+            const dataStr = "data:text/json;charset=utf-8,"
+                + encodeURIComponent(JSON.stringify(json));
+            const anchor = document.createElement("a")
+            anchor.href = dataStr;
+            anchor.download = json.filename || "diagram.json";
+            anchor.click();
+            anchor.remove();
+        }).catch(err => console.log(err));
 }
 
 
@@ -96,9 +94,7 @@ export async function save(diagramData) {
  * @returns {Promise<Object>} - server response (node menu items)
  */
 export async function getNodes() {
-    const resp = await fetch("/nodes");
-    const json = await resp.json();
-    return resp.ok ? json : Promise.reject(json);
+    return fetchWrapper("/nodes");
 }
 
 
@@ -107,9 +103,7 @@ export async function getNodes() {
  * @returns {Promise<Object>} - server response
  */
 export async function initWorkflow() {
-    const resp = await fetch("/workflow/new");
-    const json = await resp.json();
-    return resp.ok ? json : Promise.reject(json);
+    return fetchWrapper("/workflow/new");
 }
 
 
@@ -119,10 +113,9 @@ export async function initWorkflow() {
  * @returns {Promise<Object>} - server response (full serialized workflow)
  */
 export async function uploadWorkflow(formData) {
-    const resp = await fetch("/workflow/open", {
+    const options = {
         method: "POST",
         body: formData
-    });
-    const json = await resp.json();
-    return resp.ok ? json : Promise.reject(json);
+    };
+    return fetchWrapper("/workflow/open", options);
 }
