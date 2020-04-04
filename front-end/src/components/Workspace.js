@@ -28,8 +28,10 @@ class Workspace extends React.Component {
     }
 
     componentDidMount() {
-        API.getNodes().then(nodes => this.setState({nodes: nodes}));
-        API.initWorkflow().then(graph => console.log(graph));
+        API.getNodes()
+            .then(nodes => this.setState({nodes: nodes}))
+            .catch(err => console.log(err));
+        API.initWorkflow().catch(err => console.log(err));
     }
 
     /**
@@ -48,7 +50,7 @@ class Workspace extends React.Component {
     clear() {
         if (window.confirm("Clear diagram? You will lose all work.")) {
             this.model.getNodes().forEach(n => n.remove());
-            API.initWorkflow().then(graph => console.log(graph));
+            API.initWorkflow().catch(err => console.log(err));
             this.engine.repaintCanvas();
         }
     }
