@@ -155,6 +155,7 @@ def execute_workflow(request):
 
     return JsonResponse(order, safe=False)
 
+
 @swagger_auto_schema(method='get',
                      operation_summary='Retrieve sorted list of successors from a node.',
                      operation_description='Retrieves a list of successor nodes, sorted in execution order.',
@@ -196,6 +197,7 @@ def retrieve_csv(request, node_id):
 
         return response
 
+
 @swagger_auto_schema(method='post',
                      operation_summary='Uploads a file to server.',
                      operation_description='Uploads a new file to server location.',
@@ -207,9 +209,8 @@ def retrieve_csv(request, node_id):
 def upload_file(request):
     if 'file' not in request.data:
         return JsonResponse("Empty content", status=404)
-
     f = request.data['file']
-
-    fs.save(f.name, f)
-
-    return JsonResponse("File Uploaded", status=201, safe=False)
+    node_id = request.data.get('nodeId', '')
+    save_name = f"{node_id}-{f.name}"
+    fs.save(save_name, f)
+    return JsonResponse({"filename": save_name}, status=201, safe=False)
