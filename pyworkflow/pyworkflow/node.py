@@ -130,11 +130,7 @@ class WriteCsvNode(IONode):
     def execute(self, predecessor_data):
         try:
             # Write CSV needs exactly 1 input DataFrame
-            if len(predecessor_data) != self.num_in:
-                raise NodeException(
-                    'execute',
-                    'WriteCsv needs %d inputs. %d were provided' % (self.num_in, len(predecessor_data))
-                )
+            NodeUtils.validate_predecessor_data(len(predecessor_data), self.num_in, self.node_key)
 
             # Convert JSON data to DataFrame
             df = pd.DataFrame.from_dict(predecessor_data[0])
