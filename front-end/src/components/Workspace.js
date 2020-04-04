@@ -6,6 +6,7 @@ import { VPLinkFactory } from './VPLink/VPLinkFactory';
 import { CustomNodeModel } from './CustomNode/CustomNodeModel';
 import { CustomNodeFactory } from './CustomNode/CustomNodeFactory';
 import { VPPortFactory } from './VPPort/VPPortFactory';
+import * as API from '../API';
 import NodeMenu from './NodeMenu';
 import '../styles/Workspace.css';
 
@@ -21,46 +22,14 @@ class Workspace extends React.Component {
         this.engine.setModel(this.model);
         this.engine.setMaxNumberPointsPerLink(0);
         this.state = {nodes: []};
-        this.save = this.save.bind(this);
         this.load = this.load.bind(this);
         this.clear = this.clear.bind(this);
+        this.handleNodeCreation = this.handleNodeCreation.bind(this);
     }
 
     componentDidMount() {
-        async function getNodes() {
-            const resp = await fetch("/nodes");
-            return resp.json();
-        }
-        async function startWorkflow() {
-            const resp = await fetch("/workflow/new");
-            return resp.json();
-        }
-        getNodes().then(nodes => this.setState({nodes: nodes}));
-        startWorkflow().then(resp => console.log(resp));
-    }
-
-    /**
-     * serialize model, POST to server, download response as JSON file
-     */
-    async save() {
-        const data = JSON.stringify(this.model.serialize());
-        const resp = await fetch("/workflow/save", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: data
-        });
-        if (resp.status !== 200) {
-            console.log(await resp.json());
-        } else {
-            const downloadData = await resp.json();
-            const dataStr = "data:text/json;charset=utf-8,"
-                + encodeURIComponent(JSON.stringify(downloadData));
-            const anchor = document.createElement("a")
-            anchor.href = dataStr;
-            anchor.download = downloadData.filename || "diagram.json";
-            anchor.click();
-            anchor.remove();
-        }
+        API.getNodes().then(nodes => this.setState({nodes: nodes}));
+        API.initWorkflow().then(graph => console.log(graph));
     }
 
     /**
@@ -74,33 +43,27 @@ class Workspace extends React.Component {
     }
 
     /**
-     * Remove all nodes from diagram
+     * Remove all nodes from diagram and initialize new workflow on server
      */
     clear() {
-        if (window.confirm("Clear diagram?")) {
+        if (window.confirm("Clear diagram? You will lose all work.")) {
             this.model.getNodes().forEach(n => n.remove());
+            API.initWorkflow().then(graph => console.log(graph));
             this.engine.repaintCanvas();
         }
     }
 
-    async handleNodeCreation(event) {
+    // takes data from node drop and creates node on server and in diagram
+    handleNodeCreation(event) {
         const data = JSON.parse(event.dataTransfer.getData('storm-diagram-node'));
         if (!data) return;
         const node = new CustomNodeModel(data.nodeInfo, data.config),
             point = this.engine.getRelativeMousePoint(event);
         node.setPosition(point);
-        const payload = {...node.options, options: node.config};
-        const resp = await fetch("/node/", {
-            method: "POST",
-            body: JSON.stringify(payload)
-        });
-        if (resp.status === 200) {
+        API.addNode(node).then(() => {
             this.model.addNode(node);
             this.forceUpdate();
-            console.log(await resp.json());
-        } else {
-            console.log("Failed to create node on back end.")
-        }
+        }).catch(err => console.log(err));
     }
 
     render() {
@@ -108,7 +71,9 @@ class Workspace extends React.Component {
             <>
                 <Row className="mb-3">
                     <Col md={12}>
-                        <Button size="sm" onClick={this.save}>Save</Button>{' '}
+                        <Button size="sm" onClick={() => API.save(this.model.serialize())}>
+                            Save
+                        </Button>{' '}
                         <FileUpload handleData={this.load}/>{' '}
                         <Button size="sm" onClick={this.clear}>Clear</Button>
                     </Col>
@@ -131,19 +96,14 @@ class Workspace extends React.Component {
 
 function FileUpload(props) {
     const input = useRef(null);
-    const uploadFile = async file => {
+    const uploadFile = file => {
         const form = new FormData();
         form.append("file", file);
-        const resp = await fetch("/workflow/open", {
-            method: "POST",
-            body: form
+        API.uploadWorkflow(form).then(json => {
+            props.handleData(json.react);
+        }).catch(err => {
+            console.log(err);
         });
-        if (resp.status !== 200) {
-            console.log("Failed to open workflow.");
-        } else {
-            const respData = await resp.json();
-            props.handleData(respData.react);
-        }
         input.current.value = null;
     };
     const onFileSelect = e => {
