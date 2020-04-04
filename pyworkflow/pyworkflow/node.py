@@ -1,8 +1,5 @@
 import pandas as pd
 
-# from .workflow import Workflow
-
-
 class Node:
     """Node object
 
@@ -194,11 +191,7 @@ class PivotNode(ManipulationNode):
 
     def execute(self, predecessor_data):
         try:
-            if len(predecessor_data) > self.num_in:
-                raise NodeException(
-                    'execute',
-                    'PivotNode can take up to %d inputs. %d were provided' % (self.num_in, len(predecessor_data))
-                )
+            NodeUtils.validate_predecessor_data(len(predecessor_data), self.num_in, self.node_key)
             input_df = pd.DataFrame.from_dict(predecessor_data[0])
             output_df = pd.DataFrame.pivot_table(input_df, **self.options)
             return output_df.to_json()
@@ -220,17 +213,10 @@ class JoinNode(ManipulationNode):
         # Join cannot accept more than 2 input DataFrames
         # TODO: Add more error-checking if 1, or no, DataFrames passed through
         try:
-            if len(predecessor_data) > self.num_in:
-                raise NodeException(
-                    'execute',
-                    'JoinNode can take up to %d inputs. %d were provided' % (self.num_in, len(predecessor_data))
-                )
-
+            NodeUtils.validate_predecessor_data(len(predecessor_data), self.num_in, self.node_key)
             first_df = pd.DataFrame.from_dict(predecessor_data[0])
             second_df = pd.DataFrame.from_dict(predecessor_data[1])
-
             combined_df = first_df.join(second_df, lsuffix='_caller', rsuffix='_other')
-
             return combined_df.to_json()
         except Exception as e:
             raise NodeException('join', str(e))
@@ -243,3 +229,23 @@ class NodeException(Exception):
 
     def __str__(self):
         return self.action + ': ' + self.reason
+
+class NodeUtils:
+
+    @staticmethod
+    def validate_predecessor_data(predecessor_data_len, num_in, node_key):
+        validation_failed = False
+        exception_txt = ""
+        if node_key == 'WriteCsvNode' and len(predecessor_data_len) != num_in:
+                validation_failed = True
+                exception_txt = '%s needs %d inputs. %d were provided'
+        elif (node_key != 'WriteCsvNode' and predecessor_data_len > num_in):
+                validation_failed = True
+                exception_txt = '%s can take up to %d inputs. %d were provided'
+
+        if validation_failed:
+            raise NodeException(
+                'execute',
+                exception_txt % (node_key, num_in, predecessor_data_len)
+            )
+
