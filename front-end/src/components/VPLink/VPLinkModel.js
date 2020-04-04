@@ -1,4 +1,5 @@
 import { DefaultLinkModel } from '@projectstorm/react-diagrams';
+import * as API from '../../API';
 
 export class VPLinkModel extends DefaultLinkModel {
     constructor() {
@@ -7,6 +8,11 @@ export class VPLinkModel extends DefaultLinkModel {
           width: 5,
           color: 'orange'
         });
+        this.registerListener({
+            targetPortChanged: event => {
+                API.addEdge(this).catch(() => {});
+            },
+        })
     }
 
     getSVGPath() {
@@ -25,11 +31,9 @@ export class VPLinkModel extends DefaultLinkModel {
      * TODO: Notify backend the link has been removed
     */
     remove() {
-      const sourcePort = this.getSourcePort(); // PortModel
-      const sourceNode = sourcePort.getNode(); // NodeModel
-      const targetPort = this.getTargetPort(); // PortModel
-      const targetNode = targetPort.getNode(); // NodeModel
-      
-      super.remove();
+        console.log("deleting link");
+        API.deleteEdge(this)
+            .then(() => super.remove())
+            .catch(() => {});
     }
 }
