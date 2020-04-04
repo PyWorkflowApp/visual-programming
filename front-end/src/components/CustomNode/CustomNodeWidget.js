@@ -7,7 +7,7 @@ import NodeConfig from './NodeConfig';
 import '../../styles/CustomNode.css';
 import * as API from '../../API';
 
-export class CustomNodeWidget extends React.Component {
+export default class CustomNodeWidget extends React.Component {
 
     constructor(props) {
         super(props);

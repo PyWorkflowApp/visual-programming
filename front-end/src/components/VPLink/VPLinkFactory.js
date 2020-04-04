@@ -1,7 +1,7 @@
-import { VPLinkModel } from './VPLinkModel';
 import { DefaultLinkFactory } from '@projectstorm/react-diagrams';
+import VPLinkModel from './VPLinkModel';
 
-export class VPLinkFactory extends DefaultLinkFactory {
+export default class VPLinkFactory extends DefaultLinkFactory {
 
     generateModel() {
         return new VPLinkModel();

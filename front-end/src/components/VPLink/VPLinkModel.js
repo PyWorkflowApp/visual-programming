@@ -1,7 +1,7 @@
 import { DefaultLinkModel } from '@projectstorm/react-diagrams';
 import * as API from '../../API';
 
-export class VPLinkModel extends DefaultLinkModel {
+export default class VPLinkModel extends DefaultLinkModel {
     constructor() {
         super({
           type: 'default',

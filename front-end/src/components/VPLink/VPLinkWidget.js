@@ -1,5 +1,5 @@
 import { DefaultLinkWidget } from '@projectstorm/react-diagrams';
 
-export class VPLinkWidget extends DefaultLinkWidget {
+export default class VPLinkWidget extends DefaultLinkWidget {
 
 }

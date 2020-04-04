@@ -1,7 +1,7 @@
 import { DefaultPortModel } from '@projectstorm/react-diagrams';
-import { VPLinkFactory } from '../VPLink/VPLinkFactory';
+import VPLinkFactory from '../VPLink/VPLinkFactory';
 
-export class VPPortModel extends DefaultPortModel {
+export default class VPPortModel extends DefaultPortModel {
 
       createLinkModel() {
           const factory = new VPLinkFactory();

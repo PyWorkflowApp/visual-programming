@@ -1,7 +1,7 @@
-import { VPPortModel } from './VPPortModel';
 import { AbstractModelFactory } from '@projectstorm/react-canvas-core';
+import VPPortModel from './VPPortModel';
 
-export class VPPortFactory extends AbstractModelFactory {
+export default class VPPortFactory extends AbstractModelFactory {
 
     constructor() {
         super("vp-port");
