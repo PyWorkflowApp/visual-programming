@@ -5,6 +5,7 @@ import StatusLight from '../StatusLight';
 import GraphView from './GraphView';
 import NodeConfig from './NodeConfig';
 import '../../styles/CustomNode.css';
+import * as API from '../../API';
 
 export class CustomNodeWidget extends React.Component {
 
@@ -29,36 +30,18 @@ export class CustomNodeWidget extends React.Component {
     }
 
     // delete node from diagram model and redraw diagram
-    async handleDelete() {
-        const id = this.props.node.options.id;
-        const resp = await fetch(`/node/${id}`, {
-            method: "DELETE"
-        });
-        if (resp.status !== 200) {
-            console.log("Failed to delete node on back end.")
-        } else {
+    handleDelete() {
+        API.deleteNode(this.props.node).then(() => {
             this.props.node.remove();
             this.props.engine.repaintCanvas();
-            console.log(await resp.json());
-        }
+        }).catch(err => console.log(err));
     }
 
-    async acceptConfiguration(formData) {
-        this.props.node.config = formData;
-        console.log(formData);
-        const node = this.props.node;
-        const payload = {...node.options, options: node.config};
-        const resp = await fetch(`/node/${node.options.id}`, {
-            method: "POST",
-            body: JSON.stringify(payload)
-        });
-        if (resp.status !== 200) {
-            console.log("Failed to update node on back end.")
-        } else {
-            console.log(await resp.json());
+    acceptConfiguration(formData) {
+        API.updateNode(this.props.node, formData).then(() => {
             this.forceUpdate();
             this.props.engine.repaintCanvas();
-        }
+        }).catch(err => console.log(err));
     }
 
     render() {
