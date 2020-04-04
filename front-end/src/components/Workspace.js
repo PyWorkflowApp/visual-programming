@@ -1,5 +1,4 @@
 import React, { useRef } from 'react';
-import * as _ from 'lodash';
 import { Row, Col, Button } from 'react-bootstrap';
 import createEngine, { DiagramModel } from '@projectstorm/react-diagrams';
 import { CanvasWidget } from '@projectstorm/react-canvas-core';
@@ -7,6 +6,7 @@ import { VPLinkFactory } from './VPLink/VPLinkFactory';
 import { CustomNodeModel } from './CustomNode/CustomNodeModel';
 import { CustomNodeFactory } from './CustomNode/CustomNodeFactory';
 import { VPPortFactory } from './VPPort/VPPortFactory';
+import NodeMenu from './NodeMenu';
 import '../styles/Workspace.css';
 
 class Workspace extends React.Component {
@@ -104,22 +104,6 @@ class Workspace extends React.Component {
     }
 
     render() {
-        // construct menu from JSON of node types
-        const menu = _.map(this.state.nodes, (items, section) =>
-            <div key={`node-menu-${section}`}>
-                <b>{section}</b>
-                <ul>
-                { _.map(items, item => {
-                    const config = item.options;
-                    delete item.options;
-                    return (
-                        <NodeMenuItem key={item.node_key} nodeInfo={item} config={config} />
-                    )}
-                )}
-                </ul>
-            </div>
-        );
-
         return (
             <>
                 <Row className="mb-3">
@@ -130,11 +114,7 @@ class Workspace extends React.Component {
                     </Col>
                 </Row>
                 <Row className="Workspace">
-                    <Col xs={2} className="node-menu">
-                        <div>Drag-and-drop nodes to build a workflow.</div>
-                        <hr />
-                        { menu }
-                    </Col>
+                    <NodeMenu nodes={this.state.nodes} />
                     <Col xs={10}>
                         <div style={{position: 'relative', flexGrow: 1}}
                             onDrop={event => this.handleNodeCreation(event)}
@@ -146,22 +126,6 @@ class Workspace extends React.Component {
             </>
         );
     }
-}
-
-
-function NodeMenuItem(props) {
-    return (
-        <li className="NodeMenuItem"
-            draggable={true}
-            onDragStart={event => {
-                event.dataTransfer.setData(
-                    'storm-diagram-node',
-                    JSON.stringify(props));
-            }}
-            style={{ color: props.nodeInfo.color }}>
-            {props.nodeInfo.name}
-        </li>
-    )
 }
 
 
