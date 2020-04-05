@@ -148,3 +148,17 @@ export async function addEdge(link) {
 export async function deleteEdge(link) {
     return handleEdge(link, "DELETE");
 }
+
+
+/**
+ * Upload a data file to be stored on the server
+ * @param {FormData} formData - FormData with file and nodeId
+ * @returns {Promise<Object>} - server response
+ */
+export async function uploadDataFile(formData) {
+    const options = {
+        method: "POST",
+        body: formData
+    };
+    return fetchWrapper("/workflow/upload", options);
+}
