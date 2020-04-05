@@ -1,11 +1,13 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 import propTypes from 'prop-types';
 import * as _ from 'lodash';
+import * as API from "../../API";
 
-function NodeConfig(props) {
+export default function NodeConfig(props) {
 
     const form = useRef();
+    const [disabled, setDisabled] = useState(false);
 
     // confirm, fire delete callback, close modal
     const handleDelete = () => {
@@ -34,7 +36,9 @@ function NodeConfig(props) {
                     <Modal.Body>
                         { _.map(props.node.configParams, (info, key) =>
                             <OptionInput key={key} {...info} keyName={key}
-                                value={props.node.config[key]} />
+                                node={props.node}
+                                value={props.node.config[key]}
+                                disableFunc={setDisabled}/>
                         )}
                         <Form.Group>
                             <Form.Label>Node Description</Form.Label>
@@ -44,7 +48,7 @@ function NodeConfig(props) {
                         </Form.Group>
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button variant="success" type="submit">Save</Button>
+                        <Button variant="success" disabled={disabled} type="submit">Save</Button>
                         <Button variant="secondary" onClick={props.toggleShow}>Cancel</Button>
                         <Button variant="danger" onClick={handleDelete}>Delete</Button>
                     </Modal.Footer>
@@ -59,16 +63,23 @@ NodeConfig.propTypes = {
     toggleShow: propTypes.func,
     onDelete: propTypes.func,
     onSubmit: propTypes.func
-}
+};
 
 
 function OptionInput(props) {
+
     let inputComp;
     if (props.type === "file") {
-        inputComp = <input type="file" name={props.keyName} />;
+        inputComp = <FileUpload disableFunc={props.disableFunc}
+                        node={props.node}
+                        name={props.keyName}
+                        value={props.value} />
     } else if (props.type === "string") {
         inputComp = <Form.Control type="text" name={props.keyName}
                         defaultValue={props.value} />;
+    } else if (props.type === "integer") {
+        inputComp = <Form.Control type="number" name={props.keyName}
+                                  defaultValue={props.value} />;
     } else {
         return (<></>)
     }
@@ -81,4 +92,58 @@ function OptionInput(props) {
     )
 }
 
-export default NodeConfig;
+
+function FileUpload(props) {
+
+    const input = useRef(null);
+    const [fileName, setFileName] = useState(props.value || "");
+    const [status, setStatus] = useState(props.value ? "ready" : "unconfigured");
+
+    const uploadFile = async file => {
+        props.disableFunc(true);
+        setStatus("loading");
+        const fd = new FormData();
+        fd.append("file", file);
+        fd.append("nodeId", props.node.options.id);
+        API.uploadDataFile(fd)
+            .then(resp => {
+                setFileName(resp.filename);
+                setStatus("ready");
+                props.disableFunc(false);
+                setStatus("ready");
+            }).catch(() => {
+                setStatus("failed");
+            });
+        input.current.value = null;
+    };
+    const onFileSelect = e => {
+        e.preventDefault();
+        if (!input.current.files) return;
+        uploadFile(input.current.files[0]);
+    };
+
+    if (status === "loading") return (<div>Uploading file...</div>);
+    const btnText = status === "ready" ? "Choose Different File" : "Choose File";
+    let content;
+    if (status === "ready") {
+        const rxp = new RegExp(props.node.options.id + '-');
+        content = (
+            <div>
+                <b style={{color: 'green'}}>File loaded:</b>&nbsp;
+                {fileName.replace(rxp, '')}
+            </div>
+        )
+    } else if (status === "failed") {
+        content = (<div>Upload failed. Try a new file.</div>);
+    }
+    return (
+        <>
+            <input type="file" ref={input} onChange={onFileSelect}
+                   style={{display: "none"}} />
+            <input type="hidden" name={props.name} value={fileName} />
+            <Button size="sm" onClick={() => input.current.click()}>{btnText}</Button>
+            {content}
+        </>
+    )
+}
+
