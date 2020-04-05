@@ -234,6 +234,12 @@ def create_node(payload):
 
     """
     json_data = json.loads(payload)
+    # for options with type 'file', replace value with FileStorage path
+    for field, info in json_data.get("option_types", dict()).items():
+        if info["type"] == "file":
+            opt_value = json_data["options"][field]
+            if opt_value is not None:
+                json_data["options"][field] = fs.path(opt_value)
 
     try:
         return node_factory(json_data)
