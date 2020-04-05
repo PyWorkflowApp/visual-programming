@@ -196,20 +196,32 @@ class Workflow:
         if node_to_execute is None:
             raise WorkflowException('execute', 'The workflow does not contain node %s' % node_id)
 
-        # Read in any data from predecessor nodes
+        # Read in any data from predecessor/flow nodes
+        # TODO: This should work for local FlowNodes, but global flow_vars still
+        #       need a way to be assigned/replace Node options
         preceding_data = list()
+        flow_vars = list()
         for predecessor in self.get_node_predecessors(node_id):
             try:
-                preceding_data.append(self.retrieve_node_data(self, predecessor))
+                node_to_retrieve = self.get_node(predecessor)
+
+                if node_to_retrieve is None:
+                    raise WorkflowException('retrieve node data', 'The workflow does not contain node %s' % node_id)
+
+                if node_to_retrieve.node_type == 'FlowNode':
+                    flow_vars.append(node_to_retrieve.options)
+                else:
+                    preceding_data.append(Workflow.retrieve_node_data(node_to_retrieve))
+
             except WorkflowException:
                 # TODO: Should this append None, skip reading, or raise exception to view?
                 preceding_data.append(None)
 
         # Pass in data to current Node to use in execution
-        output = node_to_execute.execute(preceding_data)
+        output = node_to_execute.execute(preceding_data, flow_vars)
 
         # Save new execution data to disk
-        node_to_execute.data = self.store_node_data(self, node_id, output)
+        node_to_execute.data = Workflow.store_node_data(self, node_id, output)
 
         if node_to_execute.data is None:
             raise WorkflowException('execute', 'There was a problem saving node output.')
@@ -246,15 +258,13 @@ class Workflow:
             return None
 
     @staticmethod
-    def retrieve_node_data(workflow, node_id):
+    def retrieve_node_data(node_to_retrieve):
         """Retrieve Node data
 
-        Gets the Node specified by 'node_id' and attempts to read a saved
-        DataFrame if one exists.
+        Reads a saved DataFrame, referenced by the Node's 'data' attribute.
 
         Args:
-            workflow: The workflow containing the Node.
-            node_id: The Node containing a DataFrame saved to disk.
+            node_to_retrieve: The Node containing a DataFrame saved to disk.
 
         Returns:
             Contents of the file (a DataFrame) in a JSON object.
@@ -263,11 +273,6 @@ class Workflow:
             WorkflowException: Node does not exist, file does not exist, or
                 problem parsing the file.
         """
-        node_to_retrieve = workflow.get_node(node_id)
-
-        if node_to_retrieve is None:
-            raise WorkflowException('retrieve node data', 'The workflow does not contain node %s' % node_id)
-
         try:
             with fs.open(node_to_retrieve.data) as f:
                 return json.load(f)

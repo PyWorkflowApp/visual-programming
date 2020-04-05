@@ -251,7 +251,8 @@ def execute_node(request, node_id):
 @api_view(['GET'])
 def retrieve_data(request, node_id):
     try:
-        data = Workflow.retrieve_node_data(request.pyworkflow, node_id)
+        node_to_retrieve = request.pyworkflow.get_node(node_id)
+        data = Workflow.retrieve_node_data(node_to_retrieve)
         return JsonResponse(data, safe=False, status=200)
     except WorkflowException as e:
         return JsonResponse({e.action: e.reason}, status=500)

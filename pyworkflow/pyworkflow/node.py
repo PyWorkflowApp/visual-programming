@@ -1,5 +1,6 @@
 import pandas as pd
 
+
 class Node:
     """Node object
 
@@ -20,7 +21,7 @@ class Node:
         if node_info.get("options"):
             self.options.update(node_info["options"])
 
-    def execute(self, predecessor_data):
+    def execute(self, predecessor_data, flow_vars):
         pass
 
     def validate(self):
@@ -88,7 +89,7 @@ class IONode(Node):
     def __init__(self, node_info, options=dict()):
         super().__init__(node_info, {**IONode.DEFAULT_OPTIONS, **options})
 
-    def execute(self, predecessor_data):
+    def execute(self, predecessor_data, flow_vars):
         pass
 
     def validate(self):
@@ -136,11 +137,11 @@ class ReadCsvNode(IONode):
     def __init__(self, node_info, options=dict()):
         super().__init__(node_info, {**self.DEFAULT_OPTIONS, **options})
 
-    def execute(self, predecessor_data):
+    def execute(self, predecessor_data, flow_vars):
         try:
             # TODO: FileStorage implemented in Django to store in /tmp
             #       Better filename/path handling should be implemented.
-
+            NodeUtils.replace_flow_vars(self.options, flow_vars)
             df = pd.read_csv(**self.options)
             return df.to_json()
         except Exception as e:
@@ -171,7 +172,7 @@ class WriteCsvNode(IONode):
     def __init__(self, node_info, options=dict()):
         super().__init__(node_info, {**self.DEFAULT_OPTIONS, **options})
 
-    def execute(self, predecessor_data):
+    def execute(self, predecessor_data, flow_vars):
         try:
             # Write CSV needs exactly 1 input DataFrame
             NodeUtils.validate_predecessor_data(len(predecessor_data), self.num_in, self.node_key)
@@ -201,7 +202,7 @@ class ManipulationNode(Node):
     def __init__(self, node_info, options=dict()):
         super().__init__(node_info, {**ManipulationNode.DEFAULT_OPTIONS, **options})
 
-    def execute(self, predecessor_data):
+    def execute(self, predecessor_data, flow_vars):
         pass
 
     def validate(self):
@@ -229,7 +230,7 @@ class PivotNode(ManipulationNode):
     def __init__(self, node_info, options=dict()):
         super().__init__(node_info, {**self.DEFAULT_OPTIONS, **options})
 
-    def execute(self, predecessor_data):
+    def execute(self, predecessor_data, flow_vars):
         try:
             NodeUtils.validate_predecessor_data(len(predecessor_data), self.num_in, self.node_key)
             input_df = pd.DataFrame.from_dict(predecessor_data[0])
@@ -249,7 +250,7 @@ class JoinNode(ManipulationNode):
     def __init__(self, node_info, options=dict()):
         super().__init__(node_info, {**self.DEFAULT_OPTIONS, **options})
 
-    def execute(self, predecessor_data):
+    def execute(self, predecessor_data, flow_vars):
         # Join cannot accept more than 2 input DataFrames
         # TODO: Add more error-checking if 1, or no, DataFrames passed through
         try:
@@ -289,3 +290,9 @@ class NodeUtils:
                 exception_txt % (node_key, num_in, predecessor_data_len)
             )
 
+    @staticmethod
+    def replace_flow_vars(node_options, flow_vars):
+        for var in flow_vars:
+            node_options[var['var_name']] = var['default_value']
+
+        return
