@@ -14,6 +14,8 @@ class Node:
         self.node_key = node_info.get('node_key')
         self.data = node_info.get('data')
 
+        self.is_global = True if node_info.get('is_global') else False
+
         # Execution options are passed up from children
         self.options = options or dict()
 
@@ -30,6 +32,48 @@ class Node:
     def __str__(self):
         return "Test"
 
+
+class FlowNode(Node):
+    """FlowNode object
+    """
+    DEFAULT_OPTIONS = {
+
+    }
+
+    def __init__(self, node_info, options=dict()):
+        super().__init__(node_info, {**FlowNode.DEFAULT_OPTIONS, **options})
+
+
+class StringNode(FlowNode):
+    """StringNode object
+
+    Allows for Strings to replace 'string' fields in Nodes
+    """
+    name = "String Input"
+    num_in = 1
+    num_out = 1
+    color = 'purple'
+
+    DEFAULT_OPTIONS = {
+        'default_value': None,
+        'var_name': 'my_var',
+    }
+
+    OPTION_TYPES = {
+        'default_value': {
+            "type": "string",
+            "name": "Default Value",
+            "desc": "Value this Node will pass as a flow variable"
+        },
+        'var_name': {
+            "type": "string",
+            "name": "Variable Name",
+            "desc": "Name of the variable to use in another Node"
+        }
+    }
+
+    def __init__(self, node_info):
+        super().__init__(node_info)
 
 class IONode(Node):
     """IONodes deal with file-handling in/out of the Workflow.

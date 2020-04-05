@@ -19,11 +19,12 @@ class Workflow:
         file_path: Location of a workflow file
     """
 
-    def __init__(self, graph=nx.DiGraph(), file_path=None, name='a-name'):
+    def __init__(self, graph=nx.DiGraph(), file_path=None, name='a-name', flow_vars=nx.Graph()):
         #TODO: need to discuss a way to generating the workflow name. For now passing a default name.
         self._graph = graph
         self._file_path = file_path
         self._name = name
+        self._flow_vars = flow_vars
 
     @property
     def graph(self):
@@ -44,6 +45,10 @@ class Workflow:
         else:
             raise WorkflowException('set_file_path', 'File ' + file_path + ' is not JSON.')
 
+    @property
+    def flow_vars(self):
+        return self._flow_vars
+
     def get_node(self, node_id):
         """Retrieves Node from workflow, if exists
 
@@ -56,6 +61,18 @@ class Workflow:
         node_info = self.graph.nodes[node_id]
         return node_factory(node_info)
 
+    def get_flow_var(self, node_id):
+        """Retrieves a global flow variable from workflow, if exists
+
+        Return:
+            FlowNode object, if one exists. Otherwise, None.
+        """
+        if self._flow_vars.has_node(node_id) is not True:
+            return None
+
+        node_info = self.flow_vars.nodes[node_id]
+        return node_factory(node_info)
+
     def update_or_add_node(self, node: Node):
         """ Update or add a Node object to the graph.
 
@@ -65,15 +82,21 @@ class Workflow:
         TODO:
             * validate() always returns True; this should perform actual validation
         """
-        if node.validate():
-            # If Node not in graph yet, add it
-            if self._graph.has_node(node.node_id) is False:
-                self._graph.add_node(node.node_id)
+        # Do not add/update if invalid
+        if node.validate() is False:
+            raise WorkflowException('update_or_add_node', 'Node is invalid')
 
-            # Iterate through all Node attributes to add to graph
-            node_dict = node.__dict__
-            for key in node_dict.keys():
-                self._graph.nodes[node.node_id][key] = node_dict[key]
+        # Select the correct graph to modify
+        graph = self.flow_vars if node.is_global else self.graph
+
+        if graph.has_node(node.node_id) is False:
+            graph.add_node(node.node_id)
+
+        # NetworkX cannot store mutable data, so iterate through all Node
+        # attributes to add to graph
+        node_dict = node.__dict__
+        for key in node_dict.keys():
+            graph.nodes[node.node_id][key] = node_dict[key]
 
         return
 
@@ -137,7 +160,10 @@ class Workflow:
             WorkflowException: on issue with removing node from graph
         """
         try:
-            self._graph.remove_node(node.node_id)
+            # Select the correct graph to modify
+            graph = self.flow_vars if node.is_global else self.graph
+
+            graph.remove_node(node.node_id)
         except nx.NetworkXError:
             raise WorkflowException('remove_node', 'Node does not exist in graph.')
 
@@ -298,11 +324,18 @@ class Workflow:
         file_path = data.get('file_path')
         graph_data = data.get('graph')
         name = data.get('name')
+        flow_vars_data = data.get('flow_vars')
         if graph_data is None:
             graph = None
         else:
             graph = nx.readwrite.json_graph.node_link_graph(graph_data)
-        return cls(graph, file_path)
+
+        if flow_vars_data is None:
+            flow_vars = None
+        else:
+            flow_vars = nx.readwrite.json_graph.node_link_graph(flow_vars_data)
+
+        return cls(graph, file_path, name, flow_vars)
 
     @classmethod
     def from_file(cls, file_like):
@@ -320,16 +353,18 @@ class Workflow:
         graph = nx.readwrite.json_graph.node_link_graph(json_data)
         return cls(graph)
 
-    def to_graph_json(self):
-        return nx.readwrite.json_graph.node_link_data(self.graph)
+    @staticmethod
+    def to_graph_json(graph):
+        return nx.readwrite.json_graph.node_link_data(graph)
 
     def to_session_dict(self):
         """Store Workflow information in the Django session.
         """
         out = dict()
-        out['graph'] = self.to_graph_json()
+        out['graph'] = Workflow.to_graph_json(self.graph)
         out['file_path'] = self.file_path
         out['name'] = self.name
+        out['flow_vars'] = Workflow.to_graph_json(self.flow_vars)
         return out
 
 

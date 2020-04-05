@@ -20,10 +20,19 @@ def node_factory(node_info):
         new_node = io_node(node_key, node_info)
     elif node_type == 'ManipulationNode':
         new_node = manipulation_node(node_key, node_info)
+    elif node_type == 'FlowNode':
+        new_node = flow_node(node_key, node_info)
     else:
         new_node = None
 
     return new_node
+
+
+def flow_node(node_key, node_info):
+    if node_key == 'StringNode':
+        return StringNode(node_info)
+    else:
+        return None
 
 
 def io_node(node_key, node_info):
