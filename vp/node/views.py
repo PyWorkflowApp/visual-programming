@@ -4,7 +4,7 @@ from django.core.files.base import ContentFile
 from django.core.files.storage import FileSystemStorage
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from pyworkflow import Workflow, WorkflowException, Node, NodeException, node_factory
+from pyworkflow import Workflow, WorkflowException, Node, NodeException, node_factory, create_node
 from rest_framework.decorators import api_view
 from drf_yasg.utils import swagger_auto_schema
 from django.conf import settings
@@ -34,7 +34,10 @@ def node(request):
         405 - Method not allowed
     """
     # Extract request info for node creation
-    new_node = create_node(request.body)
+    try:
+        new_node = create_node(request.body)
+    except NodeException as e:
+        return JsonResponse({e.action: e.reason}, status=400)
 
     # If None, create_node failed
     if new_node is None:
@@ -227,17 +230,3 @@ def retrieve_data(request, node_id):
         return JsonResponse(data, safe=False, status=200)
     except WorkflowException as e:
         return JsonResponse({e.action: e.reason}, status=500)
-
-
-def create_node(payload):
-    """Pass all request info to Node Factory.
-
-    """
-    json_data = json.loads(payload)
-
-    try:
-        return node_factory(json_data)
-    except OSError as e:
-        return JsonResponse({'message': e.strerror}, status=404)
-    except NodeException as e:
-        return JsonResponse({e.action: e.reason}, status=400)
