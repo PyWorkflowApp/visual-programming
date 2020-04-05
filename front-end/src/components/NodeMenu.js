@@ -14,10 +14,11 @@ export default function NodeMenu(props) {
                     <b>{section}</b>
                     <ul>
                         { _.map(items, item => {
-                            const config = item.options;
-                            delete item.options;
+                            const data = {...item}; // copy so we can mutate
+                            const config = data.options;
+                            delete data.options;
                             return (
-                                <NodeMenuItem key={item.node_key} nodeInfo={item} config={config} />
+                                <NodeMenuItem key={data.node_key} nodeInfo={data} config={config} />
                             )}
                         )}
                     </ul>
