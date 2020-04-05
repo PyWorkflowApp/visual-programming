@@ -8,11 +8,11 @@ export class CustomLinkFactory extends DefaultLinkFactory {
         super('advanced');
     }
 
-    generateModel(): CustomLinkModel {
+    generateModel() {
       return new CustomLinkModel();
     }
 
-    generateLinkSegment(model: CustomLinkModel, selected: boolean, path: string) {
+    generateLinkSegment(model, selected, path) {
         return (
           <g>
             <CustomLinkWidget model={model} path={path} />

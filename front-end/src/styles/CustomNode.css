@@ -41,10 +41,11 @@
 }
 
 .custom-node-configure {
+    font-size: 1.5rem;
     cursor: pointer;
     position: absolute;
     left: 25%;
-    top: 25%;
+    top: 50%;
     transform: translate(-50%, -50%);
 }
 

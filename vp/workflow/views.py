@@ -210,3 +210,21 @@ def retrieve_csv(request, node_id):
         writer.writerow(['Second row', 'A', 'B', 'C', '"Testing"', "Here's a quote"])
 
         return response
+
+@swagger_auto_schema(method='post',
+                     operation_summary='Uploads a file to server.',
+                     operation_description='Uploads a new file to server location.',
+                     responses={
+                         200: 'File uploaded',
+                         404: 'No specified file'
+                     })
+@api_view(['POST'])
+def upload_file(request):
+    if 'file' not in request.data:
+        return JsonResponse("Empty content", status=404)
+
+    f = request.data['file']
+
+    fs.save(f.name, f)
+
+    return JsonResponse("File Uploaded", status=201, safe=False)
