@@ -31,9 +31,8 @@ export default class VPLinkModel extends DefaultLinkModel {
      * TODO: Notify backend the link has been removed
     */
     remove() {
-        console.log("deleting link");
+        super.remove();
         API.deleteEdge(this)
-            .then(() => super.remove())
             .catch(() => {});
     }
 }
