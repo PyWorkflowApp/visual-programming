@@ -7,6 +7,7 @@ urlpatterns = [
     path('save', views.save_workflow, name='save'),
     path('execute', views.execute_workflow, name='execute workflow'),
     path('execute/<str:node_id>/successors', views.get_successors, name='get node successors'),
+    path('globals', views.global_vars, name="retrieve global variables"),
     path('retrieve_csv/<str:node_id>', views.retrieve_csv, name='retrieve csv'),
     path('upload', views.upload_file, name='upload file')
 ]
