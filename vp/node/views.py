@@ -4,7 +4,7 @@ from django.core.files.base import ContentFile
 from django.core.files.storage import FileSystemStorage
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from pyworkflow import Workflow, WorkflowException, Node, NodeException, node_factory
+from pyworkflow import Workflow, WorkflowException, Node, NodeException, node_factory, create_node
 from rest_framework.decorators import api_view
 from drf_yasg.utils import swagger_auto_schema
 from django.conf import settings
@@ -34,7 +34,10 @@ def node(request):
         405 - Method not allowed
     """
     # Extract request info for node creation
-    new_node = create_node(request.body)
+    try:
+        new_node = create_node(request.body)
+    except NodeException as e:
+        return JsonResponse({e.action: e.reason}, status=400)
 
     # If None, create_node failed
     if new_node is None:
@@ -42,17 +45,31 @@ def node(request):
             'message': 'Missing required Node information'
         }, status=400)
 
-    # Check node_id is unique in graph
-    if request.pyworkflow.get_node(new_node.node_id) is not None:
+    # Check Node is unique in the graph
+    if new_node.is_global:
+        node_exists = request.pyworkflow.get_flow_var(new_node.node_id)
+    else:
+        node_exists = request.pyworkflow.get_node(new_node.node_id)
+
+    if node_exists:
         return JsonResponse({
-            'message': 'A node with id %s already exists in the graph.' % new_node.node_id
+            'message': 'A %s with id %s already exists in the graph.' % (
+                'flow variable' if new_node.is_global else 'node',
+                new_node.node_id
+            )
         }, status=400)
 
-    # Add Node to graph
-    request.pyworkflow.update_or_add_node(new_node)
+    # Add to the graph
+    try:
+        request.pyworkflow.update_or_add_node(new_node)
+    except WorkflowException as e:
+        return JsonResponse({e.action: e.reason}, status=400)
 
     return JsonResponse({
-        'message': 'Added new node to graph with id: %s' % new_node.node_id
+        'message': 'Added new %s to graph with id: %s' % (
+            'flow variable' if new_node.is_global else 'node',
+            new_node.node_id
+        )
     })
 
 
@@ -143,8 +160,11 @@ def handle_node(request, node_id):
         405 - Method not allowed
         500 - Error processing Node change
     """
-    # Check if the graph contains the requested Node
-    retrieved_node = request.pyworkflow.get_node(node_id)
+    # Retrieve the global or local Node
+    if request.path_info.startswith('/node/global/'):
+        retrieved_node = request.pyworkflow.get_flow_var(node_id)
+    else:
+        retrieved_node = request.pyworkflow.get_node(node_id)
 
     if retrieved_node is None:
         return JsonResponse({
@@ -165,6 +185,14 @@ def handle_node(request, node_id):
                     'message': 'Node types do not match. Need correct info.',
                     'retrieved_node': str(type(retrieved_node)),
                     'updated_node': str(type(updated_node)),
+                }, status=500)
+
+            # Nodes need to be the same type to update
+            if retrieved_node.is_global != updated_node.is_global:
+                return JsonResponse({
+                    'message': 'Node scopes do not match. Need correct info.',
+                    'retrieved_node': str(retrieved_node.is_global),
+                    'updated_node': str(updated_node.is_global),
                 }, status=500)
 
             request.pyworkflow.update_or_add_node(updated_node)
@@ -223,7 +251,8 @@ def execute_node(request, node_id):
 @api_view(['GET'])
 def retrieve_data(request, node_id):
     try:
-        data = Workflow.retrieve_node_data(request.pyworkflow, node_id)
+        node_to_retrieve = request.pyworkflow.get_node(node_id)
+        data = Workflow.retrieve_node_data(node_to_retrieve)
         return JsonResponse(data, safe=False, status=200)
     except WorkflowException as e:
         return JsonResponse({e.action: e.reason}, status=500)

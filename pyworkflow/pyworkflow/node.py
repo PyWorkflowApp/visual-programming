@@ -1,5 +1,6 @@
 import pandas as pd
 
+
 class Node:
     """Node object
 
@@ -11,6 +12,8 @@ class Node:
         self.node_key = node_info.get('node_key')
         self.data = node_info.get('data')
 
+        self.is_global = True if node_info.get('is_global') else False
+
         # Execution options are passed up from children
         self.options = options or dict()
 
@@ -18,7 +21,7 @@ class Node:
         if node_info.get("options"):
             self.options.update(node_info["options"])
 
-    def execute(self, predecessor_data):
+    def execute(self, predecessor_data, flow_vars):
         pass
 
     def validate(self):
@@ -27,6 +30,48 @@ class Node:
     def __str__(self):
         return "Test"
 
+
+class FlowNode(Node):
+    """FlowNode object
+    """
+    DEFAULT_OPTIONS = {
+
+    }
+
+    def __init__(self, node_info, options=dict()):
+        super().__init__(node_info, {**FlowNode.DEFAULT_OPTIONS, **options})
+
+
+class StringNode(FlowNode):
+    """StringNode object
+
+    Allows for Strings to replace 'string' fields in Nodes
+    """
+    name = "String Input"
+    num_in = 1
+    num_out = 1
+    color = 'purple'
+
+    DEFAULT_OPTIONS = {
+        'default_value': None,
+        'var_name': 'my_var',
+    }
+
+    OPTION_TYPES = {
+        'default_value': {
+            "type": "string",
+            "name": "Default Value",
+            "desc": "Value this Node will pass as a flow variable"
+        },
+        'var_name': {
+            "type": "string",
+            "name": "Variable Name",
+            "desc": "Name of the variable to use in another Node"
+        }
+    }
+
+    def __init__(self, node_info):
+        super().__init__(node_info)
 
 class IONode(Node):
     """IONodes deal with file-handling in/out of the Workflow.
@@ -44,7 +89,7 @@ class IONode(Node):
     def __init__(self, node_info, options=dict()):
         super().__init__(node_info, {**IONode.DEFAULT_OPTIONS, **options})
 
-    def execute(self, predecessor_data):
+    def execute(self, predecessor_data, flow_vars):
         pass
 
     def validate(self):
@@ -92,10 +137,11 @@ class ReadCsvNode(IONode):
     def __init__(self, node_info, options=dict()):
         super().__init__(node_info, {**self.DEFAULT_OPTIONS, **options})
 
-    def execute(self, predecessor_data):
+    def execute(self, predecessor_data, flow_vars):
         try:
             # TODO: FileStorage implemented in Django to store in /tmp
             #       Better filename/path handling should be implemented.
+            NodeUtils.replace_flow_vars(self.options, flow_vars)
             kwargs = self.options.copy()  # won't copy nested dicts though
             del kwargs["description"]
             df = pd.read_csv(**kwargs)
@@ -128,7 +174,7 @@ class WriteCsvNode(IONode):
     def __init__(self, node_info, options=dict()):
         super().__init__(node_info, {**self.DEFAULT_OPTIONS, **options})
 
-    def execute(self, predecessor_data):
+    def execute(self, predecessor_data, flow_vars):
         try:
             # Write CSV needs exactly 1 input DataFrame
             NodeUtils.validate_predecessor_data(len(predecessor_data), self.num_in, self.node_key)
@@ -158,7 +204,7 @@ class ManipulationNode(Node):
     def __init__(self, node_info, options=dict()):
         super().__init__(node_info, {**ManipulationNode.DEFAULT_OPTIONS, **options})
 
-    def execute(self, predecessor_data):
+    def execute(self, predecessor_data, flow_vars):
         pass
 
     def validate(self):
@@ -186,7 +232,7 @@ class PivotNode(ManipulationNode):
     def __init__(self, node_info, options=dict()):
         super().__init__(node_info, {**self.DEFAULT_OPTIONS, **options})
 
-    def execute(self, predecessor_data):
+    def execute(self, predecessor_data, flow_vars):
         try:
             NodeUtils.validate_predecessor_data(len(predecessor_data), self.num_in, self.node_key)
             input_df = pd.DataFrame.from_dict(predecessor_data[0])
@@ -206,7 +252,7 @@ class JoinNode(ManipulationNode):
     def __init__(self, node_info, options=dict()):
         super().__init__(node_info, {**self.DEFAULT_OPTIONS, **options})
 
-    def execute(self, predecessor_data):
+    def execute(self, predecessor_data, flow_vars):
         # Join cannot accept more than 2 input DataFrames
         # TODO: Add more error-checking if 1, or no, DataFrames passed through
         try:
@@ -246,3 +292,9 @@ class NodeUtils:
                 exception_txt % (node_key, num_in, predecessor_data_len)
             )
 
+    @staticmethod
+    def replace_flow_vars(node_options, flow_vars):
+        for var in flow_vars:
+            node_options[var['var_name']] = var['default_value']
+
+        return

@@ -1,6 +1,5 @@
 import json
 import csv
-import inspect
 
 from django.http import JsonResponse, HttpResponse
 from django.conf import settings
@@ -31,7 +30,7 @@ def new_workflow(request):
     request.pyworkflow = Workflow()
     request.session.update(request.pyworkflow.to_session_dict())
 
-    return JsonResponse(request.pyworkflow.to_graph_json())
+    return JsonResponse(Workflow.to_graph_json(request.pyworkflow.graph))
 
 
 @swagger_auto_schema(method='post',
@@ -120,7 +119,8 @@ def save_workflow(request):
     try:
         combined_json = json.dumps({
             'react': json.loads(request.body),
-            'networkx': request.pyworkflow.to_graph_json(),
+            'networkx': Workflow.to_graph_json(request.pyworkflow.graph),
+            'flow_vars': Workflow.to_graph_json(request.pyworkflow.flow_vars),
             'filename': request.pyworkflow.file_path
         })
 
@@ -154,6 +154,20 @@ def execute_workflow(request):
         return JsonResponse({e.action: e.reason}, status=500)
 
     return JsonResponse(order, safe=False)
+
+
+@swagger_auto_schema(method='get',
+                     operation_summary='Retrieve list of global flow vars.',
+                     operation_description='Retrieves a list of global flow vars.',
+                     responses={
+                         200: 'List of global flow variables.',
+                         404: 'No graph exists.',
+                         500: 'Error generating the topological sort for the graph.'
+                     })
+@api_view(['GET'])
+def global_vars(request):
+    graph_data = Workflow.to_graph_json(request.pyworkflow.flow_vars)
+    return JsonResponse(graph_data["nodes"], safe=False)
 
 
 @swagger_auto_schema(method='get',

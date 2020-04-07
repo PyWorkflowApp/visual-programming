@@ -1,5 +1,14 @@
 from .node import *
+import json
 
+
+def create_node(payload):
+    json_data = json.loads(payload)
+
+    try:
+        return node_factory(json_data)
+    except OSError as e:
+        raise NodeException('create_node', 'Problem parsing JSON')
 
 def node_factory(node_info):
     # Create a new Node with info
@@ -11,10 +20,19 @@ def node_factory(node_info):
         new_node = io_node(node_key, node_info)
     elif node_type == 'ManipulationNode':
         new_node = manipulation_node(node_key, node_info)
+    elif node_type == 'FlowNode':
+        new_node = flow_node(node_key, node_info)
     else:
         new_node = None
 
     return new_node
+
+
+def flow_node(node_key, node_info):
+    if node_key == 'StringNode':
+        return StringNode(node_info)
+    else:
+        return None
 
 
 def io_node(node_key, node_info):
