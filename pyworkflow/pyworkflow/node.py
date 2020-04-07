@@ -120,7 +120,7 @@ class ReadCsvNode(IONode):
         'filepath_or_buffer': {
             "type": "file",
             "name": "File",
-            "desc": "File to read"
+            "desc": "CSV File"
         },
         'sep': {
             "type": "string",
@@ -142,7 +142,9 @@ class ReadCsvNode(IONode):
             # TODO: FileStorage implemented in Django to store in /tmp
             #       Better filename/path handling should be implemented.
             NodeUtils.replace_flow_vars(self.options, flow_vars)
-            df = pd.read_csv(**self.options)
+            kwargs = self.options.copy()  # won't copy nested dicts though
+            del kwargs["description"]
+            df = pd.read_csv(**kwargs)
             return df.to_json()
         except Exception as e:
             raise NodeException('read csv', str(e))
