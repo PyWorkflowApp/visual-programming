@@ -1,7 +1,7 @@
 import { NodeModel } from '@projectstorm/react-diagrams';
-import { VPPortModel } from '../VPPort/VPPortModel';
+import VPPortModel from '../VPPort/VPPortModel';
 
-export class CustomNodeModel extends NodeModel {
+export default class CustomNodeModel extends NodeModel {
 
     constructor(options = {}, config = {}) {
         super({

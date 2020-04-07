@@ -1,12 +1,13 @@
-import { VPPortModel } from './VPPortModel';
-import { DefaultPortFactory } from '@projectstorm/react-diagrams';
+import { AbstractModelFactory } from '@projectstorm/react-canvas-core';
+import VPPortModel from './VPPortModel';
 
-export class VPPortFactory extends DefaultPortFactory {
+export default class VPPortFactory extends AbstractModelFactory {
 
-    getType() {
-        return "vp-port";
+    constructor() {
+        super("vp-port");
     }
-    generateModel(event) {
+
+    generateModel() {
         return new VPPortModel({name: 'vp-port-name'});
     }
 }

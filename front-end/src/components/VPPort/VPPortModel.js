@@ -1,12 +1,16 @@
 import { DefaultPortModel } from '@projectstorm/react-diagrams';
-import { VPLinkModel } from '../VPLink/VPLinkModel';
+import VPLinkFactory from '../VPLink/VPLinkFactory';
 
-export class VPPortModel extends DefaultPortModel {
+export default class VPPortModel extends DefaultPortModel {
+
       createLinkModel() {
-          return new VPLinkModel();
+          const factory = new VPLinkFactory();
+          return factory.generateModel();
       }
 
       canLinkToPort(port) {
-        return port instanceof VPPortModel;
+          // can't both be in or out ports
+          return port instanceof VPPortModel
+              && this.options.in !== port.options.in;
       }
 }

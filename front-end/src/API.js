@@ -119,3 +119,32 @@ export async function uploadWorkflow(formData) {
     };
     return fetchWrapper("/workflow/open", options);
 }
+
+
+async function handleEdge(link, method) {
+    const sourceId = link.getSourcePort().getNode().options.id;
+    const targetId = link.getTargetPort().getNode().options.id;
+    return fetchWrapper(
+        `/node/edge/${sourceId}/${targetId}`,
+        {method: method});
+}
+
+
+/**
+ * Add edge to server-side workflow
+ * @param {VPLinkModel} link - JS edge to create
+ * @returns {Promise<Object>} - server response
+ */
+export async function addEdge(link) {
+    return handleEdge(link, "POST");
+}
+
+
+/**
+ * Delete edge from server-side workflow
+ * @param {VPLinkModel} link - JS edge to delete
+ * @returns {Promise<Object>} - server response
+ */
+export async function deleteEdge(link) {
+    return handleEdge(link, "DELETE");
+}

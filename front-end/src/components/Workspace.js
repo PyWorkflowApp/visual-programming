@@ -2,10 +2,10 @@ import React, { useRef } from 'react';
 import { Row, Col, Button } from 'react-bootstrap';
 import createEngine, { DiagramModel } from '@projectstorm/react-diagrams';
 import { CanvasWidget } from '@projectstorm/react-canvas-core';
-import { VPLinkFactory } from './VPLink/VPLinkFactory';
-import { CustomNodeModel } from './CustomNode/CustomNodeModel';
-import { CustomNodeFactory } from './CustomNode/CustomNodeFactory';
-import { VPPortFactory } from './VPPort/VPPortFactory';
+import VPLinkFactory from './VPLink/VPLinkFactory';
+import CustomNodeModel from './CustomNode/CustomNodeModel';
+import CustomNodeFactory from './CustomNode/CustomNodeFactory';
+import VPPortFactory from './VPPort/VPPortFactory';
 import * as API from '../API';
 import NodeMenu from './NodeMenu';
 import '../styles/Workspace.css';
@@ -57,8 +57,9 @@ class Workspace extends React.Component {
 
     // takes data from node drop and creates node on server and in diagram
     handleNodeCreation(event) {
-        const data = JSON.parse(event.dataTransfer.getData('storm-diagram-node'));
-        if (!data) return;
+        const evtData = event.dataTransfer.getData("storm-diagram-node");
+        if (!evtData) return;
+        const data = JSON.parse(evtData);
         const node = new CustomNodeModel(data.nodeInfo, data.config),
             point = this.engine.getRelativeMousePoint(event);
         node.setPosition(point);
