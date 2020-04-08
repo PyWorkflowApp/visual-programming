@@ -115,7 +115,6 @@ class ReadCsvNode(IONode):
     name = "Read CSV"
     num_in = 0
     num_out = 1
-    color = 'purple'
 
     DEFAULT_OPTIONS = {
         'filepath_or_buffer': None,
@@ -234,8 +233,8 @@ class ManipulationNode(Node):
         Filter
         Multi-in
     """
-    color = 'yellow'
     display_name = "Manipulation"
+    color = 'goldenrod'
 
     DEFAULT_OPTIONS = {}
 
