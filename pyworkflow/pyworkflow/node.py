@@ -1,4 +1,8 @@
 import pandas as pd
+from django.core.files.storage import FileSystemStorage
+from django.conf import settings
+
+fs = FileSystemStorage(location=settings.MEDIA_ROOT)
 
 
 class Node:
@@ -145,9 +149,9 @@ class ReadCsvNode(IONode):
             # TODO: FileStorage implemented in Django to store in /tmp
             #       Better filename/path handling should be implemented.
             NodeUtils.replace_flow_vars(self.options, flow_vars)
-            kwargs = self.options.copy()  # won't copy nested dicts though
-            del kwargs["description"]
-            df = pd.read_csv(**kwargs)
+            opts = self.options
+            df = pd.read_csv(opts["filepath_or_buffer"], sep=opts["sep"],
+                             header=opts["header"])
             return df.to_json()
         except Exception as e:
             raise NodeException('read csv', str(e))
@@ -186,7 +190,10 @@ class WriteCsvNode(IONode):
             df = pd.DataFrame.from_dict(predecessor_data[0])
 
             # Write to CSV and save
-            df.to_csv(**self.options)
+            opts = self.options
+            # TODO: Remove use of Django file storage from pyworkflow nodes
+            fname = fs.path(opts["path_or_buf"])
+            df.to_csv(fname, sep=opts["sep"], index=opts["index"])
             return df.to_json()
         except Exception as e:
             raise NodeException('write csv', str(e))
