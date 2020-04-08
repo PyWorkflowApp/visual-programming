@@ -90,7 +90,7 @@ def open_workflow(request):
     # Construct response
     return JsonResponse({
         'react': react,
-        'networkx': request.pyworkflow.to_graph_json(),
+        'networkx': Workflow.to_graph_json(request.pyworkflow.graph),
     })
 
 
@@ -194,23 +194,6 @@ def get_successors(request, node_id):
         return JsonResponse({e.action: e.reason}, status=500)
 
     return JsonResponse(order, safe=False)
-
-
-def retrieve_csv(request, node_id):
-    if request.method == 'GET':
-        """
-        Retrieves a CSV after the associated node execution and returns it as a json.
-        Currently just using a demo CSV in workspace. 
-        """
-        # Create the HttpResponse object with the appropriate CSV header.
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
-
-        writer = csv.writer(response)
-        writer.writerow(['First row', 'Foo', 'Bar', 'Baz'])
-        writer.writerow(['Second row', 'A', 'B', 'C', '"Testing"', "Here's a quote"])
-
-        return response
 
 
 @swagger_auto_schema(method='post',
