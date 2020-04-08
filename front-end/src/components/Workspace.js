@@ -81,6 +81,11 @@ class Workspace extends React.Component {
                 // this is hack to re-render the node widget
                 node.setSelected(true);
                 node.setSelected(false);
+                if (node.options.download_result) {
+                    // TODO: make this work for non-WriteCsvNode nodes
+                    API.downloadDataFile(node.config["path_or_buf"])
+                        .catch(err => console.log(err));
+                }
             } catch {
                 console.log("Stopping execution because of failure");
                 break;
