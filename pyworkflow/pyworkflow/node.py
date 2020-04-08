@@ -34,6 +34,7 @@ class Node:
 class FlowNode(Node):
     """FlowNode object
     """
+    display_name = "Flow Control"
     DEFAULT_OPTIONS = {
 
     }
@@ -73,6 +74,7 @@ class StringNode(FlowNode):
     def __init__(self, node_info):
         super().__init__(node_info)
 
+
 class IONode(Node):
     """IONodes deal with file-handling in/out of the Workflow.
 
@@ -81,6 +83,7 @@ class IONode(Node):
         Write CSV
     """
     color = 'black'
+    display_name = "I/O"
 
     DEFAULT_OPTIONS = {
         # 'file': None,
@@ -198,6 +201,7 @@ class ManipulationNode(Node):
         Multi-in
     """
     color = 'yellow'
+    display_name = "Manipulation"
 
     DEFAULT_OPTIONS = {}
 
@@ -272,6 +276,7 @@ class NodeException(Exception):
 
     def __str__(self):
         return self.action + ': ' + self.reason
+
 
 class NodeUtils:
 
