@@ -121,6 +121,7 @@ class ReadCsvNode(IONode):
         'filepath_or_buffer': None,
         'sep': ',',
         'header': 'infer',
+        'index_col': None
     }
 
     OPTION_TYPES = {
@@ -138,6 +139,11 @@ class ReadCsvNode(IONode):
             "type": "string",
             "name": "Column Name Row",
             "desc": "Row number with column names (0-indexed) or 'infer'"
+        },
+        'index_col': {
+            "type": "string",
+            "name": "Index Column Name",
+            "desc": "Column to use as index (facilitates joining)"
         }
     }
 
@@ -172,10 +178,31 @@ class WriteCsvNode(IONode):
     name = "Write CSV"
     num_in = 1
     num_out = 0
+    download_result = True
+
     DEFAULT_OPTIONS = {
         'path_or_buf': None,
         'sep': ',',
         'index': True,
+    }
+
+    OPTION_TYPES = {
+        "path_or_buf": {
+            "type": "string",
+            "name": "Filename",
+            "desc": "Filename to write"
+        },
+        "sep": {
+            "type": "string",
+            "name": "Delimiter",
+            "desc": "column delimiter, default ','"
+        },
+        "index": {
+            "type": "boolean",
+            "name": "Index",
+            "desc": "Write index column or not"
+        }
+
     }
 
     def __init__(self, node_info, options=dict()):
