@@ -226,7 +226,55 @@ class PivotNode(ManipulationNode):
         'dropna': True,
         'margins_name': 'All',
         'observed': False
+    }
 
+    OPTION_TYPES = {
+        'index': {
+            "type": "column, grouper, array or list",
+            "name": "Index",
+            "desc": "Column to aggregate"
+        },
+        'values': {
+            "type": "column, grouper, array or list",
+            "name": "Values",
+            "desc": "Column name to use to populate new frame's values"
+        },
+        'columns': {
+            "type": "column, grouper, array or list",
+            "name": "Column Name Row",
+            "desc": "Column(s) to use for populating new frame values.'"
+        },
+        'aggfunc': {
+            "type": "function, list of functions, dict, default numpy.mean",
+            "name": "Aggregation function",
+            "desc": "Function used for aggregation"
+        },
+        'fill_value': {
+            "type": "scalar",
+            "name": "Fill value",
+            "desc": "Value to replace missing values with"
+        },
+        'margins': {
+            "type": "boolean",
+            "name": "Margins name",
+            "desc": "Add all rows/columns"
+        },
+
+        'dropna': {
+            "type": "boolean",
+            "name": "Drop NaN columns",
+            "desc": "Ignore columns with all NaN entries"
+        },
+        'margins_name': {
+            "type": "string",
+            "name": "Margins name",
+            "desc": "Name of the row/column that will contain the totals when margins is True"
+        },
+        'observed': {
+            "type": "string",
+            "name": "Column Name Row",
+            "desc": "Row number with column names (0-indexed) or 'infer'"
+        }
     }
 
     def __init__(self, node_info, options=dict()):
