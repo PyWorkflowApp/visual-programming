@@ -11,6 +11,7 @@ export default class CustomNodeModel extends NodeModel {
         this.options.node_id = this.options.id;
         this.config = config;
         this.configParams = options.option_types;
+        this.options.status = options.status || "unconfigured";
 
         const nIn = options.num_in === undefined ? 1 : options.num_in;
         const nOut = options.num_out === undefined ? 1 : options.num_out;
@@ -45,5 +46,9 @@ export default class CustomNodeModel extends NodeModel {
 
     deserialize(ob, engine) {
         super.deserialize(ob, engine);
+    }
+
+    setStatus(status) {
+        this.options.status = status;
     }
 }

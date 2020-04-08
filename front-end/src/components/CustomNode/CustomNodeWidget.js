@@ -83,7 +83,7 @@ export default class CustomNodeWidget extends React.Component {
                         { portWidgets["out"] }
                     </div>
                 </div>
-                <StatusLight status="unconfigured" />
+                <StatusLight status={this.props.node.options.status} />
                 <div className="custom-node-description">{this.props.node.config.description}</div>
             </div>
         );
