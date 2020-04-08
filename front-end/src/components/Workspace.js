@@ -25,6 +25,7 @@ class Workspace extends React.Component {
         this.load = this.load.bind(this);
         this.clear = this.clear.bind(this);
         this.handleNodeCreation = this.handleNodeCreation.bind(this);
+        this.execute = this.execute.bind(this);
     }
 
     componentDidMount() {
@@ -69,6 +70,19 @@ class Workspace extends React.Component {
         }).catch(err => console.log(err));
     }
 
+    async execute() {
+        const order = await API.executionOrder();
+        for (let i = 0; i < order.length; ++i) {
+            let node = this.model.getNode(order[i]);
+            try {
+                await API.execute(node);
+            } catch {
+                console.log("Stopping execution because of failure");
+                break;
+            }
+        }
+    }
+
     render() {
         return (
             <>
@@ -78,7 +92,8 @@ class Workspace extends React.Component {
                             Save
                         </Button>{' '}
                         <FileUpload handleData={this.load}/>{' '}
-                        <Button size="sm" onClick={this.clear}>Clear</Button>
+                        <Button size="sm" onClick={this.clear}>Clear</Button>{' '}
+                        <Button size="sm" onClick={this.execute}>Execute</Button>
                     </Col>
                 </Row>
                 <Row className="Workspace">
