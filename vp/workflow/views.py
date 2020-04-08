@@ -1,3 +1,4 @@
+import os
 import json
 import csv
 
@@ -89,7 +90,7 @@ def open_workflow(request):
     # Construct response
     return JsonResponse({
         'react': react,
-        'networkx': request.pyworkflow.to_graph_json(),
+        'networkx': Workflow.to_graph_json(request.pyworkflow.graph),
     })
 
 
@@ -195,23 +196,6 @@ def get_successors(request, node_id):
     return JsonResponse(order, safe=False)
 
 
-def retrieve_csv(request, node_id):
-    if request.method == 'GET':
-        """
-        Retrieves a CSV after the associated node execution and returns it as a json.
-        Currently just using a demo CSV in workspace. 
-        """
-        # Create the HttpResponse object with the appropriate CSV header.
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
-
-        writer = csv.writer(response)
-        writer.writerow(['First row', 'Foo', 'Bar', 'Baz'])
-        writer.writerow(['Second row', 'A', 'B', 'C', '"Testing"', "Here's a quote"])
-
-        return response
-
-
 @swagger_auto_schema(method='post',
                      operation_summary='Uploads a file to server.',
                      operation_description='Uploads a new file to server location.',
@@ -228,3 +212,30 @@ def upload_file(request):
     save_name = f"{node_id}-{f.name}"
     fs.save(save_name, f)
     return JsonResponse({"filename": save_name}, status=201, safe=False)
+
+
+@swagger_auto_schema(method='get',
+                     operation_summary='Downloads a file from the server',
+                     operation_description='Downloads a file by name from the server.',
+                     responses={
+                         200: 'File downloaded',
+                         404: 'Could not read specified file'
+                     })
+@api_view(['GET'])
+def download_file(request):
+    fname = request.GET["filename"]
+    _, ext = os.path.splitext(fname)
+    content = "application/octet-stream"
+    if ext == ".csv":
+        content = "text/csv"
+    elif ext == ".json":
+        content = "application/json"
+    response = HttpResponse(content_type=content)
+    try:
+        with fs.open(fname) as f:
+            response.write(f.read())
+        return response
+    except OSError:
+        return JsonResponse({"message": "Could not find or read file"},
+                            status=404)
+

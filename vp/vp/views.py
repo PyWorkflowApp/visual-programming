@@ -22,6 +22,7 @@ def info(request):
     }
     return JsonResponse(data)
 
+
 @swagger_auto_schema(method='get',
                      operation_summary='Retrieve a list of installed Nodes',
                      operation_description='Retrieves a list of installed Nodes, in JSON.',
@@ -40,7 +41,8 @@ def retrieve_nodes_for_user(request):
 
     # Iterate through node 'types'
     for parent in Node.__subclasses__():
-        data[parent.__name__] = list()
+        key = getattr(parent, "display_name", parent.__name__)
+        data[key] = list()
 
         # Iterate through node 'keys'
         for child in parent.__subclasses__():
@@ -55,8 +57,9 @@ def retrieve_nodes_for_user(request):
                 'doc': child.__doc__,
                 'options': {**parent.DEFAULT_OPTIONS, **child.DEFAULT_OPTIONS},
                 'option_types': getattr(child, "OPTION_TYPES", dict()),
+                'download_result':  getattr(child, "download_result", False)
             }
 
-            data[parent.__name__].append(child_node)
+            data[key].append(child_node)
 
     return JsonResponse(data)

@@ -1,3 +1,6 @@
+import { downloadFile } from './utils';
+
+
 /**
  * Sends request to server via fetch API and handles error cases
  * @param {string} endpoint - server endpoint
@@ -78,13 +81,8 @@ export async function save(diagramData) {
     };
     fetchWrapper("/workflow/save", options)
         .then(json => {
-            const dataStr = "data:text/json;charset=utf-8,"
-                + encodeURIComponent(JSON.stringify(json));
-            const anchor = document.createElement("a")
-            anchor.href = dataStr;
-            anchor.download = json.filename || "diagram.json";
-            anchor.click();
-            anchor.remove();
+            downloadFile(JSON.stringify(json), "application/json",
+                json.filename || "diagram.json")
         }).catch(err => console.log(err));
 }
 
@@ -161,4 +159,45 @@ export async function uploadDataFile(formData) {
         body: formData
     };
     return fetchWrapper("/workflow/upload", options);
+}
+
+
+/**
+ * Download file by name from server
+ * @param {string} fileName - name of file to download
+ * @returns {Promise<void>}
+ */
+export async function downloadDataFile(fileName) {
+    // TODO: make this not a giant security problem
+    let contentType;
+    // can't use fetchWrapper because it assumes JSON response
+    fetch(`/workflow/download?filename=${fileName}`)
+        .then(async resp => {
+            if (!resp.ok) return Promise.reject(await resp.json());
+            contentType = resp.headers.get("content-type");
+            if (contentType.startsWith("text")) {
+                resp.text().then(data => {
+                    downloadFile(data, contentType, fileName);
+                })
+            }
+        }).catch(err => console.log(err));
+}
+
+
+/**
+ * Get execution order of nodes in graph
+ * @returns {Promise<Object>} - server response (array of node IDs)
+ */
+export async function executionOrder() {
+    return fetchWrapper("/workflow/execute");
+}
+
+/**
+ * Execute given node on server
+ * @param {CustomNodeModel }node - node to execute
+ * @returns {Promise<Object>} - server response
+ */
+export async function execute(node) {
+    const id = node.options.id;
+    return fetchWrapper(`/node/${id}/execute`);
 }

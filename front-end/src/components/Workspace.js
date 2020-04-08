@@ -25,6 +25,7 @@ class Workspace extends React.Component {
         this.load = this.load.bind(this);
         this.clear = this.clear.bind(this);
         this.handleNodeCreation = this.handleNodeCreation.bind(this);
+        this.execute = this.execute.bind(this);
     }
 
     componentDidMount() {
@@ -69,6 +70,29 @@ class Workspace extends React.Component {
         }).catch(err => console.log(err));
     }
 
+    async execute() {
+        const order = await API.executionOrder();
+        for (let i = 0; i < order.length; ++i) {
+            let node = this.model.getNode(order[i]);
+            try {
+                await API.execute(node);
+                node.setStatus("complete");
+                // repainting canvas didn't update status light, so
+                // this is hack to re-render the node widget
+                node.setSelected(true);
+                node.setSelected(false);
+                if (node.options.download_result) {
+                    // TODO: make this work for non-WriteCsvNode nodes
+                    API.downloadDataFile(node.config["path_or_buf"])
+                        .catch(err => console.log(err));
+                }
+            } catch {
+                console.log("Stopping execution because of failure");
+                break;
+            }
+        }
+    }
+
     render() {
         return (
             <>
@@ -78,7 +102,8 @@ class Workspace extends React.Component {
                             Save
                         </Button>{' '}
                         <FileUpload handleData={this.load}/>{' '}
-                        <Button size="sm" onClick={this.clear}>Clear</Button>
+                        <Button size="sm" onClick={this.clear}>Clear</Button>{' '}
+                        <Button size="sm" onClick={this.execute}>Execute</Button>
                     </Col>
                 </Row>
                 <Row className="Workspace">

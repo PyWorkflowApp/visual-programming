@@ -1,4 +1,8 @@
 import pandas as pd
+from django.core.files.storage import FileSystemStorage
+from django.conf import settings
+
+fs = FileSystemStorage(location=settings.MEDIA_ROOT)
 
 
 class Node:
@@ -34,6 +38,7 @@ class Node:
 class FlowNode(Node):
     """FlowNode object
     """
+    display_name = "Flow Control"
     DEFAULT_OPTIONS = {
 
     }
@@ -73,6 +78,7 @@ class StringNode(FlowNode):
     def __init__(self, node_info):
         super().__init__(node_info)
 
+
 class IONode(Node):
     """IONodes deal with file-handling in/out of the Workflow.
 
@@ -81,6 +87,7 @@ class IONode(Node):
         Write CSV
     """
     color = 'black'
+    display_name = "I/O"
 
     DEFAULT_OPTIONS = {
         # 'file': None,
@@ -108,12 +115,12 @@ class ReadCsvNode(IONode):
     name = "Read CSV"
     num_in = 0
     num_out = 1
-    color = 'purple'
 
     DEFAULT_OPTIONS = {
         'filepath_or_buffer': None,
         'sep': ',',
         'header': 'infer',
+        'index_col': None
     }
 
     OPTION_TYPES = {
@@ -131,6 +138,11 @@ class ReadCsvNode(IONode):
             "type": "string",
             "name": "Column Name Row",
             "desc": "Row number with column names (0-indexed) or 'infer'"
+        },
+        'index_col': {
+            "type": "string",
+            "name": "Index Column Name",
+            "desc": "Column to use as index (facilitates joining)"
         }
     }
 
@@ -142,9 +154,9 @@ class ReadCsvNode(IONode):
             # TODO: FileStorage implemented in Django to store in /tmp
             #       Better filename/path handling should be implemented.
             NodeUtils.replace_flow_vars(self.options, flow_vars)
-            kwargs = self.options.copy()  # won't copy nested dicts though
-            del kwargs["description"]
-            df = pd.read_csv(**kwargs)
+            opts = self.options
+            df = pd.read_csv(opts["filepath_or_buffer"], sep=opts["sep"],
+                             header=opts["header"])
             return df.to_json()
         except Exception as e:
             raise NodeException('read csv', str(e))
@@ -165,10 +177,31 @@ class WriteCsvNode(IONode):
     name = "Write CSV"
     num_in = 1
     num_out = 0
+    download_result = True
+
     DEFAULT_OPTIONS = {
         'path_or_buf': None,
         'sep': ',',
         'index': True,
+    }
+
+    OPTION_TYPES = {
+        "path_or_buf": {
+            "type": "string",
+            "name": "Filename",
+            "desc": "Filename to write"
+        },
+        "sep": {
+            "type": "string",
+            "name": "Delimiter",
+            "desc": "column delimiter, default ','"
+        },
+        "index": {
+            "type": "boolean",
+            "name": "Index",
+            "desc": "Write index column or not"
+        }
+
     }
 
     def __init__(self, node_info, options=dict()):
@@ -183,7 +216,10 @@ class WriteCsvNode(IONode):
             df = pd.DataFrame.from_dict(predecessor_data[0])
 
             # Write to CSV and save
-            df.to_csv(**self.options)
+            opts = self.options
+            # TODO: Remove use of Django file storage from pyworkflow nodes
+            fname = fs.path(opts["path_or_buf"])
+            df.to_csv(fname, sep=opts["sep"], index=opts["index"])
             return df.to_json()
         except Exception as e:
             raise NodeException('write csv', str(e))
@@ -197,7 +233,8 @@ class ManipulationNode(Node):
         Filter
         Multi-in
     """
-    color = 'yellow'
+    display_name = "Manipulation"
+    color = 'goldenrod'
 
     DEFAULT_OPTIONS = {}
 
@@ -321,13 +358,14 @@ class NodeException(Exception):
     def __str__(self):
         return self.action + ': ' + self.reason
 
+
 class NodeUtils:
 
     @staticmethod
     def validate_predecessor_data(predecessor_data_len, num_in, node_key):
         validation_failed = False
         exception_txt = ""
-        if node_key == 'WriteCsvNode' and len(predecessor_data_len) != num_in:
+        if node_key == 'WriteCsvNode' and predecessor_data_len != num_in:
                 validation_failed = True
                 exception_txt = '%s needs %d inputs. %d were provided'
         elif (node_key != 'WriteCsvNode' and predecessor_data_len > num_in):
