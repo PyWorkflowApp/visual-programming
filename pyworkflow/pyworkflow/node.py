@@ -291,7 +291,7 @@ class NodeUtils:
     def validate_predecessor_data(predecessor_data_len, num_in, node_key):
         validation_failed = False
         exception_txt = ""
-        if node_key == 'WriteCsvNode' and len(predecessor_data_len) != num_in:
+        if node_key == 'WriteCsvNode' and predecessor_data_len != num_in:
                 validation_failed = True
                 exception_txt = '%s needs %d inputs. %d were provided'
         elif (node_key != 'WriteCsvNode' and predecessor_data_len > num_in):
