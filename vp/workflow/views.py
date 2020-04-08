@@ -1,3 +1,4 @@
+import os
 import json
 import csv
 
@@ -228,3 +229,30 @@ def upload_file(request):
     save_name = f"{node_id}-{f.name}"
     fs.save(save_name, f)
     return JsonResponse({"filename": save_name}, status=201, safe=False)
+
+
+@swagger_auto_schema(method='get',
+                     operation_summary='Downloads a file from the server',
+                     operation_description='Downloads a file by name from the server.',
+                     responses={
+                         200: 'File downloaded',
+                         404: 'Could not read specified file'
+                     })
+@api_view(['GET'])
+def download_file(request):
+    fname = request.GET["filename"]
+    _, ext = os.path.splitext(fname)
+    content = "application/octet-stream"
+    if ext == ".csv":
+        content = "text/csv"
+    elif ext == ".json":
+        content = "application/json"
+    response = HttpResponse(content_type=content)
+    try:
+        with fs.open(fname) as f:
+            response.write(f.read())
+        return response
+    except OSError:
+        return JsonResponse({"message": "Could not find or read file"},
+                            status=404)
+
