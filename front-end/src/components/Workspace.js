@@ -76,6 +76,11 @@ class Workspace extends React.Component {
             let node = this.model.getNode(order[i]);
             try {
                 await API.execute(node);
+                node.setStatus("complete");
+                // repainting canvas didn't update status light, so
+                // this is hack to re-render the node widget
+                node.setSelected(true);
+                node.setSelected(false);
             } catch {
                 console.log("Stopping execution because of failure");
                 break;
