@@ -162,3 +162,22 @@ export async function uploadDataFile(formData) {
     };
     return fetchWrapper("/workflow/upload", options);
 }
+
+
+/**
+ * Get execution order of nodes in graph
+ * @returns {Promise<Object>} - server response (array of node IDs)
+ */
+export async function executionOrder() {
+    return fetchWrapper("/workflow/execute");
+}
+
+/**
+ * Execute given node on server
+ * @param {CustomNodeModel }node - node to execute
+ * @returns {Promise<Object>} - server response
+ */
+export async function execute(node) {
+    const id = node.options.id;
+    return fetchWrapper(`/node/${id}/execute`);
+}
