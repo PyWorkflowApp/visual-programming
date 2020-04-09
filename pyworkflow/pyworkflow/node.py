@@ -332,7 +332,17 @@ class JoinNode(ManipulationNode):
     num_in = 2
     num_out = 1
 
-    DEFAULT_OPTIONS = {}
+    DEFAULT_OPTIONS = {
+        "on": None,
+    }
+
+    OPTION_TYPES = {
+        "on": {
+            "type": "string",
+            "name": "Join Column",
+            "desc": "Name of column to join on"
+        }
+    }
 
     def __init__(self, node_info, options=dict()):
         super().__init__(node_info, {**self.DEFAULT_OPTIONS, **options})
