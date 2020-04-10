@@ -67,14 +67,10 @@ def open_workflow(request):
         500 - Missing JSON data or
     """
     try:
-        # If multi-part form-data, use this
         # TODO: file is parsed into JSON in memory;
         #       may want to save to 'fs' for large files
         uploaded_file = request.FILES['file']
         combined_json = json.load(uploaded_file)
-
-        # If file is passed in as raw JSON, use this
-        # combined_json = json.loads(request.body)
 
         request.pyworkflow = Workflow.from_request(combined_json['networkx'])
         request.session.update(request.pyworkflow.to_session_dict())
@@ -204,35 +200,46 @@ def get_successors(request, node_id):
                      })
 @api_view(['POST'])
 def upload_file(request):
-    if 'file' not in request.data:
+    f = request.FILES['file']
+
+    if f is None:
         return JsonResponse("Empty content", status=404)
-    f = request.data['file']
-    node_id = request.data.get('nodeId', '')
-    save_name = f"{node_id}-{f.name}"
-    fs.save(save_name, f)
+
+    node_id = request.POST.get('nodeId', '')
+    save_name = request.pyworkflow.upload_file(f, node_id)
+
     return JsonResponse({"filename": save_name}, status=201, safe=False)
 
 
-@swagger_auto_schema(method='get',
+@swagger_auto_schema(method='post',
                      operation_summary='Downloads a file from the server',
-                     operation_description='Downloads a file by name from the server.',
+                     operation_description='Downloads a file associated with Node from server.',
                      responses={
                          200: 'File downloaded',
                          404: 'Could not read specified file'
                      })
-@api_view(['GET'])
+@api_view(['POST'])
 def download_file(request):
-    fname = request.GET["filename"]
-    _, ext = os.path.splitext(fname)
-    content = "application/octet-stream"
-    if ext == ".csv":
-        content = "text/csv"
-    elif ext == ".json":
-        content = "application/json"
-    response = HttpResponse(content_type=content)
     try:
-        with fs.open(fname) as f:
-            response.write(f.read())
+        # Retrieve Node info, and related File object
+        json_data = json.loads(request.body)
+        f = request.pyworkflow.download_file(json_data['node_id'])
+
+        # Parse file type
+        _, ext = os.path.splitext(f.name)
+        if ext == ".csv":
+            content = "text/csv"
+        elif ext == ".json":
+            content = "application/json"
+        else:
+            content = "application/octet-stream"
+
+        # Construct response
+        response = HttpResponse(content_type=content)
+        response.write(f.read())
+
+        # File not opened with `with`; need to close
+        f.close()
         return response
     except OSError:
         return JsonResponse({"message": "Could not find or read file"},

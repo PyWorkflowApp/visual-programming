@@ -164,20 +164,26 @@ export async function uploadDataFile(formData) {
 
 /**
  * Download file by name from server
- * @param {string} fileName - name of file to download
+ * @param {CustomNodeModel} node - node containing file to download
  * @returns {Promise<void>}
  */
-export async function downloadDataFile(fileName) {
+export async function downloadDataFile(node) {
     // TODO: make this not a giant security problem
     let contentType;
+
+    const payload = {...node.options, options: node.config};
+
     // can't use fetchWrapper because it assumes JSON response
-    fetch(`/workflow/download?filename=${fileName}`)
+    fetch(`/workflow/download`, {
+        method: "POST",
+        body: JSON.stringify(payload)
+    })
         .then(async resp => {
             if (!resp.ok) return Promise.reject(await resp.json());
             contentType = resp.headers.get("content-type");
             if (contentType.startsWith("text")) {
                 resp.text().then(data => {
-                    downloadFile(data, contentType, fileName);
+                    downloadFile(data, contentType, node.config["path_or_buf"]);
                 })
             }
         }).catch(err => console.log(err));

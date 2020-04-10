@@ -83,7 +83,7 @@ class Workspace extends React.Component {
                 node.setSelected(false);
                 if (node.options.download_result) {
                     // TODO: make this work for non-WriteCsvNode nodes
-                    API.downloadDataFile(node.config["path_or_buf"])
+                    API.downloadDataFile(node)
                         .catch(err => console.log(err));
                 }
             } catch {
