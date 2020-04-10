@@ -351,6 +351,8 @@ class Workflow:
         graph_data = data.get('graph')
         name = data.get('name')
         flow_vars_data = data.get('flow_vars')
+        file_system = data.get('file_system')
+        
         if graph_data is None:
             graph = None
         else:
@@ -361,7 +363,7 @@ class Workflow:
         else:
             flow_vars = nx.readwrite.json_graph.node_link_graph(flow_vars_data)
 
-        return cls(graph, file_path, name, flow_vars)
+        return cls(graph, file_path, name, flow_vars, FileSystemStorage(location=file_system))
 
     @classmethod
     def from_file(cls, file_like):
@@ -391,6 +393,7 @@ class Workflow:
         out['file_path'] = self.file_path
         out['name'] = self.name
         out['flow_vars'] = Workflow.to_graph_json(self.flow_vars)
+        out['file_system'] = self._file_system.location
         return out
 
 
