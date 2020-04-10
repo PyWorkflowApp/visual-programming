@@ -69,7 +69,7 @@ def open_workflow(request):
     try:
         # TODO: file is parsed into JSON in memory;
         #       may want to save to 'fs' for large files
-        uploaded_file = request.FILES['file']
+        uploaded_file = request.FILES.get('file')
         combined_json = json.load(uploaded_file)
 
         request.pyworkflow = Workflow.from_request(combined_json['networkx'])
@@ -200,7 +200,7 @@ def get_successors(request, node_id):
                      })
 @api_view(['POST'])
 def upload_file(request):
-    f = request.FILES['file']
+    f = request.FILES.get('file')
 
     if f is None:
         return JsonResponse("Empty content", status=404)
