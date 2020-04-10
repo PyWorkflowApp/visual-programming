@@ -1,14 +1,5 @@
 from .node import *
-import json
 
-
-def create_node(payload):
-    json_data = json.loads(payload)
-
-    try:
-        return node_factory(json_data)
-    except OSError as e:
-        raise NodeException('create_node', 'Problem parsing JSON')
 
 def node_factory(node_info):
     # Create a new Node with info

@@ -4,7 +4,7 @@ from django.core.files.base import ContentFile
 from django.core.files.storage import FileSystemStorage
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from pyworkflow import Workflow, WorkflowException, Node, NodeException, node_factory, create_node
+from pyworkflow import Workflow, WorkflowException, Node, NodeException, node_factory
 from rest_framework.decorators import api_view
 from drf_yasg.utils import swagger_auto_schema
 from django.conf import settings
