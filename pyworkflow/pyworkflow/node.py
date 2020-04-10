@@ -16,7 +16,7 @@ class Node:
         self.node_key = node_info.get('node_key')
         self.data = node_info.get('data')
 
-        self.is_global = True if node_info.get('is_global') else False
+        self.is_global = node_info.get('is_global') is True
 
         # Execution options are passed up from children
         self.options = options or dict()
