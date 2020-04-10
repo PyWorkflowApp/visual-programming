@@ -237,6 +237,23 @@ class Workflow:
         except RuntimeError as e:
             raise WorkflowException('execution order', 'The graph was changed while generating the execution order')
 
+    def upload_file(self, f, node_id):
+        try:
+            fname = f"{node_id}-{f.name}"
+            return self._file_system.save(fname, f)
+        except Exception as e:
+            raise WorkflowException('upload_file', str(e))
+
+    def download_file(self, node_id):
+        node = self.get_node(node_id)
+        if node is None:
+            return None
+        else:
+            fname = node.options["path_or_buf"]
+
+            return self._file_system.open(fname)
+
+
     @staticmethod
     def store_node_data(workflow, node_id, data):
         """Store Node data
