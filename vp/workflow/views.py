@@ -9,8 +9,6 @@ from rest_framework.decorators import api_view
 from pyworkflow import Workflow, WorkflowException
 from drf_yasg.utils import swagger_auto_schema
 
-fs = FileSystemStorage(location=settings.MEDIA_ROOT)
-
 
 @swagger_auto_schema(method='get',
                      operation_summary='Create a new workflow.',
@@ -28,7 +26,8 @@ def new_workflow(request):
         200 - Created new DiGraph
     """
     # Create new Workflow
-    request.pyworkflow = Workflow()
+    fs = FileSystemStorage(location=settings.MEDIA_ROOT)
+    request.pyworkflow = Workflow(file_system=fs)
     request.session.update(request.pyworkflow.to_session_dict())
 
     return JsonResponse(Workflow.to_graph_json(request.pyworkflow.graph))

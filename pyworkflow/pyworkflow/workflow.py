@@ -19,12 +19,13 @@ class Workflow:
         file_path: Location of a workflow file
     """
 
-    def __init__(self, graph=nx.DiGraph(), file_path=None, name='a-name', flow_vars=nx.Graph()):
+    def __init__(self, graph=nx.DiGraph(), file_path=None, name='a-name', flow_vars=nx.Graph(), file_system=fs):
         #TODO: need to discuss a way to generating the workflow name. For now passing a default name.
         self._graph = graph
         self._file_path = file_path
         self._name = name
         self._flow_vars = flow_vars
+        self._file_system = file_system
 
     @property
     def graph(self):

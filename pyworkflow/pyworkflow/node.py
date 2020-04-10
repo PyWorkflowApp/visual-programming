@@ -1,8 +1,4 @@
 import pandas as pd
-from django.core.files.storage import FileSystemStorage
-from django.conf import settings
-
-fs = FileSystemStorage(location=settings.MEDIA_ROOT)
 
 
 class Node:
@@ -217,9 +213,7 @@ class WriteCsvNode(IONode):
 
             # Write to CSV and save
             opts = self.options
-            # TODO: Remove use of Django file storage from pyworkflow nodes
-            fname = fs.path(opts["path_or_buf"])
-            df.to_csv(fname, sep=opts["sep"], index=opts["index"])
+            df.to_csv(opts["path_or_buf"], sep=opts["sep"], index=opts["index"])
             return df.to_json()
         except Exception as e:
             raise NodeException('write csv', str(e))
