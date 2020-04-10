@@ -206,9 +206,12 @@ def upload_file(request):
         return JsonResponse("Empty content", status=404)
 
     node_id = request.POST.get('nodeId', '')
-    save_name = request.pyworkflow.upload_file(f, node_id)
 
-    return JsonResponse({"filename": save_name}, status=201, safe=False)
+    try:
+        save_name = request.pyworkflow.upload_file(f, node_id)
+        return JsonResponse({"filename": save_name}, status=201, safe=False)
+    except WorkflowException as e:
+        return JsonResponse({e.action: e.reason}, status=500)
 
 
 @swagger_auto_schema(method='post',

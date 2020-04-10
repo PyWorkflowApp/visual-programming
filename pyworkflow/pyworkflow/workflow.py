@@ -250,7 +250,6 @@ class Workflow:
             return None
         else:
             fname = node.options["path_or_buf"]
-
             return self._file_system.open(fname)
 
 
