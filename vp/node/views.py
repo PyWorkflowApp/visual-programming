@@ -1,15 +1,10 @@
 import json
 
-from django.core.files.base import ContentFile
-from django.core.files.storage import FileSystemStorage
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from pyworkflow import Workflow, WorkflowException, Node, NodeException, node_factory
 from rest_framework.decorators import api_view
 from drf_yasg.utils import swagger_auto_schema
-from django.conf import settings
-
-fs = FileSystemStorage(location=settings.MEDIA_ROOT)
 
 
 @swagger_auto_schema(method='post',
@@ -35,7 +30,7 @@ def node(request):
     """
     # Extract request info for node creation
     try:
-        new_node = create_node(request.body)
+        new_node = create_node(request)
     except NodeException as e:
         return JsonResponse({e.action: e.reason}, status=400)
 
@@ -177,7 +172,7 @@ def handle_node(request, node_id):
         if request.method == 'GET':
             response = JsonResponse(retrieved_node.__dict__, safe=False)
         elif request.method == 'POST':
-            updated_node = create_node(request.body)
+            updated_node = create_node(request)
 
             # Nodes need to be the same type to update
             if type(retrieved_node) != type(updated_node):
@@ -258,17 +253,17 @@ def retrieve_data(request, node_id):
         return JsonResponse({e.action: e.reason}, status=500)
 
 
-def create_node(payload):
+def create_node(request):
     """Pass all request info to Node Factory.
 
     """
-    json_data = json.loads(payload)
+    json_data = json.loads(request.body)
     # for options with type 'file', replace value with FileStorage path
     for field, info in json_data.get("option_types", dict()).items():
         if info["type"] == "file" or info["name"] == "Filename":
             opt_value = json_data["options"][field]
             if opt_value is not None:
-                json_data["options"][field] = fs.path(opt_value)
+                json_data["options"][field] = request.pyworkflow.fs.path(opt_value)
 
     try:
         return node_factory(json_data)

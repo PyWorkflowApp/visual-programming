@@ -36,6 +36,10 @@ class Workflow:
         self._graph = graph
 
     @property
+    def fs(self):
+        return self._file_system
+
+    @property
     def file_path(self):
         return self._file_path
 
