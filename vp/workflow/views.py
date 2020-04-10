@@ -1,10 +1,8 @@
 import os
 import json
-import csv
 
 from django.http import JsonResponse, HttpResponse
 from django.conf import settings
-from django.core.files.storage import FileSystemStorage
 from rest_framework.decorators import api_view
 from pyworkflow import Workflow, WorkflowException
 from drf_yasg.utils import swagger_auto_schema
@@ -26,8 +24,7 @@ def new_workflow(request):
         200 - Created new DiGraph
     """
     # Create new Workflow
-    fs = FileSystemStorage(location=settings.MEDIA_ROOT)
-    request.pyworkflow = Workflow(file_system=fs)
+    request.pyworkflow = Workflow(root_dir=settings.MEDIA_ROOT)
     request.session.update(request.pyworkflow.to_session_dict())
 
     return JsonResponse(Workflow.to_graph_json(request.pyworkflow.graph))
@@ -117,7 +114,8 @@ def save_workflow(request):
             'react': json.loads(request.body),
             'networkx': Workflow.to_graph_json(request.pyworkflow.graph),
             'flow_vars': Workflow.to_graph_json(request.pyworkflow.flow_vars),
-            'filename': request.pyworkflow.file_path
+            'filename': request.pyworkflow.file_path,
+            'root_dir': request.pyworkflow.root_dir,
         })
 
         return HttpResponse(combined_json, content_type='application/json')
@@ -247,4 +245,6 @@ def download_file(request):
     except OSError:
         return JsonResponse({"message": "Could not find or read file"},
                             status=404)
+    except WorkflowException as e:
+        return JsonResponse({e.action: e.reason}, status=500)
 

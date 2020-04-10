@@ -1,3 +1,4 @@
+import os
 import networkx as nx
 import json
 
@@ -5,10 +6,6 @@ from .node import Node
 from .node_factory import node_factory
 
 from django.conf import settings
-from django.core.files.base import ContentFile
-from django.core.files.storage import FileSystemStorage
-
-fs = FileSystemStorage(location=settings.MEDIA_ROOT)
 
 
 class Workflow:
@@ -19,13 +16,16 @@ class Workflow:
         file_path: Location of a workflow file
     """
 
-    def __init__(self, graph=nx.DiGraph(), file_path=None, name='a-name', flow_vars=nx.Graph(), file_system=fs):
+    def __init__(self, graph=nx.DiGraph(), file_path=None, name='a-name', flow_vars=nx.Graph(), root_dir=settings.MEDIA_ROOT):
         #TODO: need to discuss a way to generating the workflow name. For now passing a default name.
         self._graph = graph
         self._file_path = file_path
         self._name = name
         self._flow_vars = flow_vars
-        self._file_system = file_system
+
+        if not os.path.exists(root_dir):
+            os.makedirs(root_dir)
+        self._root_dir = root_dir
 
     @property
     def graph(self):
@@ -35,9 +35,12 @@ class Workflow:
     def graph(self, graph):
         self._graph = graph
 
+    def path(self, file_name):
+        return os.path.join(self.root_dir, file_name)
+
     @property
-    def fs(self):
-        return self._file_system
+    def root_dir(self):
+        return self._root_dir
 
     @property
     def file_path(self):
@@ -241,20 +244,33 @@ class Workflow:
         except RuntimeError as e:
             raise WorkflowException('execution order', 'The graph was changed while generating the execution order')
 
-    def upload_file(self, f, node_id):
+    def upload_file(self, uploaded_file, node_id):
         try:
-            fname = f"{node_id}-{f.name}"
-            return self._file_system.save(fname, f)
-        except Exception as e:
+            file_name = f"{node_id}-{uploaded_file.name}"
+            to_open = os.path.join(self.root_dir, file_name)
+
+            # TODO: Change to a stream/other method for large files?
+            with open(to_open, 'wb') as f:
+                f.write(uploaded_file.read())
+
+            uploaded_file.close()
+            return to_open
+        except OSError as e:
             raise WorkflowException('upload_file', str(e))
 
     def download_file(self, node_id):
         node = self.get_node(node_id)
         if node is None:
             return None
-        else:
-            fname = node.options["path_or_buf"]
-            return self._file_system.open(fname)
+
+        try:
+            # TODO: Change to generic "file" option to allow for more than WriteCsv
+            to_open = os.path.join(self.root_dir, node.options["path_or_buf"])
+            return open(to_open)
+        except KeyError:
+            raise WorkflowException('download_file', '%s does not have an associated file' % node_id)
+        except OSError as e:
+            raise WorkflowException('download_file', str(e))
 
 
     @staticmethod
@@ -271,10 +287,12 @@ class Workflow:
         Returns:
 
         """
-        file_name = Workflow.generate_file_name(workflow.name, node_id)
+        file_name = Workflow.generate_file_name(workflow, node_id)
 
         try:
-            return fs.save(file_name, ContentFile(data))
+            with open(file_name, 'w') as f:
+                f.write(data)
+            return file_name
         except Exception as e:
             return None
 
@@ -295,12 +313,15 @@ class Workflow:
                 problem parsing the file.
         """
         try:
-            with fs.open(node_to_retrieve.data) as f:
+            with open(node_to_retrieve.data) as f:
                 return json.load(f)
         except OSError as e:
             raise WorkflowException('retrieve node data', str(e))
-        except TypeError as e:
-            raise WorkflowException('retrieve node data', str(e))
+        except TypeError:
+            raise WorkflowException(
+                'retrieve node data',
+                'Node %s has not yet been executed. No data to retrieve.' % node_to_retrieve.node_id
+            )
         except json.JSONDecodeError as e:
             raise WorkflowException('retrieve node data', str(e))
 
@@ -322,20 +343,18 @@ class Workflow:
         return nx.readwrite.json_graph.node_link_graph(json_data)
 
     @staticmethod
-    def generate_file_name(workflow_name, node_id):
+    def generate_file_name(workflow, node_id):
         """Generates a file name for saving intermediate execution data.
 
         Current format is workflow_name - node_id
 
         Args:
-            workflow_name: the name of the workflow
+            workflow: the workflow
             node_id: the id of the workflow
         """
         #TODO: need to add validation
-        if workflow_name is None:
-            workflow_name = "a-name"
-
-        return workflow_name + '-' + str(node_id)
+        file_name = workflow.name if workflow.name else 'a-name'
+        return os.path.join(workflow.root_dir, file_name + '-' + str(node_id))
 
     @classmethod
     def from_session(cls, data):
@@ -351,7 +370,7 @@ class Workflow:
         graph_data = data.get('graph')
         name = data.get('name')
         flow_vars_data = data.get('flow_vars')
-        file_system = data.get('file_system')
+        root_dir = data.get('root_dir')
         
         if graph_data is None:
             graph = None
@@ -363,7 +382,7 @@ class Workflow:
         else:
             flow_vars = nx.readwrite.json_graph.node_link_graph(flow_vars_data)
 
-        return cls(graph, file_path, name, flow_vars, FileSystemStorage(location=file_system))
+        return cls(graph, file_path, name, flow_vars, root_dir)
 
     @classmethod
     def from_file(cls, file_like):
@@ -393,7 +412,7 @@ class Workflow:
         out['file_path'] = self.file_path
         out['name'] = self.name
         out['flow_vars'] = Workflow.to_graph_json(self.flow_vars)
-        out['file_system'] = self._file_system.location
+        out['root_dir'] = self.root_dir
         return out
 
 
