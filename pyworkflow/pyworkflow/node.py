@@ -326,7 +326,17 @@ class JoinNode(ManipulationNode):
     num_in = 2
     num_out = 1
 
-    DEFAULT_OPTIONS = {}
+    DEFAULT_OPTIONS = {
+        "on": None,
+    }
+
+    OPTION_TYPES = {
+        "on": {
+            "type": "string",
+            "name": "Join Column",
+            "desc": "Name of column to join on"
+        }
+    }
 
     def __init__(self, node_info, options=dict()):
         super().__init__(node_info, {**self.DEFAULT_OPTIONS, **options})
@@ -338,7 +348,7 @@ class JoinNode(ManipulationNode):
             NodeUtils.validate_predecessor_data(len(predecessor_data), self.num_in, self.node_key)
             first_df = pd.DataFrame.from_dict(predecessor_data[0])
             second_df = pd.DataFrame.from_dict(predecessor_data[1])
-            combined_df = first_df.join(second_df, lsuffix='_caller', rsuffix='_other')
+            combined_df = pd.merge(first_df, second_df, on=self.options["on"])
             return combined_df.to_json()
         except Exception as e:
             raise NodeException('join', str(e))
