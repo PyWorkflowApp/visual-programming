@@ -116,6 +116,10 @@ class Workflow:
     def name(self, name: str):
         self._name = name
 
+    @property
+    def filename(self):
+        return self.name + '.json'
+
     def add_edge(self, node_from: Node, node_to: Node):
         """ Add a Node object to the graph.
 

@@ -116,11 +116,14 @@ def save_workflow(request):
     # serialized graph
     try:
         combined_json = json.dumps({
+            'filename': request.pyworkflow.filename,
             'react': json.loads(request.body),
-            'networkx': Workflow.to_graph_json(request.pyworkflow.graph),
-            'flow_vars': Workflow.to_graph_json(request.pyworkflow.flow_vars),
-            'filename': request.pyworkflow.file_path,
-            'root_dir': request.pyworkflow.root_dir,
+            'pyworkflow': {
+                'name': request.pyworkflow.name,
+                'root_dir': request.pyworkflow.root_dir,
+                'graph': Workflow.to_graph_json(request.pyworkflow.graph),
+                'flow_vars': Workflow.to_graph_json(request.pyworkflow.flow_vars),
+            }
         })
 
         return HttpResponse(combined_json, content_type='application/json')
