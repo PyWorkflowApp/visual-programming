@@ -1,3 +1,3 @@
 from .workflow import Workflow, WorkflowException
 from .node import *
-from .node_factory import node_factory, create_node
+from .node_factory import node_factory
