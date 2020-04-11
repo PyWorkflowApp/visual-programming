@@ -8,13 +8,13 @@ from pyworkflow import Workflow, WorkflowException
 from drf_yasg.utils import swagger_auto_schema
 
 
-@swagger_auto_schema(method='get',
+@swagger_auto_schema(method='post',
                      operation_summary='Create a new workflow.',
                      operation_description='Creates a new workflow with empty DiGraph.',
                      responses={
                          200: 'Created new DiGraph'
                      })
-@api_view(['GET'])
+@api_view(['POST'])
 def new_workflow(request):
     """Create a new workflow.
 
@@ -23,8 +23,13 @@ def new_workflow(request):
     Return:
         200 - Created new DiGraph
     """
+    try:
+        workflow_id = json.loads(request.body)
+    except json.JSONDecodeError as e:
+        return JsonResponse({'No React model ID provided': str(e)}, status=500)
+
     # Create new Workflow
-    request.pyworkflow = Workflow(root_dir=settings.MEDIA_ROOT)
+    request.pyworkflow = Workflow(name=workflow_id, root_dir=settings.MEDIA_ROOT)
     request.session.update(request.pyworkflow.to_session_dict())
 
     return JsonResponse(Workflow.to_graph_json(request.pyworkflow.graph))
