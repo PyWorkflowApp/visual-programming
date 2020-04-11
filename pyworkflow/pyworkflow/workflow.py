@@ -5,53 +5,42 @@ import json
 from .node import Node
 from .node_factory import node_factory
 
-from django.conf import settings
-
 
 class Workflow:
     """ Workflow object
 
     Attributes:
+        name: Name of the workflow
+        root_dir: Used for reading/writing files to/from disk
         graph: A NetworkX Directed Graph
-        file_path: Location of a workflow file
+        flow_vars: Global flow variables associated with workflow
     """
 
-    def __init__(self, graph=nx.DiGraph(), file_path=None, name='a-name', flow_vars=nx.Graph(), root_dir=settings.MEDIA_ROOT):
-        #TODO: need to discuss a way to generating the workflow name. For now passing a default name.
-        self._graph = graph
-        self._file_path = file_path
+    def __init__(self, name="Untitled", root_dir=None, graph=nx.DiGraph(), flow_vars=nx.Graph()):
         self._name = name
-        self._flow_vars = flow_vars
+
+        if root_dir is None:
+            root_dir = os.getcwd()
 
         if not os.path.exists(root_dir):
             os.makedirs(root_dir)
+
         self._root_dir = root_dir
+
+        self._graph = graph
+        self._flow_vars = flow_vars
 
     @property
     def graph(self):
         return self._graph
 
-    @graph.setter
-    def graph(self, graph):
-        self._graph = graph
-
-    def path(self, file_name):
-        return os.path.join(self.root_dir, file_name)
+    @staticmethod
+    def path(workflow, file_name):
+        return os.path.join(workflow.root_dir, file_name)
 
     @property
     def root_dir(self):
         return self._root_dir
-
-    @property
-    def file_path(self):
-        return self._file_path
-
-    @file_path.setter
-    def file_path(self, file_path: str):
-        if file_path is None or file_path[-5:] == '.json':
-            self._file_path = file_path
-        else:
-            raise WorkflowException('set_file_path', 'File ' + file_path + ' is not JSON.')
 
     @property
     def flow_vars(self):
@@ -251,7 +240,7 @@ class Workflow:
     def upload_file(self, uploaded_file, node_id):
         try:
             file_name = f"{node_id}-{uploaded_file.name}"
-            to_open = os.path.join(self.root_dir, file_name)
+            to_open = Workflow.path(self, file_name)
 
             # TODO: Change to a stream/other method for large files?
             with open(to_open, 'wb') as f:
@@ -269,13 +258,12 @@ class Workflow:
 
         try:
             # TODO: Change to generic "file" option to allow for more than WriteCsv
-            to_open = os.path.join(self.root_dir, node.options["path_or_buf"])
+            to_open = Workflow.path(self, node.options['path_or_buf'])
             return open(to_open)
         except KeyError:
             raise WorkflowException('download_file', '%s does not have an associated file' % node_id)
         except OSError as e:
             raise WorkflowException('download_file', str(e))
-
 
     @staticmethod
     def store_node_data(workflow, node_id, data):
@@ -292,9 +280,10 @@ class Workflow:
 
         """
         file_name = Workflow.generate_file_name(workflow, node_id)
+        file_path = Workflow.path(workflow, file_name)
 
         try:
-            with open(file_name, 'w') as f:
+            with open(file_path, 'w') as f:
                 f.write(data)
             return file_name
         except Exception as e:
@@ -348,15 +337,13 @@ class Workflow:
     def generate_file_name(workflow, node_id):
         """Generates a file name for saving intermediate execution data.
 
-        Current format is workflow_name - node_id
+        Current format is 'workflow_name - node_id'
 
         Args:
             workflow: the workflow
             node_id: the id of the workflow
         """
-        #TODO: need to add validation
-        file_name = workflow.name if workflow.name else 'a-name'
-        return os.path.join(workflow.root_dir, file_name + '-' + str(node_id))
+        return f"{workflow.name}-{node_id}"
 
     @classmethod
     def from_json(cls, json_data):
@@ -391,13 +378,15 @@ class Workflow:
     def to_session_dict(self):
         """Store Workflow information in the Django session.
         """
-        out = dict()
-        out['graph'] = Workflow.to_graph_json(self.graph)
-        out['file_path'] = self.file_path
-        out['name'] = self.name
-        out['flow_vars'] = Workflow.to_graph_json(self.flow_vars)
-        out['root_dir'] = self.root_dir
-        return out
+        try:
+            out = dict()
+            out['name'] = self.name
+            out['root_dir'] = self.root_dir
+            out['graph'] = Workflow.to_graph_json(self.graph)
+            out['flow_vars'] = Workflow.to_graph_json(self.flow_vars)
+            return out
+        except nx.NetworkXError as e:
+            raise WorkflowException('to_session_dict', str(e))
 
 
 class WorkflowException(Exception):
