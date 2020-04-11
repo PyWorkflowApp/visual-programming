@@ -76,19 +76,15 @@ def open_workflow(request):
 
         request.pyworkflow = Workflow.from_request(combined_json['networkx'])
         request.session.update(request.pyworkflow.to_session_dict())
-        react = combined_json['react']
+
+        # Send back front-end workflow
+        return JsonResponse(combined_json['react'])
     except KeyError as e:
         return JsonResponse({'open_workflow': 'Missing data for ' + str(e)}, status=500)
     except json.JSONDecodeError as e:
         return JsonResponse({'No React JSON provided': str(e)}, status=500)
     except WorkflowException as e:
         return JsonResponse({e.action: e.reason}, status=404)
-
-    # Construct response
-    return JsonResponse({
-        'react': react,
-        'networkx': Workflow.to_graph_json(request.pyworkflow.graph),
-    })
 
 
 @swagger_auto_schema(method='post',

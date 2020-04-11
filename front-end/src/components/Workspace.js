@@ -128,7 +128,7 @@ function FileUpload(props) {
         const form = new FormData();
         form.append("file", file);
         API.uploadWorkflow(form).then(json => {
-            props.handleData(json.react);
+            props.handleData(json);
         }).catch(err => {
             console.log(err);
         });
