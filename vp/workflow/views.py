@@ -74,7 +74,7 @@ def open_workflow(request):
         uploaded_file = request.FILES.get('file')
         combined_json = json.load(uploaded_file)
 
-        request.pyworkflow = Workflow.from_request(combined_json['networkx'])
+        request.pyworkflow = Workflow.from_json(combined_json['pyworkflow'])
         request.session.update(request.pyworkflow.to_session_dict())
 
         # Send back front-end workflow

@@ -330,20 +330,18 @@ class Workflow:
             raise WorkflowException('retrieve node data', str(e))
 
     @staticmethod
-    def read_graph_json(file_like):
+    def read_graph_json(json_data):
         """Deserialize JSON NetworkX graph
 
         Args:
-            file_like: file-like object from which to read JSON-serialized graph
+            json_data: JSON data from which to read JSON-serialized graph
 
         Returns:
              NetworkX DiGraph object
 
         Raises:
-            OSError: on file error
             NetworkXError: on issue with loading JSON graph data
         """
-        json_data = json.load(file_like)
         return nx.readwrite.json_graph.node_link_graph(json_data)
 
     @staticmethod
@@ -361,48 +359,30 @@ class Workflow:
         return os.path.join(workflow.root_dir, file_name + '-' + str(node_id))
 
     @classmethod
-    def from_session(cls, data):
-        """Create instance from graph (JSON) data and filename
-
-        Typically takes Django session as argument, which contains
-        `graph` and `file_path` keys.
+    def from_json(cls, json_data):
+        """Load Workflow from JSON data.
 
         Args:
-            data: dict-like with keys `file_path` and `graph`
+            json_data: JSON-like data from session, or uploaded file
+
+        Returns:
+            New Workflow object
+
+        Raises:
+            WorkflowException: on missing data (KeyError) or on
+                malformed NetworkX graph data (NetworkXError)
         """
-        file_path = data.get('file_path')
-        graph_data = data.get('graph')
-        name = data.get('name')
-        flow_vars_data = data.get('flow_vars')
-        root_dir = data.get('root_dir')
-        
-        if graph_data is None:
-            graph = None
-        else:
-            graph = nx.readwrite.json_graph.node_link_graph(graph_data)
+        try:
+            name = json_data['name']
+            root_dir = json_data['root_dir']
+            graph = Workflow.read_graph_json(json_data['graph'])
+            flow_vars = Workflow.read_graph_json(json_data['flow_vars'])
 
-        if flow_vars_data is None:
-            flow_vars = None
-        else:
-            flow_vars = nx.readwrite.json_graph.node_link_graph(flow_vars_data)
-
-        return cls(graph, file_path, name, flow_vars, root_dir)
-
-    @classmethod
-    def from_file(cls, file_like):
-        """
-
-        """
-        graph = cls.read_graph_json(file_like)
-        return cls(graph)
-
-    @classmethod
-    def from_request(cls, json_data):
-        """
-
-        """
-        graph = nx.readwrite.json_graph.node_link_graph(json_data)
-        return cls(graph)
+            return cls(name=name, root_dir=root_dir, graph=graph, flow_vars=flow_vars)
+        except KeyError as e:
+            raise WorkflowException('from_json', str(e))
+        except nx.NetworkXError as e:
+            raise WorkflowException('from_json', str(e))
 
     @staticmethod
     def to_graph_json(graph):

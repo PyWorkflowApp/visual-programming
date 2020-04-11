@@ -25,7 +25,7 @@ class WorkflowMiddleware:
             pass
         else:
             # All other cases, load workflow from session
-            request.pyworkflow = Workflow.from_session(request.session)
+            request.pyworkflow = Workflow.from_json(request.session)
 
             # Check if a graph is present
             if request.pyworkflow.graph is None:
