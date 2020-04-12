@@ -42,5 +42,7 @@ def manipulation_node(node_key, node_info):
         return PivotNode(node_info)
     elif node_key == 'multi-in':
         return ManipulationNode(node_info)
+    elif node_key == 'FilterNode':
+        return FilterNode(node_info)
     else:
         return None
