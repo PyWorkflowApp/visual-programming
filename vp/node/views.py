@@ -263,7 +263,7 @@ def create_node(request):
         if info["type"] == "file" or info["name"] == "Filename":
             opt_value = json_data["options"][field]
             if opt_value is not None:
-                json_data["options"][field] = request.pyworkflow.path(opt_value)
+                json_data["options"][field] = Workflow.path(request.pyworkflow, opt_value)
 
     try:
         return node_factory(json_data)

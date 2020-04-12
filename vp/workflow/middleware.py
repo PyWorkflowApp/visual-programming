@@ -1,4 +1,4 @@
-from pyworkflow import Workflow
+from pyworkflow import Workflow, WorkflowException
 from django.http import JsonResponse
 
 
@@ -25,13 +25,16 @@ class WorkflowMiddleware:
             pass
         else:
             # All other cases, load workflow from session
-            request.pyworkflow = Workflow.from_json(request.session)
+            try:
+                request.pyworkflow = Workflow.from_json(request.session)
 
-            # Check if a graph is present
-            if request.pyworkflow.graph is None:
-                return JsonResponse({
-                    'message': 'A workflow has not been created yet.'
-                }, status=404)
+                # Check if a graph is present
+                if request.pyworkflow.graph is None:
+                    return JsonResponse({
+                        'message': 'A workflow has not been created yet.'
+                    }, status=404)
+            except WorkflowException as e:
+                return JsonResponse({e.action: e.reason}, status=500)
 
         response = self.get_response(request)
 
