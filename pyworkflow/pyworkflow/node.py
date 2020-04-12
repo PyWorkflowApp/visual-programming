@@ -149,6 +149,8 @@ class ReadCsvNode(IONode):
         try:
             # TODO: FileStorage implemented in Django to store in /tmp
             #       Better filename/path handling should be implemented.
+            # Read CSV needs exactly 0 input DataFrame
+            NodeUtils.validate_predecessor_data(len(predecessor_data), self.num_in, self.node_key)
             NodeUtils.replace_flow_vars(self.options, flow_vars)
             opts = self.options
             df = pd.read_csv(opts["filepath_or_buffer"], sep=opts["sep"],
@@ -413,7 +415,8 @@ class NodeException(Exception):
 
 class NodeUtils:
 
-    FIXED_INPUT_NODES = ['WriteCsvNode', 'FilterNode']
+    FIXED_INPUT_NODES = ['WriteCsvNode', 'FilterNode', 'JoinNode'] # nodes which can only have a fixed number of predecessors
+    MAX_INPUT_NODES = ['ReadCsvNode'] # nodes for which num_in represents a maximum number of predecessors
 
     @staticmethod
     def validate_predecessor_data(predecessor_data_len, num_in, node_key):
@@ -422,7 +425,7 @@ class NodeUtils:
         if node_key in NodeUtils.FIXED_INPUT_NODES and predecessor_data_len != num_in:
                 validation_failed = True
                 exception_txt = '%s needs %d inputs. %d were provided'
-        elif (node_key not in NodeUtils.FIXED_INPUT_NODES and predecessor_data_len > num_in):
+        elif (node_key in NodeUtils.MAX_INPUT_NODES and predecessor_data_len > num_in):
                 validation_failed = True
                 exception_txt = '%s can take up to %d inputs. %d were provided'
 
