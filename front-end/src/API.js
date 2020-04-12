@@ -98,10 +98,16 @@ export async function getNodes() {
 
 /**
  * Start a new workflow on the server
+ * @param {DiagramModel} model - Diagram model
  * @returns {Promise<Object>} - server response
  */
-export async function initWorkflow() {
-    return fetchWrapper("/workflow/new");
+export async function initWorkflow(model) {
+    const options = {
+        method: "POST",
+        body: JSON.stringify(model.options.id)
+    };
+
+    return fetchWrapper("/workflow/new", options);
 }
 
 

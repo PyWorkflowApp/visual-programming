@@ -32,7 +32,7 @@ class Workspace extends React.Component {
         API.getNodes()
             .then(nodes => this.setState({nodes: nodes}))
             .catch(err => console.log(err));
-        API.initWorkflow().catch(err => console.log(err));
+        API.initWorkflow(this.model).catch(err => console.log(err));
     }
 
     /**
@@ -51,7 +51,7 @@ class Workspace extends React.Component {
     clear() {
         if (window.confirm("Clear diagram? You will lose all work.")) {
             this.model.getNodes().forEach(n => n.remove());
-            API.initWorkflow().catch(err => console.log(err));
+            API.initWorkflow(this.model).catch(err => console.log(err));
             this.engine.repaintCanvas();
         }
     }
@@ -128,7 +128,7 @@ function FileUpload(props) {
         const form = new FormData();
         form.append("file", file);
         API.uploadWorkflow(form).then(json => {
-            props.handleData(json.react);
+            props.handleData(json);
         }).catch(err => {
             console.log(err);
         });

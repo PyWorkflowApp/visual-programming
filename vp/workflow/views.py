@@ -8,13 +8,13 @@ from pyworkflow import Workflow, WorkflowException
 from drf_yasg.utils import swagger_auto_schema
 
 
-@swagger_auto_schema(method='get',
+@swagger_auto_schema(method='post',
                      operation_summary='Create a new workflow.',
                      operation_description='Creates a new workflow with empty DiGraph.',
                      responses={
                          200: 'Created new DiGraph'
                      })
-@api_view(['GET'])
+@api_view(['POST'])
 def new_workflow(request):
     """Create a new workflow.
 
@@ -23,8 +23,13 @@ def new_workflow(request):
     Return:
         200 - Created new DiGraph
     """
+    try:
+        workflow_id = json.loads(request.body)
+    except json.JSONDecodeError as e:
+        return JsonResponse({'No React model ID provided': str(e)}, status=500)
+
     # Create new Workflow
-    request.pyworkflow = Workflow(root_dir=settings.MEDIA_ROOT)
+    request.pyworkflow = Workflow(name=workflow_id, root_dir=settings.MEDIA_ROOT)
     request.session.update(request.pyworkflow.to_session_dict())
 
     return JsonResponse(Workflow.to_graph_json(request.pyworkflow.graph))
@@ -49,12 +54,17 @@ def open_workflow(request):
         request: Django request Object, should follow the pattern:
             {
                 react: {react-diagrams JSON},
-                networkx: {networkx graph as JSON},
+                pyworkflow: {
+                    name: Workflow name,
+                    root_dir: File storage,
+                    graph: Computational graph,
+                    flow_vars: Global flow variables,
+                },
             }
 
     Raises:
         JSONDecodeError: invalid JSON data
-        KeyError: request missing either 'react' or 'networkx' data
+        KeyError: request missing either 'react' or 'pyworkflow' data
         WorkflowException: error loading JSON into NetworkX DiGraph
 
     Returns:
@@ -69,9 +79,11 @@ def open_workflow(request):
         uploaded_file = request.FILES.get('file')
         combined_json = json.load(uploaded_file)
 
-        request.pyworkflow = Workflow.from_request(combined_json['networkx'])
+        request.pyworkflow = Workflow.from_json(combined_json['pyworkflow'])
         request.session.update(request.pyworkflow.to_session_dict())
-        react = combined_json['react']
+
+        # Send back front-end workflow
+        return JsonResponse(combined_json['react'])
     except KeyError as e:
         return JsonResponse({'open_workflow': 'Missing data for ' + str(e)}, status=500)
     except json.JSONDecodeError as e:
@@ -79,11 +91,23 @@ def open_workflow(request):
     except WorkflowException as e:
         return JsonResponse({e.action: e.reason}, status=404)
 
-    # Construct response
-    return JsonResponse({
-        'react': react,
-        'networkx': Workflow.to_graph_json(request.pyworkflow.graph),
-    })
+
+@swagger_auto_schema(method='post',
+                     operation_summary='Edit workflow information',
+                     operation_description='Edits workflow information.',
+                     responses={
+                         200: 'Workflow info updated',
+                         500: 'No valid JSON in request body'
+                     })
+@api_view(['POST'])
+def edit_workflow(request):
+    try:
+        json_data = json.loads(request.body)
+        request.pyworkflow.name = json_data['name']
+
+        return JsonResponse({'message': 'Workflow successfully updated.'})
+    except Exception as e:
+        return JsonResponse({'message': str(e)}, status=404)
 
 
 @swagger_auto_schema(method='post',
@@ -111,11 +135,14 @@ def save_workflow(request):
     # serialized graph
     try:
         combined_json = json.dumps({
+            'filename': request.pyworkflow.filename,
             'react': json.loads(request.body),
-            'networkx': Workflow.to_graph_json(request.pyworkflow.graph),
-            'flow_vars': Workflow.to_graph_json(request.pyworkflow.flow_vars),
-            'filename': request.pyworkflow.file_path,
-            'root_dir': request.pyworkflow.root_dir,
+            'pyworkflow': {
+                'name': request.pyworkflow.name,
+                'root_dir': request.pyworkflow.root_dir,
+                'graph': Workflow.to_graph_json(request.pyworkflow.graph),
+                'flow_vars': Workflow.to_graph_json(request.pyworkflow.flow_vars),
+            }
         })
 
         return HttpResponse(combined_json, content_type='application/json')

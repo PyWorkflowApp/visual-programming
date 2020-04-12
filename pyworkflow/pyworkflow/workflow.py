@@ -5,35 +5,26 @@ import json
 from .node import Node
 from .node_factory import node_factory
 
-from django.conf import settings
-
 
 class Workflow:
     """ Workflow object
 
     Attributes:
+        name: Name of the workflow
+        root_dir: Used for reading/writing files to/from disk
         graph: A NetworkX Directed Graph
-        file_path: Location of a workflow file
+        flow_vars: Global flow variables associated with workflow
     """
 
-    def __init__(self, graph=nx.DiGraph(), file_path=None, name='a-name', flow_vars=nx.Graph(), root_dir=settings.MEDIA_ROOT):
-        #TODO: need to discuss a way to generating the workflow name. For now passing a default name.
-        self._graph = graph
-        self._file_path = file_path
+    def __init__(self, name="Untitled", root_dir=None, graph=nx.DiGraph(), flow_vars=nx.Graph()):
         self._name = name
+        self._root_dir = WorkflowUtils.set_root_dir(root_dir)
+        self._graph = graph
         self._flow_vars = flow_vars
-
-        if not os.path.exists(root_dir):
-            os.makedirs(root_dir)
-        self._root_dir = root_dir
 
     @property
     def graph(self):
         return self._graph
-
-    @graph.setter
-    def graph(self, graph):
-        self._graph = graph
 
     def path(self, file_name):
         return os.path.join(self.root_dir, file_name)
@@ -41,17 +32,6 @@ class Workflow:
     @property
     def root_dir(self):
         return self._root_dir
-
-    @property
-    def file_path(self):
-        return self._file_path
-
-    @file_path.setter
-    def file_path(self, file_path: str):
-        if file_path is None or file_path[-5:] == '.json':
-            self._file_path = file_path
-        else:
-            raise WorkflowException('set_file_path', 'File ' + file_path + ' is not JSON.')
 
     @property
     def flow_vars(self):
@@ -115,6 +95,10 @@ class Workflow:
     @name.setter
     def name(self, name: str):
         self._name = name
+
+    @property
+    def filename(self):
+        return self.name + '.json'
 
     def add_edge(self, node_from: Node, node_to: Node):
         """ Add a Node object to the graph.
@@ -247,7 +231,7 @@ class Workflow:
     def upload_file(self, uploaded_file, node_id):
         try:
             file_name = f"{node_id}-{uploaded_file.name}"
-            to_open = os.path.join(self.root_dir, file_name)
+            to_open = self.path(file_name)
 
             # TODO: Change to a stream/other method for large files?
             with open(to_open, 'wb') as f:
@@ -265,13 +249,12 @@ class Workflow:
 
         try:
             # TODO: Change to generic "file" option to allow for more than WriteCsv
-            to_open = os.path.join(self.root_dir, node.options["path_or_buf"])
+            to_open = self.path(node.options['path_or_buf'])
             return open(to_open)
         except KeyError:
             raise WorkflowException('download_file', '%s does not have an associated file' % node_id)
         except OSError as e:
             raise WorkflowException('download_file', str(e))
-
 
     @staticmethod
     def store_node_data(workflow, node_id, data):
@@ -288,9 +271,10 @@ class Workflow:
 
         """
         file_name = Workflow.generate_file_name(workflow, node_id)
+        file_path = workflow.path(file_name)
 
         try:
-            with open(file_name, 'w') as f:
+            with open(file_path, 'w') as f:
                 f.write(data)
             return file_name
         except Exception as e:
@@ -326,79 +310,57 @@ class Workflow:
             raise WorkflowException('retrieve node data', str(e))
 
     @staticmethod
-    def read_graph_json(file_like):
+    def read_graph_json(json_data):
         """Deserialize JSON NetworkX graph
 
         Args:
-            file_like: file-like object from which to read JSON-serialized graph
+            json_data: JSON data from which to read JSON-serialized graph
 
         Returns:
              NetworkX DiGraph object
 
         Raises:
-            OSError: on file error
             NetworkXError: on issue with loading JSON graph data
         """
-        json_data = json.load(file_like)
         return nx.readwrite.json_graph.node_link_graph(json_data)
 
     @staticmethod
     def generate_file_name(workflow, node_id):
         """Generates a file name for saving intermediate execution data.
 
-        Current format is workflow_name - node_id
+        Current format is 'workflow_name - node_id'
 
         Args:
             workflow: the workflow
             node_id: the id of the workflow
         """
-        #TODO: need to add validation
-        file_name = workflow.name if workflow.name else 'a-name'
-        return os.path.join(workflow.root_dir, file_name + '-' + str(node_id))
+        return f"{workflow.name}-{node_id}"
 
     @classmethod
-    def from_session(cls, data):
-        """Create instance from graph (JSON) data and filename
-
-        Typically takes Django session as argument, which contains
-        `graph` and `file_path` keys.
+    def from_json(cls, json_data):
+        """Load Workflow from JSON data.
 
         Args:
-            data: dict-like with keys `file_path` and `graph`
+            json_data: JSON-like data from session, or uploaded file
+
+        Returns:
+            New Workflow object
+
+        Raises:
+            WorkflowException: on missing data (KeyError) or on
+                malformed NetworkX graph data (NetworkXError)
         """
-        file_path = data.get('file_path')
-        graph_data = data.get('graph')
-        name = data.get('name')
-        flow_vars_data = data.get('flow_vars')
-        root_dir = data.get('root_dir')
-        
-        if graph_data is None:
-            graph = None
-        else:
-            graph = nx.readwrite.json_graph.node_link_graph(graph_data)
+        try:
+            name = json_data['name']
+            root_dir = json_data['root_dir']
+            graph = Workflow.read_graph_json(json_data['graph'])
+            flow_vars = Workflow.read_graph_json(json_data['flow_vars'])
 
-        if flow_vars_data is None:
-            flow_vars = None
-        else:
-            flow_vars = nx.readwrite.json_graph.node_link_graph(flow_vars_data)
-
-        return cls(graph, file_path, name, flow_vars, root_dir)
-
-    @classmethod
-    def from_file(cls, file_like):
-        """
-
-        """
-        graph = cls.read_graph_json(file_like)
-        return cls(graph)
-
-    @classmethod
-    def from_request(cls, json_data):
-        """
-
-        """
-        graph = nx.readwrite.json_graph.node_link_graph(json_data)
-        return cls(graph)
+            return cls(name=name, root_dir=root_dir, graph=graph, flow_vars=flow_vars)
+        except KeyError as e:
+            raise WorkflowException('from_json', str(e))
+        except nx.NetworkXError as e:
+            raise WorkflowException('from_json', str(e))
 
     @staticmethod
     def to_graph_json(graph):
@@ -407,13 +369,27 @@ class Workflow:
     def to_session_dict(self):
         """Store Workflow information in the Django session.
         """
-        out = dict()
-        out['graph'] = Workflow.to_graph_json(self.graph)
-        out['file_path'] = self.file_path
-        out['name'] = self.name
-        out['flow_vars'] = Workflow.to_graph_json(self.flow_vars)
-        out['root_dir'] = self.root_dir
-        return out
+        try:
+            out = dict()
+            out['name'] = self.name
+            out['root_dir'] = self.root_dir
+            out['graph'] = Workflow.to_graph_json(self.graph)
+            out['flow_vars'] = Workflow.to_graph_json(self.flow_vars)
+            return out
+        except nx.NetworkXError as e:
+            raise WorkflowException('to_session_dict', str(e))
+
+
+class WorkflowUtils:
+    @staticmethod
+    def set_root_dir(root_dir):
+        if root_dir is None:
+            root_dir = os.getcwd()
+
+        if not os.path.exists(root_dir):
+            os.makedirs(root_dir)
+
+        return root_dir
 
 
 class WorkflowException(Exception):
