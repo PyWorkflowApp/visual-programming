@@ -54,12 +54,17 @@ def open_workflow(request):
         request: Django request Object, should follow the pattern:
             {
                 react: {react-diagrams JSON},
-                networkx: {networkx graph as JSON},
+                pyworkflow: {
+                    name: Workflow name,
+                    root_dir: File storage,
+                    graph: Computational graph,
+                    flow_vars: Global flow variables,
+                },
             }
 
     Raises:
         JSONDecodeError: invalid JSON data
-        KeyError: request missing either 'react' or 'networkx' data
+        KeyError: request missing either 'react' or 'pyworkflow' data
         WorkflowException: error loading JSON into NetworkX DiGraph
 
     Returns:
@@ -85,6 +90,24 @@ def open_workflow(request):
         return JsonResponse({'No React JSON provided': str(e)}, status=500)
     except WorkflowException as e:
         return JsonResponse({e.action: e.reason}, status=404)
+
+
+@swagger_auto_schema(method='post',
+                     operation_summary='Edit workflow information',
+                     operation_description='Edits workflow information.',
+                     responses={
+                         200: 'Workflow info updated',
+                         500: 'No valid JSON in request body'
+                     })
+@api_view(['POST'])
+def edit_workflow(request):
+    try:
+        json_data = json.loads(request.body)
+        request.pyworkflow.name = json_data['name']
+
+        return JsonResponse({'message': 'Workflow successfully updated.'})
+    except Exception as e:
+        return JsonResponse({'message': str(e)}, status=404)
 
 
 @swagger_auto_schema(method='post',
