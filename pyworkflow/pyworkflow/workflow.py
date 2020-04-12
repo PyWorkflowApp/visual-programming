@@ -34,9 +34,8 @@ class Workflow:
     def graph(self):
         return self._graph
 
-    @staticmethod
-    def path(workflow, file_name):
-        return os.path.join(workflow.root_dir, file_name)
+    def path(self, file_name):
+        return os.path.join(self.root_dir, file_name)
 
     @property
     def root_dir(self):
@@ -240,7 +239,7 @@ class Workflow:
     def upload_file(self, uploaded_file, node_id):
         try:
             file_name = f"{node_id}-{uploaded_file.name}"
-            to_open = Workflow.path(self, file_name)
+            to_open = self.path(file_name)
 
             # TODO: Change to a stream/other method for large files?
             with open(to_open, 'wb') as f:
@@ -258,7 +257,7 @@ class Workflow:
 
         try:
             # TODO: Change to generic "file" option to allow for more than WriteCsv
-            to_open = Workflow.path(self, node.options['path_or_buf'])
+            to_open = self.path(node.options['path_or_buf'])
             return open(to_open)
         except KeyError:
             raise WorkflowException('download_file', '%s does not have an associated file' % node_id)
@@ -280,7 +279,7 @@ class Workflow:
 
         """
         file_name = Workflow.generate_file_name(workflow, node_id)
-        file_path = Workflow.path(workflow, file_name)
+        file_path = workflow.path(file_name)
 
         try:
             with open(file_path, 'w') as f:
