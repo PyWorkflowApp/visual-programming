@@ -18,15 +18,7 @@ class Workflow:
 
     def __init__(self, name="Untitled", root_dir=None, graph=nx.DiGraph(), flow_vars=nx.Graph()):
         self._name = name
-
-        if root_dir is None:
-            root_dir = os.getcwd()
-
-        if not os.path.exists(root_dir):
-            os.makedirs(root_dir)
-
-        self._root_dir = root_dir
-
+        self._root_dir = WorkflowUtils.set_root_dir(root_dir)
         self._graph = graph
         self._flow_vars = flow_vars
 
@@ -386,6 +378,18 @@ class Workflow:
             return out
         except nx.NetworkXError as e:
             raise WorkflowException('to_session_dict', str(e))
+
+
+class WorkflowUtils:
+    @staticmethod
+    def set_root_dir(root_dir):
+        if root_dir is None:
+            root_dir = os.getcwd()
+
+        if not os.path.exists(root_dir):
+            os.makedirs(root_dir)
+
+        return root_dir
 
 
 class WorkflowException(Exception):
