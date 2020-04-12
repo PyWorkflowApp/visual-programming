@@ -413,14 +413,16 @@ class NodeException(Exception):
 
 class NodeUtils:
 
+    FIXED_INPUT_NODES = ['WriteCsvNode', 'FilterNode']
+
     @staticmethod
     def validate_predecessor_data(predecessor_data_len, num_in, node_key):
         validation_failed = False
         exception_txt = ""
-        if node_key == 'WriteCsvNode' and predecessor_data_len != num_in:
+        if node_key in NodeUtils.FIXED_INPUT_NODES and predecessor_data_len != num_in:
                 validation_failed = True
                 exception_txt = '%s needs %d inputs. %d were provided'
-        elif (node_key != 'WriteCsvNode' and predecessor_data_len > num_in):
+        elif (node_key not in NodeUtils.FIXED_INPUT_NODES and predecessor_data_len > num_in):
                 validation_failed = True
                 exception_txt = '%s can take up to %d inputs. %d were provided'
 
