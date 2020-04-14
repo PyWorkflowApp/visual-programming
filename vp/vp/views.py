@@ -55,8 +55,8 @@ def retrieve_nodes_for_user(request):
                 'num_out': child.num_out,
                 'color': child.color or parent.color,
                 'doc': child.__doc__,
-                'options': {**parent.DEFAULT_OPTIONS, **child.DEFAULT_OPTIONS},
-                'option_types': getattr(child, "OPTION_TYPES", dict()),
+                'options': {k: v.get_value() for k, v in child.options.items()},
+                'option_types': child.option_types,
                 'download_result':  getattr(child, "download_result", False)
             }
 

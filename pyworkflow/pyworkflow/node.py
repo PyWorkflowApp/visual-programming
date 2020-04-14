@@ -1,11 +1,16 @@
 import pandas as pd
 
+from .parameters import *
+
 
 class Node:
     """Node object
 
     """
-    def __init__(self, node_info, options=None):
+    options = Options()
+    option_types = OptionTypes()
+
+    def __init__(self, node_info):
         self.name = node_info.get('name')
         self.node_id = node_info.get('node_id')
         self.node_type = node_info.get('node_type')
@@ -14,12 +19,9 @@ class Node:
 
         self.is_global = node_info.get('is_global') is True
 
-        # Execution options are passed up from children
-        self.options = options or dict()
-
-        # User-override takes precedence
+        self.option_values = dict()
         if node_info.get("options"):
-            self.options.update(node_info["options"])
+            self.option_values.update(node_info["options"])
 
     def execute(self, predecessor_data, flow_vars):
         pass
@@ -35,12 +37,6 @@ class FlowNode(Node):
     """FlowNode object
     """
     display_name = "Flow Control"
-    DEFAULT_OPTIONS = {
-
-    }
-
-    def __init__(self, node_info, options=dict()):
-        super().__init__(node_info, {**FlowNode.DEFAULT_OPTIONS, **options})
 
 
 class StringNode(FlowNode):
@@ -53,26 +49,12 @@ class StringNode(FlowNode):
     num_out = 1
     color = 'purple'
 
-    DEFAULT_OPTIONS = {
-        'default_value': None,
-        'var_name': 'my_var',
+    OPTIONS = {
+        "default_value": StringParameter("Default Value",
+                                         docstring="Value this node will pass as a flow variable"),
+        "var_name": StringParameter("Variable Name", default="my_var",
+                                    docstring="Name of the variable to use in another Node")
     }
-
-    OPTION_TYPES = {
-        'default_value': {
-            "type": "string",
-            "name": "Default Value",
-            "desc": "Value this Node will pass as a flow variable"
-        },
-        'var_name': {
-            "type": "string",
-            "name": "Variable Name",
-            "desc": "Name of the variable to use in another Node"
-        }
-    }
-
-    def __init__(self, node_info):
-        super().__init__(node_info)
 
 
 class IONode(Node):
@@ -84,13 +66,6 @@ class IONode(Node):
     """
     color = 'black'
     display_name = "I/O"
-
-    DEFAULT_OPTIONS = {
-        # 'file': None,
-    }
-
-    def __init__(self, node_info, options=dict()):
-        super().__init__(node_info, {**IONode.DEFAULT_OPTIONS, **options})
 
     def execute(self, predecessor_data, flow_vars):
         pass
@@ -112,49 +87,27 @@ class ReadCsvNode(IONode):
     num_in = 0
     num_out = 1
 
-    DEFAULT_OPTIONS = {
-        'filepath_or_buffer': None,
-        'sep': ',',
-        'header': 'infer',
-        'index_col': None
+    OPTIONS = {
+        "file": FileParameter("File", docstring="CSV File"),
+        "sep": StringParameter("Delimiter", default=",", docstring="Column delimiter"),
+        # user-specified headers are probably integers, but haven't figured out
+        # arguments with multiple possible types
+        "header": StringParameter("Header Row", default="infer",
+                                   docstring="Row number containing column names (0-indexed)"),
     }
-
-    OPTION_TYPES = {
-        'filepath_or_buffer': {
-            "type": "file",
-            "name": "File",
-            "desc": "CSV File"
-        },
-        'sep': {
-            "type": "string",
-            "name": "Delimiter",
-            "desc": "column delimiter, default ','"
-        },
-        'header': {
-            "type": "string",
-            "name": "Column Name Row",
-            "desc": "Row number with column names (0-indexed) or 'infer'"
-        },
-        'index_col': {
-            "type": "string",
-            "name": "Index Column Name",
-            "desc": "Column to use as index (facilitates joining)"
-        }
-    }
-
-    def __init__(self, node_info, options=dict()):
-        super().__init__(node_info, {**self.DEFAULT_OPTIONS, **options})
 
     def execute(self, predecessor_data, flow_vars):
+        print(self.option_values)
+        print(self.options)
         try:
-            # TODO: FileStorage implemented in Django to store in /tmp
-            #       Better filename/path handling should be implemented.
             NodeUtils.replace_flow_vars(self.options, flow_vars)
-            opts = self.options
-            df = pd.read_csv(opts["filepath_or_buffer"], sep=opts["sep"],
-                             header=opts["header"])
+            fname = self.options["file"].get_value()
+            sep = self.options["sep"].get_value()
+            hdr = self.options["header"].get_value()
+            df = pd.read_csv(fname, sep=sep, header=hdr)
             return df.to_json()
         except Exception as e:
+            raise e
             raise NodeException('read csv', str(e))
 
     def __str__(self):
@@ -175,33 +128,11 @@ class WriteCsvNode(IONode):
     num_out = 0
     download_result = True
 
-    DEFAULT_OPTIONS = {
-        'path_or_buf': None,
-        'sep': ',',
-        'index': True,
+    OPTIONS = {
+        "file": StringParameter("Filename", docstring="CSV file to write"),
+        "sep": StringParameter("Delimiter", default=",", docstring="Column delimiter"),
+        "index": BooleanParameter("Write Index", default=True, docstring="Write index as column?"),
     }
-
-    OPTION_TYPES = {
-        "path_or_buf": {
-            "type": "string",
-            "name": "Filename",
-            "desc": "Filename to write"
-        },
-        "sep": {
-            "type": "string",
-            "name": "Delimiter",
-            "desc": "column delimiter, default ','"
-        },
-        "index": {
-            "type": "boolean",
-            "name": "Index",
-            "desc": "Write index column or not"
-        }
-
-    }
-
-    def __init__(self, node_info, options=dict()):
-        super().__init__(node_info, {**self.DEFAULT_OPTIONS, **options})
 
     def execute(self, predecessor_data, flow_vars):
         try:
@@ -212,8 +143,10 @@ class WriteCsvNode(IONode):
             df = pd.DataFrame.from_dict(predecessor_data[0])
 
             # Write to CSV and save
-            opts = self.options
-            df.to_csv(opts["path_or_buf"], sep=opts["sep"], index=opts["index"])
+            fname = self.options["file"].get_value()
+            sep = self.options["sep"].get_value()
+            index = self.options["index"].get_value()
+            df.to_csv(fname, sep=sep, index=index)
             return df.to_json()
         except Exception as e:
             raise NodeException('write csv', str(e))
@@ -229,11 +162,6 @@ class ManipulationNode(Node):
     """
     display_name = "Manipulation"
     color = 'goldenrod'
-
-    DEFAULT_OPTIONS = {}
-
-    def __init__(self, node_info, options=dict()):
-        super().__init__(node_info, {**ManipulationNode.DEFAULT_OPTIONS, **options})
 
     def execute(self, predecessor_data, flow_vars):
         pass
@@ -308,9 +236,6 @@ class PivotNode(ManipulationNode):
         }
     }
 
-    def __init__(self, node_info, options=dict()):
-        super().__init__(node_info, {**self.DEFAULT_OPTIONS, **options})
-
     def execute(self, predecessor_data, flow_vars):
         try:
             NodeUtils.validate_predecessor_data(len(predecessor_data), self.num_in, self.node_key)
@@ -326,20 +251,9 @@ class JoinNode(ManipulationNode):
     num_in = 2
     num_out = 1
 
-    DEFAULT_OPTIONS = {
-        "on": None,
+    OPTIONS = {
+        "on": StringParameter("Join Column", docstring="Name of column to join on")
     }
-
-    OPTION_TYPES = {
-        "on": {
-            "type": "string",
-            "name": "Join Column",
-            "desc": "Name of column to join on"
-        }
-    }
-
-    def __init__(self, node_info, options=dict()):
-        super().__init__(node_info, {**self.DEFAULT_OPTIONS, **options})
 
     def execute(self, predecessor_data, flow_vars):
         # Join cannot accept more than 2 input DataFrames
@@ -348,7 +262,8 @@ class JoinNode(ManipulationNode):
             NodeUtils.validate_predecessor_data(len(predecessor_data), self.num_in, self.node_key)
             first_df = pd.DataFrame.from_dict(predecessor_data[0])
             second_df = pd.DataFrame.from_dict(predecessor_data[1])
-            combined_df = pd.merge(first_df, second_df, on=self.options["on"])
+            combined_df = pd.merge(first_df, second_df,
+                                   on=self.options["on"].get_value())
             return combined_df.to_json()
         except Exception as e:
             raise NodeException('join', str(e))
@@ -384,6 +299,9 @@ class NodeUtils:
 
     @staticmethod
     def replace_flow_vars(node_options, flow_vars):
+        # TODO: this will no longer work with the Node.options descriptor,
+        #       which uses Node.option_values to populate the Parameter
+        #       class values upon access
         for var in flow_vars:
             node_options[var['var_name']] = var['default_value']
 
