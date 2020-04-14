@@ -93,7 +93,10 @@ class Workflow:
         # attributes to add to graph
         node_dict = node.__dict__
         for key in node_dict.keys():
-            graph.nodes[node.node_id][key] = node_dict[key]
+            out_key = key
+            if key == "option_values":
+                out_key = "options"
+            graph.nodes[node.node_id][out_key] = node_dict[key]
 
         return
 
