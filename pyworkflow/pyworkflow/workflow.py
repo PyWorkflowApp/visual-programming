@@ -18,15 +18,7 @@ class Workflow:
 
     def __init__(self, name="Untitled", root_dir=None, graph=nx.DiGraph(), flow_vars=nx.Graph()):
         self._name = name
-
-        if root_dir is None:
-            root_dir = os.getcwd()
-
-        if not os.path.exists(root_dir):
-            os.makedirs(root_dir)
-
-        self._root_dir = root_dir
-
+        self._root_dir = WorkflowUtils.set_root_dir(root_dir)
         self._graph = graph
         self._flow_vars = flow_vars
 
@@ -34,9 +26,8 @@ class Workflow:
     def graph(self):
         return self._graph
 
-    @staticmethod
-    def path(workflow, file_name):
-        return os.path.join(workflow.root_dir, file_name)
+    def path(self, file_name):
+        return os.path.join(self.root_dir, file_name)
 
     @property
     def root_dir(self):
@@ -243,7 +234,7 @@ class Workflow:
     def upload_file(self, uploaded_file, node_id):
         try:
             file_name = f"{node_id}-{uploaded_file.name}"
-            to_open = Workflow.path(self, file_name)
+            to_open = self.path(file_name)
 
             # TODO: Change to a stream/other method for large files?
             with open(to_open, 'wb') as f:
@@ -283,7 +274,7 @@ class Workflow:
 
         """
         file_name = Workflow.generate_file_name(workflow, node_id)
-        file_path = Workflow.path(workflow, file_name)
+        file_path = workflow.path(file_name)
 
         try:
             with open(file_path, 'w') as f:
@@ -389,6 +380,18 @@ class Workflow:
             return out
         except nx.NetworkXError as e:
             raise WorkflowException('to_session_dict', str(e))
+
+
+class WorkflowUtils:
+    @staticmethod
+    def set_root_dir(root_dir):
+        if root_dir is None:
+            root_dir = os.getcwd()
+
+        if not os.path.exists(root_dir):
+            os.makedirs(root_dir)
+
+        return root_dir
 
 
 class WorkflowException(Exception):
