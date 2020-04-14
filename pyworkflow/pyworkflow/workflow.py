@@ -261,7 +261,7 @@ class Workflow:
 
         try:
             # TODO: Change to generic "file" option to allow for more than WriteCsv
-            to_open = Workflow.path(self, node.options['path_or_buf'])
+            to_open = Workflow.path(self, node.options['file'].get_value())
             return open(to_open)
         except KeyError:
             raise WorkflowException('download_file', '%s does not have an associated file' % node_id)

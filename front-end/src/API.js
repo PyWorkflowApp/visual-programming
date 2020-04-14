@@ -189,7 +189,7 @@ export async function downloadDataFile(node) {
             contentType = resp.headers.get("content-type");
             if (contentType.startsWith("text")) {
                 resp.text().then(data => {
-                    downloadFile(data, contentType, node.config["path_or_buf"]);
+                    downloadFile(data, contentType, node.config["file"]);
                 })
             }
         }).catch(err => console.log(err));
