@@ -97,8 +97,6 @@ class ReadCsvNode(IONode):
     }
 
     def execute(self, predecessor_data, flow_vars):
-        print(self.option_values)
-        print(self.options)
         try:
             NodeUtils.replace_flow_vars(self.options, flow_vars)
             fname = self.options["file"].get_value()
@@ -107,7 +105,6 @@ class ReadCsvNode(IONode):
             df = pd.read_csv(fname, sep=sep, header=hdr)
             return df.to_json()
         except Exception as e:
-            raise e
             raise NodeException('read csv', str(e))
 
     def __str__(self):
