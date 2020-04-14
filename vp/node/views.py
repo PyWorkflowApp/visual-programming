@@ -260,7 +260,7 @@ def create_node(request):
     json_data = json.loads(request.body)
     # for options with type 'file', replace value with FileStorage path
     for field, info in json_data.get("option_types", dict()).items():
-        if info["type"] == "file" or info["name"] == "Filename":
+        if info["type"] == "file" or info["label"] == "Filename":
             opt_value = json_data["options"][field]
             if opt_value is not None:
                 json_data["options"][field] = Workflow.path(request.pyworkflow, opt_value)
