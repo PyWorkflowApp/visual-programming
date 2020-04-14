@@ -252,7 +252,7 @@ class Workflow:
 
         try:
             # TODO: Change to generic "file" option to allow for more than WriteCsv
-            to_open = Workflow.path(self, node.options['file'].get_value())
+            to_open = self.path(node.options['file'].get_value())
             return open(to_open)
         except KeyError:
             raise WorkflowException('download_file', '%s does not have an associated file' % node_id)
@@ -299,7 +299,7 @@ class Workflow:
                 problem parsing the file.
         """
         try:
-            with open(Workflow.path(self, node_to_retrieve.data)) as f:
+            with open(self.path(node_to_retrieve.data)) as f:
                 return json.load(f)
         except OSError as e:
             raise WorkflowException('retrieve node data', str(e))
