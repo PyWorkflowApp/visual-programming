@@ -85,8 +85,8 @@ function OptionInput(props) {
     }
     return (
         <Form.Group>
-                <Form.Label>{props.name}</Form.Label>
-                <div style={{fontSize: '0.7rem'}}>{props.desc}</div>
+                <Form.Label>{props.label}</Form.Label>
+                <div style={{fontSize: '0.7rem'}}>{props.docstring}</div>
                 { inputComp }
         </Form.Group>
     )
