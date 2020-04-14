@@ -215,7 +215,7 @@ class Workflow:
                 if node_to_retrieve.node_type == 'FlowNode':
                     flow_vars.append(node_to_retrieve.options)
                 else:
-                    preceding_data.append(Workflow.retrieve_node_data(node_to_retrieve))
+                    preceding_data.append(self.retrieve_node_data(node_to_retrieve))
 
             except WorkflowException:
                 # TODO: Should this append None, skip reading, or raise exception to view?
@@ -292,8 +292,7 @@ class Workflow:
         except Exception as e:
             return None
 
-    @staticmethod
-    def retrieve_node_data(node_to_retrieve):
+    def retrieve_node_data(self, node_to_retrieve):
         """Retrieve Node data
 
         Reads a saved DataFrame, referenced by the Node's 'data' attribute.
@@ -309,7 +308,7 @@ class Workflow:
                 problem parsing the file.
         """
         try:
-            with open(node_to_retrieve.data) as f:
+            with open(Workflow.path(self, node_to_retrieve.data)) as f:
                 return json.load(f)
         except OSError as e:
             raise WorkflowException('retrieve node data', str(e))
