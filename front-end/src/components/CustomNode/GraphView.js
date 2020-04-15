@@ -2,53 +2,61 @@ import React from 'react';
 import { Modal, Button } from 'react-bootstrap';
 import propTypes from 'prop-types';
 import { VariableSizeGrid as Grid } from 'react-window';
+import * as API from "../../API";
 
-function GraphView(props) {
+export default class GraphView extends React.Component {
 
-    const onClose = () => {
-        props.toggleShow();
+    constructor(props) {
+      super(props);
+      this.key_id = props.node.getNodeId();
+      this.columnCount = 0;
+      this.rowCount = 0;
+      this.state = { data: [] };
+    }
+
+    onClose = () => {
+        this.props.toggleShow();
     };
 
-    /*
-    * Dummy example taken from https://react-window.now.sh/#/examples/grid/variable-size
-    */
-    const columnWidths = new Array(1000)
+    columnWidths = new Array(this.columnCount)
       .fill(true)
       .map(() => 75 + Math.round(Math.random() * 50));
 
-    const rowHeights = new Array(1000)
+    rowHeights = new Array(this.rowCount)
       .fill(true)
       .map(() => 25 + Math.round(Math.random() * 50));
 
-    const Cell = ({ columnIndex, rowIndex, style }) => (
+    Cell = ({ columnIndex, rowIndex, style }) => (
       <div style={style}>
         Item {rowIndex},{columnIndex}
       </div>
     );
 
 
-    return (
-            <Modal show={props.show} onHide={props.toggleShow} centered>
-            <Modal.Header>
-                <Modal.Title><b>{props.node.options.name}</b> View</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-            <Grid
-                columnCount={1000}
-                columnWidth={index => columnWidths[index]}
-                height={150}
-                rowCount={1000}
-                rowHeight={index => rowHeights[index]}
-                width={400}
-              >
-                {Cell}
-              </Grid>
-            </Modal.Body>
-            <Modal.Footer>
-                <Button variant="secondary" onClick={onClose}>Accept</Button>
-            </Modal.Footer>
-            </Modal>
-    );
+    render() {
+      return (
+              <Modal show={this.props.show} onHide={this.props.toggleShow} centered>
+              <Modal.Header>
+                  <Modal.Title><b>{this.props.node.options.name}</b> View</Modal.Title>
+              </Modal.Header>
+              <Modal.Body>
+              <Grid
+                  columnCount={this.columnCount}
+                  columnWidth={index => this.columnWidths[index]}
+                  height={150}
+                  rowCount={this.rowCount}
+                  rowHeight={index => this.rowHeights[index]}
+                  width={400}
+                >
+                  {this.Cell}
+                </Grid>
+              </Modal.Body>
+              <Modal.Footer>
+                  <Button variant="secondary" onClick={this.onClose}>Accept</Button>
+              </Modal.Footer>
+              </Modal>
+      );
+    }
 }
 
 
@@ -57,5 +65,3 @@ GraphView.propTypes = {
     toggleShow: propTypes.func,
     onClose: propTypes.func,
 }
-
-export default GraphView;

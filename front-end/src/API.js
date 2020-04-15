@@ -213,3 +213,12 @@ export async function execute(node) {
     const id = node.options.id;
     return fetchWrapper(`/node/${id}/execute`);
 }
+
+/**
+ * Retrieves the data at the state of the specified node
+ * @param {string }nodeId - node identifier for an execution state
+ * @returns {Promise<Object>} - json respnse with the data at specified state
+ */
+export async function retrieveData(nodeId) {
+  return fetchWrapper(`/node/${nodeId}/retrieve_csv_data`)
+}
