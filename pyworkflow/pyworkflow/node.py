@@ -149,6 +149,8 @@ class ReadCsvNode(IONode):
         try:
             # TODO: FileStorage implemented in Django to store in /tmp
             #       Better filename/path handling should be implemented.
+            # Read CSV needs exactly 0 input DataFrame
+            NodeUtils.validate_predecessor_data(len(predecessor_data), self.num_in, self.node_key)
             NodeUtils.replace_flow_vars(self.options, flow_vars)
             opts = self.options
             df = pd.read_csv(opts["filepath_or_buffer"], sep=opts["sep"],
@@ -354,6 +356,54 @@ class JoinNode(ManipulationNode):
             raise NodeException('join', str(e))
 
 
+class FilterNode(ManipulationNode):
+    name = "Filter"
+    num_in = 1
+    num_out = 1
+
+    DEFAULT_OPTIONS = {
+        'items': None,
+        'like': None,
+        'regex': None,
+        'axis': None
+    }
+
+    OPTION_TYPES = {
+        'items': {
+            "type": "list",
+            "name": "Items",
+            "desc": "Keep labels from axis which are in items"
+        },
+        'like': {
+            "type": "string",
+            "name": "Like",
+            "desc": "Keep labels from axis for which like in label == True."
+        },
+        'regex': {
+            "type": "string",
+            "name": "Regex",
+            "desc": "Keep labels from axis for which re.search(regex, label) == True."
+        },
+        'axis': {
+            "type": "int or string",
+            "name": "Axis",
+            "desc": "The axis to filter on."
+        }
+    }
+
+    def __init__(self, node_info, options=dict()):
+        super().__init__(node_info, {**self.DEFAULT_OPTIONS, **options})
+
+    def execute(self, predecessor_data, flow_vars):
+        try:
+            NodeUtils.validate_predecessor_data(len(predecessor_data), self.num_in, self.node_key)
+            input_df = pd.DataFrame.from_dict(predecessor_data[0])
+            output_df = pd.DataFrame.filter(input_df, **self.options)
+            return output_df.to_json()
+        except Exception as e:
+            raise NodeException('filter', str(e))
+
+
 class NodeException(Exception):
     def __init__(self, action: str, reason: str):
         self.action = action
@@ -365,14 +415,17 @@ class NodeException(Exception):
 
 class NodeUtils:
 
+    FIXED_INPUT_NODES = ['WriteCsvNode', 'FilterNode', 'JoinNode'] # nodes which can only have a fixed number of predecessors
+    MAX_INPUT_NODES = ['ReadCsvNode'] # nodes for which num_in represents a maximum number of predecessors
+
     @staticmethod
     def validate_predecessor_data(predecessor_data_len, num_in, node_key):
         validation_failed = False
         exception_txt = ""
-        if node_key == 'WriteCsvNode' and predecessor_data_len != num_in:
+        if node_key in NodeUtils.FIXED_INPUT_NODES and predecessor_data_len != num_in:
                 validation_failed = True
                 exception_txt = '%s needs %d inputs. %d were provided'
-        elif (node_key != 'WriteCsvNode' and predecessor_data_len > num_in):
+        elif (node_key in NodeUtils.MAX_INPUT_NODES and predecessor_data_len > num_in):
                 validation_failed = True
                 exception_txt = '%s can take up to %d inputs. %d were provided'
 
