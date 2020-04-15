@@ -14,6 +14,13 @@ export default class GraphView extends React.Component {
       this.state = { data: [] };
     }
 
+    load = () => {
+          console.log("Loading data");
+          const jsonResponse = API.retrieveData(this.key_id)
+          console.log("response type: " jsonResponse)
+          this.setState({ data: jsonResponse });
+    }
+
     onClose = () => {
         this.props.toggleShow();
     };
@@ -53,6 +60,7 @@ export default class GraphView extends React.Component {
               </Modal.Body>
               <Modal.Footer>
                   <Button variant="secondary" onClick={this.onClose}>Accept</Button>
+                  <Button variant="secondary" onClick={this.load}>Load</Button>
               </Modal.Footer>
               </Modal>
       );
