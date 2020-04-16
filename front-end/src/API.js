@@ -13,8 +13,12 @@ function fetchWrapper(endpoint, options = {}) {
             .then(async resp => {
                 const data = await resp.json();
                 console.log(data);
-                if (resp.ok) return resolve(data);
-                else return reject(data);
+                if (resp.ok) {
+                  console.log("Response is ok");
+                  return resolve(data);
+                } else {
+                  return reject(data);
+                }
             })
             .catch(err => {
                 return reject(err);
@@ -220,5 +224,5 @@ export async function execute(node) {
  * @returns {Promise<Object>} - json respnse with the data at specified state
  */
 export async function retrieveData(nodeId) {
-  return fetchWrapper(`/node/${nodeId}/retrieve_csv_data`)
+  return fetchWrapper(`/node/${nodeId}/retrieve_data`);
 }

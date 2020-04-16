@@ -11,6 +11,7 @@ export default class GraphView extends React.Component {
       super(props);
       this.key_id = props.node.getNodeId();
       this.state = {
+        loading: false,
         rowCount: 0,
         columnCount: 0,
         data: [],
@@ -29,6 +30,7 @@ export default class GraphView extends React.Component {
 
     load = async () => {
           console.log("Loading data");
+          this.setState({loading: true})
           API.retrieveData(this.key_id)
           .then(json => {
             const keys = Object.keys(json);
@@ -40,7 +42,8 @@ export default class GraphView extends React.Component {
             this.setState({ data: json,
               keys: keys,
               columnCount: columnCount,
-              rowCount: rowCount });
+              rowCount: rowCount,
+              loading: false});
           }).catch(err => console.log(err));
     }
 
@@ -57,7 +60,6 @@ export default class GraphView extends React.Component {
       .map(() => 25 + Math.round(Math.random() * 50));
 
     Cell = ({ columnIndex, rowIndex, style }) => {
-      console.log("Showing (" + columnIndex + ", " + rowIndex + ") out of (" + this.state.columnCount + ", " + this.state.rowCount + ")");
       if (rowIndex === 0) {
         return (
           <div style={style}>
@@ -77,6 +79,10 @@ export default class GraphView extends React.Component {
 
 
     render() {
+      if (this.state.loading) {
+        return (<div>Loading data...</div>);
+      }
+
       if (this.state.columnCount < 1) {
         return (
           <Modal show={this.props.show} onHide={this.props.toggleShow} centered>
@@ -84,6 +90,7 @@ export default class GraphView extends React.Component {
               <Modal.Title><b>{this.props.node.options.name}</b> View</Modal.Title>
           </Modal.Header>
           <Modal.Body>
+          Loading the data might take a while depending on how big the data is.
           </Modal.Body>
           <Modal.Footer>
               <Button variant="secondary" onClick={this.onClose}>Accept</Button>
@@ -102,27 +109,20 @@ export default class GraphView extends React.Component {
                   <Modal.Title><b>{this.props.node.options.name}</b> View</Modal.Title>
               </Modal.Header>
               <Modal.Body>
-              <div style={{height: '150px', width: '16000px', overflow: 'scroll' }}>
-              <AutoSizer onResize={this.onResize}>
-               {({height, width}) => (
               <Grid
                   ref={this.state.gridRef}
                   columnCount={this.state.columnCount}
-                  columnWidth={index => 20}
-                  height={height}
+                  columnWidth={index => 40}
+                  height={150}
                   rowCount={this.state.rowCount}
-                  rowHeight={index => this.rowHeights[index]}
-                  width={width}
+                  rowHeight={index => 20}
+                  width={480}
                 >
                   {this.Cell}
                 </Grid>
-              )}
-                </AutoSizer>
-                </div>
               </Modal.Body>
               <Modal.Footer>
                   <Button variant="secondary" onClick={this.onClose}>Accept</Button>
-                  <Button variant="secondary" onClick={this.load}>Load</Button>
               </Modal.Footer>
               </Modal>
       );
