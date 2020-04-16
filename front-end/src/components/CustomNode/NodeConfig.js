@@ -1,60 +1,82 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Modal, Button, Form } from 'react-bootstrap';
 import propTypes from 'prop-types';
 import * as _ from 'lodash';
 import * as API from "../../API";
 
-export default function NodeConfig(props) {
+export default class NodeConfig extends React.Component {
 
-    const form = useRef();
-    const [disabled, setDisabled] = useState(false);
+    constructor(props) {
+        super(props);
+        this.state = {
+            disabled: false,
+            data: {}
+        };
+        this.updateData = this.updateData.bind(this);
+        this.handleDelete = this.handleDelete.bind(this);
+        this.handleSubmit = this.handleSubmit.bind(this);
+    }
+
+    // callback to update form data in state;
+    // resulting state will be sent to node config callback
+    updateData(key, value) {
+        this.setState((prevState) => ({
+                ...prevState,
+                data: {
+                    ...prevState.data,
+                    [key]: value
+                }
+            })
+        );
+    };
 
     // confirm, fire delete callback, close modal
-    const handleDelete = () => {
+    handleDelete() {
         if (window.confirm("Are you sure you want to delete this node?")) {
-            props.onDelete();
-            props.toggleShow();
+            this.props.onDelete();
+            this.props.toggleShow();
         }
     };
 
     // collect config data, fire submit callback, close modal
-    const handleSubmit = (e) => {
+    handleSubmit(e) {
         e.preventDefault();
-        const fd = new FormData(form.current);
-        const data = {};
-        fd.forEach((value, key) => {data[key] = value;});
-        props.onSubmit(data);
-        props.toggleShow();
+        console.log(this.state.data);
+        this.props.onSubmit(this.state.data);
+        this.props.toggleShow();
     };
 
-    return (
-            <Modal show={props.show} onHide={props.toggleShow} centered>
-                <Form onSubmit={handleSubmit} ref={form}>
+    render() {
+        return (
+            <Modal show={this.props.show} onHide={this.props.toggleShow} centered>
+                <Form onSubmit={this.handleSubmit}>
                     <Modal.Header>
-                        <Modal.Title><b>{props.node.options.name}</b> Configuration</Modal.Title>
+                        <Modal.Title><b>{this.props.node.options.name}</b> Configuration</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
-                        { _.map(props.node.configParams, (info, key) =>
+                        {_.map(this.props.node.configParams, (info, key) =>
                             <OptionInput key={key} {...info} keyName={key}
-                                node={props.node}
-                                value={props.node.config[key]}
-                                disableFunc={setDisabled}/>
+                                         onChange={this.updateData}
+                                         node={this.props.node}
+                                         value={this.props.node.config[key]}
+                                         disableFunc={(v) => this.setState({disabled: v})}/>
                         )}
                         <Form.Group>
                             <Form.Label>Node Description</Form.Label>
                             <Form.Control as="textarea" rows="2"
-                                name="description"
-                                defaultValue={props.node.config.description} />
+                                          name="description"
+                                          defaultValue={this.props.node.config.description}/>
                         </Form.Group>
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button variant="success" disabled={disabled} type="submit">Save</Button>
-                        <Button variant="secondary" onClick={props.toggleShow}>Cancel</Button>
-                        <Button variant="danger" onClick={handleDelete}>Delete</Button>
+                        <Button variant="success" disabled={this.props.disabled} type="submit">Save</Button>
+                        <Button variant="secondary" onClick={this.props.toggleShow}>Cancel</Button>
+                        <Button variant="danger" onClick={this.handleDelete}>Delete</Button>
                     </Modal.Footer>
                 </Form>
             </Modal>
-    );
+        );
+    }
 }
 
 
