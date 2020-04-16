@@ -21,7 +21,7 @@ export default class GraphView extends React.Component {
   }
 
   columnWidths = (index) => {
-    return 10 * this.state.keys[index].length;
+    return 10 * this.state.widths[index];
   }
 
   rowHeights = () => new Array(765)
@@ -32,6 +32,23 @@ export default class GraphView extends React.Component {
         this.props.toggleShow();
   };
 
+  computeWidths = (columnCount, rowCount, json) => {
+    const widths = new Array(columnCount);
+    const keys = Object.keys(json);
+    for (let index = 0; index < columnCount; index++) {
+        const key = keys[index];
+        widths[index] = key.length;
+        for (let rowIndex = 0; rowIndex < rowCount; rowIndex++) {
+          const value = json[key][rowIndex.toString()];
+          if (value != null && value.length > widths[index]) {
+            widths[index] = value.length;
+          }
+        }
+    }
+
+    return widths;
+  }
+
   load = async () => {
           this.setState({loading: true})
           API.retrieveData(this.key_id)
@@ -40,12 +57,13 @@ export default class GraphView extends React.Component {
             const columnCount = keys.length;
             const rows = Object.keys(json[keys[0]]);
             const rowCount = rows.length;
-            console.log("There are " + rowCount + " rows")
+            const widths = this.computeWidths(columnCount, rowCount, json);
             this.setState({ data: json,
               keys: keys,
               columnCount: columnCount,
               rowCount: rowCount,
-              loading: false});
+              loading: false,
+              widths: widths});
           }).catch(err => console.log(err));
     }
 
