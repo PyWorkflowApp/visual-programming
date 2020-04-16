@@ -68,7 +68,7 @@ export default class GraphView extends React.Component {
 
       return (
         <div className={className} style={style}>
-          {this.state.data[this.keys[columnIndex]][rowIndex]}
+          {this.state.data[this.state.keys[columnIndex]][rowIndex.toString()] }
         </div>
       );
     }
