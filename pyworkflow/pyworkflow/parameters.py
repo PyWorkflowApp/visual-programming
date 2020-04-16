@@ -52,7 +52,9 @@ class Parameter:
         return self.__class__(self.label, self.default, self.docstring)
 
     def get_value(self):
-        return self._value or self.default
+        if self._value is None:
+            return self.default
+        return self._value
 
     def set_value(self, value):
         self._value = value
