@@ -51,9 +51,9 @@ export default class GraphView extends React.Component {
         this.props.toggleShow();
     };
 
-    columnWidths = () => new Array(1000)
-      .fill(true)
-      .map(() => 75 + Math.round(Math.random() * 50));
+    columnWidths = (index) => {
+      return 10 * this.state.keys[index].length;
+    }
 
     rowHeights = () => new Array(765)
       .fill(true)
@@ -112,7 +112,7 @@ export default class GraphView extends React.Component {
               <Grid
                   ref={this.state.gridRef}
                   columnCount={this.state.columnCount}
-                  columnWidth={index => 40}
+                  columnWidth={index => this.columnWidths(index)}
                   height={150}
                   rowCount={this.state.rowCount}
                   rowHeight={index => 20}
