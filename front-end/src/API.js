@@ -14,7 +14,6 @@ function fetchWrapper(endpoint, options = {}) {
                 const data = await resp.json();
                 console.log(data);
                 if (resp.ok) {
-                  console.log("Response is ok");
                   return resolve(data);
                 } else {
                   return reject(data);
