@@ -88,20 +88,20 @@ NodeConfig.propTypes = {
 };
 
 
+/**
+ *  Wrapper component to render form groups in the node config form.
+ */
 function OptionInput(props) {
 
     let inputComp;
     if (props.type === "file") {
-        inputComp = <FileUpload disableFunc={props.disableFunc}
-                        node={props.node}
-                        name={props.keyName}
-                        value={props.value} />
+        inputComp = <FileUploadInput {...props} />
     } else if (props.type === "string") {
-        inputComp = <Form.Control type="text" name={props.keyName}
-                        defaultValue={props.value} />;
-    } else if (props.type === "integer") {
-        inputComp = <Form.Control type="number" name={props.keyName}
-                                  defaultValue={props.value} />;
+        inputComp = <SimpleInput {...props} type="text" />
+    } else if (props.type === "int") {
+        inputComp = <SimpleInput {...props} type="number" />
+    } else if (props.type === "boolean") {
+        inputComp = <BooleanInput {...props} />
     } else {
         return (<></>)
     }
@@ -115,11 +115,23 @@ function OptionInput(props) {
 }
 
 
-function FileUpload(props) {
+/**
+ *  Component representing a file parameter.
+ *  Uploads selected file to server upon selection, and passes
+ *  the filename from the server response to the form callback.
+ */
+function FileUploadInput(props) {
 
     const input = useRef(null);
     const [fileName, setFileName] = useState(props.value || "");
     const [status, setStatus] = useState(props.value ? "ready" : "unconfigured");
+
+    const {keyName, onChange} = props;
+    // fire callback on mount to update node config state
+    useEffect(() => {
+            onChange(keyName, fileName);
+        },
+        [fileName, keyName, onChange]);
 
     const uploadFile = async file => {
         props.disableFunc(true);
@@ -169,3 +181,45 @@ function FileUpload(props) {
     )
 }
 
+function SimpleInput(props) {
+
+    const [value, setValue] = useState(props.value);
+    const handleChange = (event) => {
+        setValue(event.target.value);
+    };
+
+    const {keyName, onChange} = props;
+    // whenever value changes, fire callback to update config form
+    useEffect(() => {
+            onChange(keyName, value);
+        },
+        [value, keyName, onChange]);
+
+    return  (
+        <Form.Control type={props.type} name={props.keyName}
+                          defaultValue={props.value}
+                          onChange={handleChange} />
+    )
+}
+
+
+function BooleanInput(props) {
+
+    const [value, setValue] = useState(props.value);
+    const handleChange = (event) => {
+        setValue(event.target.checked);
+    };
+
+    const {keyName, onChange} = props;
+    // whenever value changes, fire callback to update config form
+    useEffect(() => {
+            onChange(keyName, value);
+        },
+        [value, keyName, onChange]);
+
+    return  (
+        <Form.Check type="checkbox" name={props.keyName}
+                      checked={value}
+                      onChange={handleChange} />
+    )
+}
