@@ -84,7 +84,10 @@ class Workflow:
         # attributes to add to graph
         node_dict = node.__dict__
         for key in node_dict.keys():
-            graph.nodes[node.node_id][key] = node_dict[key]
+            out_key = key
+            if key == "option_values":
+                out_key = "options"
+            graph.nodes[node.node_id][out_key] = node_dict[key]
 
         return
 
@@ -203,7 +206,7 @@ class Workflow:
                 if node_to_retrieve.node_type == 'FlowNode':
                     flow_vars.append(node_to_retrieve.options)
                 else:
-                    preceding_data.append(Workflow.retrieve_node_data(node_to_retrieve))
+                    preceding_data.append(self.retrieve_node_data(node_to_retrieve))
 
             except WorkflowException:
                 # TODO: Should this append None, skip reading, or raise exception to view?
@@ -249,7 +252,7 @@ class Workflow:
 
         try:
             # TODO: Change to generic "file" option to allow for more than WriteCsv
-            to_open = self.path(node.options['path_or_buf'])
+            to_open = self.path(node.options['file'].get_value())
             return open(to_open)
         except KeyError:
             raise WorkflowException('download_file', '%s does not have an associated file' % node_id)
@@ -280,8 +283,7 @@ class Workflow:
         except Exception as e:
             return None
 
-    @staticmethod
-    def retrieve_node_data(node_to_retrieve):
+    def retrieve_node_data(self, node_to_retrieve):
         """Retrieve Node data
 
         Reads a saved DataFrame, referenced by the Node's 'data' attribute.
@@ -297,7 +299,7 @@ class Workflow:
                 problem parsing the file.
         """
         try:
-            with open(node_to_retrieve.data) as f:
+            with open(self.path(node_to_retrieve.data)) as f:
                 return json.load(f)
         except OSError as e:
             raise WorkflowException('retrieve node data', str(e))

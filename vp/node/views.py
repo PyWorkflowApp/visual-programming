@@ -247,7 +247,7 @@ def execute_node(request, node_id):
 def retrieve_data(request, node_id):
     try:
         node_to_retrieve = request.pyworkflow.get_node(node_id)
-        data = Workflow.retrieve_node_data(node_to_retrieve)
+        data = request.pyworkflow.retrieve_node_data(node_to_retrieve)
         return JsonResponse(data, safe=False, status=200)
     except WorkflowException as e:
         return JsonResponse({e.action: e.reason}, status=500)
@@ -260,7 +260,7 @@ def create_node(request):
     json_data = json.loads(request.body)
     # for options with type 'file', replace value with FileStorage path
     for field, info in json_data.get("option_types", dict()).items():
-        if info["type"] == "file" or info["name"] == "Filename":
+        if info["type"] == "file" or info["label"] == "Filename":
             opt_value = json_data["options"][field]
             if opt_value is not None:
                 json_data["options"][field] = request.pyworkflow.path(opt_value)
