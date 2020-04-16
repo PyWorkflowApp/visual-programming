@@ -2,40 +2,42 @@ import React from 'react';
 import { Modal, Button } from 'react-bootstrap';
 import propTypes from 'prop-types';
 import { VariableSizeGrid as Grid } from 'react-window';
-import  AutoSizer from 'react-virtualized-auto-sizer';
 import * as API from "../../API";
+import '../../styles/index.css';
+
 
 export default class GraphView extends React.Component {
 
-    constructor(props) {
-      super(props);
-      this.key_id = props.node.getNodeId();
-      this.state = {
-        loading: false,
-        rowCount: 0,
-        columnCount: 0,
-        data: [],
-        keys: [],
-        gridRef: React.createRef()};
-    }
+  constructor(props) {
+    super(props);
+    this.key_id = props.node.getNodeId();
+    this.state = {
+      loading: false,
+      rowCount: 0,
+      columnCount: 0,
+      data: [],
+      keys: [],
+      gridRef: React.createRef()};
+  }
 
-  onResize = (...args) => {
-      if (this.state.gridRef.current != null) {
-        this.state.gridRef.current.resetAfterIndices({
-          columnIndex: 0,
-          shouldForceUpdate: false
-        });
-      }
+  columnWidths = (index) => {
+    return 10 * this.state.keys[index].length;
+  }
+
+  rowHeights = () => new Array(765)
+    .fill(true)
+    .map(() => 25 + Math.round(Math.random() * 50));
+
+  onClose = () => {
+        this.props.toggleShow();
   };
 
-    load = async () => {
-          console.log("Loading data");
+  load = async () => {
           this.setState({loading: true})
           API.retrieveData(this.key_id)
           .then(json => {
             const keys = Object.keys(json);
             const columnCount = keys.length;
-            console.log("There are " + columnCount + " columns");
             const rows = Object.keys(json[keys[0]]);
             const rowCount = rows.length;
             console.log("There are " + rowCount + " rows")
@@ -47,34 +49,28 @@ export default class GraphView extends React.Component {
           }).catch(err => console.log(err));
     }
 
-    onClose = () => {
-        this.props.toggleShow();
-    };
-
-    columnWidths = (index) => {
-      return 10 * this.state.keys[index].length;
-    }
-
-    rowHeights = () => new Array(765)
-      .fill(true)
-      .map(() => 25 + Math.round(Math.random() * 50));
-
     Cell = ({ columnIndex, rowIndex, style }) => {
+      const className =  columnIndex % 2
+          ? rowIndex % 2 === 0
+            ? 'GridItemOdd'
+            : 'GridItemEven'
+          : rowIndex % 2
+            ? 'GridItemOdd'
+            : 'GridItemEven';
+
       if (rowIndex === 0) {
         return (
-          <div style={style}>
+          <div className={className} style={style}>
             {this.state.keys[columnIndex]}
           </div>
         );
       }
 
-      return (<div></div>);
-
-      /*return (
-        <div style={style}>
+      return (
+        <div className={className} style={style}>
           {this.state.data[this.keys[columnIndex]][rowIndex]}
         </div>
-      );*/
+      );
     }
 
 
@@ -100,9 +96,6 @@ export default class GraphView extends React.Component {
         );
       }
 
-      console.log("Displaying data with " + this.state.columnCount + " columns");
-      console.log("Displaying data with " + this.state.rowCount + " rows");
-
       return (
               <Modal show={this.props.show} onHide={this.props.toggleShow} centered>
               <Modal.Header>
@@ -111,6 +104,7 @@ export default class GraphView extends React.Component {
               <Modal.Body>
               <Grid
                   ref={this.state.gridRef}
+                  className="Grid"
                   columnCount={this.state.columnCount}
                   columnWidth={index => this.columnWidths(index)}
                   height={150}
