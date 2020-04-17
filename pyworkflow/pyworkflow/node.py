@@ -50,10 +50,15 @@ class StringNode(FlowNode):
     color = 'purple'
 
     OPTIONS = {
-        "default_value": StringParameter("Default Value",
-                                         docstring="Value this node will pass as a flow variable"),
-        "var_name": StringParameter("Variable Name", default="my_var",
-                                    docstring="Name of the variable to use in another Node")
+        "default_value": StringParameter(
+            "Default Value",
+            docstring="Value this node will pass as a flow variable"
+        ),
+        "var_name": StringParameter(
+            "Variable Name",
+            default="my_var",
+            docstring="Name of the variable to use in another Node"
+        )
     }
 
 
@@ -88,12 +93,22 @@ class ReadCsvNode(IONode):
     num_out = 1
 
     OPTIONS = {
-        "file": FileParameter("File", docstring="CSV File"),
-        "sep": StringParameter("Delimiter", default=",", docstring="Column delimiter"),
+        "file": FileParameter(
+            "File",
+            docstring="CSV File"
+        ),
+        "sep": StringParameter(
+            "Delimiter",
+            default=",",
+            docstring="Column delimiter"
+        ),
         # user-specified headers are probably integers, but haven't figured out
         # arguments with multiple possible types
-        "header": StringParameter("Header Row", default="infer",
-                                   docstring="Row number containing column names (0-indexed)"),
+        "header": StringParameter(
+            "Header Row",
+            default="infer",
+            docstring="Row number containing column names (0-indexed)"
+        ),
     }
 
     def execute(self, predecessor_data, flow_vars):
@@ -128,9 +143,20 @@ class WriteCsvNode(IONode):
     download_result = True
 
     OPTIONS = {
-        "file": StringParameter("Filename", docstring="CSV file to write"),
-        "sep": StringParameter("Delimiter", default=",", docstring="Column delimiter"),
-        "index": BooleanParameter("Write Index", default=True, docstring="Write index as column?"),
+        "file": StringParameter(
+            "Filename",
+            docstring="CSV file to write"
+        ),
+        "sep": StringParameter(
+            "Delimiter",
+            default=",",
+            docstring="Column delimiter"
+        ),
+        "index": BooleanParameter(
+            "Write Index",
+            default=True,
+            docstring="Write index as column?"
+        ),
     }
 
     def execute(self, predecessor_data, flow_vars):
@@ -174,65 +200,48 @@ class PivotNode(ManipulationNode):
     num_in = 1
     num_out = 3
 
-    DEFAULT_OPTIONS = {
-        'index': None,
-        'values': None,
-        'columns': None,
-        'aggfunc': 'mean',
-        'fill_value': None,
-        'margins': False,
-        'dropna': True,
-        'margins_name': 'All',
-        'observed': False
-    }
-
-    OPTION_TYPES = {
-        'index': {
-            "type": "column, grouper, array or list",
-            "name": "Index",
-            "desc": "Column to aggregate"
-        },
-        'values': {
-            "type": "column, grouper, array or list",
-            "name": "Values",
-            "desc": "Column name to use to populate new frame's values"
-        },
-        'columns': {
-            "type": "column, grouper, array or list",
-            "name": "Column Name Row",
-            "desc": "Column(s) to use for populating new frame values.'"
-        },
-        'aggfunc': {
-            "type": "function, list of functions, dict, default numpy.mean",
-            "name": "Aggregation function",
-            "desc": "Function used for aggregation"
-        },
-        'fill_value': {
-            "type": "scalar",
-            "name": "Fill value",
-            "desc": "Value to replace missing values with"
-        },
-        'margins': {
-            "type": "boolean",
-            "name": "Margins name",
-            "desc": "Add all rows/columns"
-        },
-
-        'dropna': {
-            "type": "boolean",
-            "name": "Drop NaN columns",
-            "desc": "Ignore columns with all NaN entries"
-        },
-        'margins_name': {
-            "type": "string",
-            "name": "Margins name",
-            "desc": "Name of the row/column that will contain the totals when margins is True"
-        },
-        'observed': {
-            "type": "string",
-            "name": "Column Name Row",
-            "desc": "Row number with column names (0-indexed) or 'infer'"
-        }
+    OPTIONS = {
+        'index': StringParameter(
+            'Index',
+            docstring='Column to aggregate (column, grouper, array or list)'
+        ),
+        'values': StringParameter(
+            'Values',
+            docstring='Column name to use to populate new frame\'s values (column, grouper, array or list)'
+        ),
+        'columns': StringParameter(
+            'Column Name Row',
+            docstring='Column(s) to use for populating new frame values. (column, grouper, array or list)'
+        ),
+        'aggfunc': StringParameter(
+            'Aggregation function',
+            default='mean',
+            docstring='Function used for aggregation (function, list of functions, dict, default numpy.mean)'
+        ),
+        'fill_value': StringParameter(
+            'Fill value',
+            docstring='Value to replace missing values with (scalar)'
+        ),
+        'margins': BooleanParameter(
+            'Margins name',
+            default=False,
+            docstring='Add all rows/columns'
+        ),
+        'dropna': BooleanParameter(
+            'Drop NaN columns',
+            default=True,
+            docstring='Ignore columns with all NaN entries'
+        ),
+        'margins_name': StringParameter(
+            'Margins name',
+            default='All',
+            docstring='Name of the row/column that will contain the totals when margins is True'
+        ),
+        'observed': BooleanParameter(
+            'Column Name Row',
+            default=False,
+            docstring='Row number with column names (0-indexed) or "infer"'
+        )
     }
 
     def execute(self, predecessor_data, flow_vars):
@@ -273,34 +282,23 @@ class FilterNode(ManipulationNode):
     num_in = 1
     num_out = 1
 
-    DEFAULT_OPTIONS = {
-        'items': None,
-        'like': None,
-        'regex': None,
-        'axis': None
-    }
-
-    OPTION_TYPES = {
-        'items': {
-            "type": "list",
-            "name": "Items",
-            "desc": "Keep labels from axis which are in items"
-        },
-        'like': {
-            "type": "string",
-            "name": "Like",
-            "desc": "Keep labels from axis for which like in label == True."
-        },
-        'regex': {
-            "type": "string",
-            "name": "Regex",
-            "desc": "Keep labels from axis for which re.search(regex, label) == True."
-        },
-        'axis': {
-            "type": "int or string",
-            "name": "Axis",
-            "desc": "The axis to filter on."
-        }
+    OPTIONS = {
+        'items': StringParameter(
+            'Items',
+            docstring='Keep labels from axis which are in items'
+        ),
+        'like': StringParameter(
+            'Like',
+            docstring='Keep labels from axis for which like in label == True.'
+        ),
+        'regex': StringParameter(
+            'Regex',
+            docstring='Keep labels from axis for which re.search(regex, label) == True.'
+        ),
+        'axis': StringParameter(
+            'Axis',
+            docstring='The axis to filter on.'
+        )
     }
 
     def __init__(self, node_info, options=dict()):
