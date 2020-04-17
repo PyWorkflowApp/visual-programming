@@ -23,8 +23,40 @@ class Node:
         if node_info.get("options"):
             self.option_values.update(node_info["options"])
 
+        self.option_replace = dict()
+        if node_info.get("option_replace"):
+            self.option_replace.update(node_info["option_replace"])
+
     def execute(self, predecessor_data, flow_vars):
         raise NotImplementedError()
+
+    def replace_flow_vars(self, flow_vars):
+        """Replace Node options with flow variables.
+
+        If the user has specified any flow variables to replace Node options,
+        perform the replacement and return a dict with all options to use for
+        execution. If no flow variables are included, this method will return
+        a copy of all Node options unchanged.
+
+        Args:
+            flow_vars: dict of variables to replace options
+
+        Returns:
+            dict containing options to use for execution
+        """
+        execution_options = dict()
+
+        # TODO: Can we iterate through flow_vars instead?
+        #       If none are included, we can just return `self.options`.
+        for key, option in self.options.items():
+
+            if key in flow_vars:
+                replacement = flow_vars[key].get_replacement_value()
+                option.set_value(replacement)
+
+            execution_options[key] = option
+
+        return execution_options
 
     def validate(self):
         """Validate Node configuration
@@ -70,6 +102,9 @@ class FlowNode(Node):
 
     def execute(self, predecessor_data, flow_vars):
         return
+
+    def get_replacement_value(self):
+        return self.options['default_value'].get_value()
 
 
 class StringNode(FlowNode):
@@ -143,11 +178,11 @@ class ReadCsvNode(IONode):
 
     def execute(self, predecessor_data, flow_vars):
         try:
-            NodeUtils.replace_flow_vars(self.options, flow_vars)
-            fname = self.options["file"].get_value()
-            sep = self.options["sep"].get_value()
-            hdr = self.options["header"].get_value()
-            df = pd.read_csv(fname, sep=sep, header=hdr)
+            df = pd.read_csv(
+                flow_vars["file"].get_value(),
+                sep=flow_vars["sep"].get_value(),
+                header=flow_vars["header"].get_value()
+            )
             return df.to_json()
         except Exception as e:
             raise NodeException('read csv', str(e))
@@ -190,10 +225,11 @@ class WriteCsvNode(IONode):
             df = pd.DataFrame.from_dict(predecessor_data[0])
 
             # Write to CSV and save
-            fname = self.options["file"].get_value()
-            sep = self.options["sep"].get_value()
-            index = self.options["index"].get_value()
-            df.to_csv(fname, sep=sep, index=index)
+            df.to_csv(
+                flow_vars["file"].get_value(),
+                sep=flow_vars["sep"].get_value(),
+                index=flow_vars["index"].get_value()
+            )
             return df.to_json()
         except Exception as e:
             raise NodeException('write csv', str(e))
@@ -285,8 +321,11 @@ class JoinNode(ManipulationNode):
         try:
             first_df = pd.DataFrame.from_dict(predecessor_data[0])
             second_df = pd.DataFrame.from_dict(predecessor_data[1])
-            combined_df = pd.merge(first_df, second_df,
-                                   on=self.options["on"].get_value())
+            combined_df = pd.merge(
+                first_df,
+                second_df,
+                on=flow_vars["on"].get_value()
+            )
             return combined_df.to_json()
         except Exception as e:
             raise NodeException('join', str(e))
@@ -332,17 +371,3 @@ class NodeException(Exception):
 
     def __str__(self):
         return self.action + ': ' + self.reason
-
-
-class NodeUtils:
-
-
-    @staticmethod
-    def replace_flow_vars(node_options, flow_vars):
-        # TODO: this will no longer work with the Node.options descriptor,
-        #       which uses Node.option_values to populate the Parameter
-        #       class values upon access
-        for var in flow_vars:
-            node_options[var['var_name']] = var['default_value']
-
-        return
