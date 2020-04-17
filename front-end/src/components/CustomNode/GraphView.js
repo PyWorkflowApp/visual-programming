@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { forwardRef } from "react";
 import { Modal, Button } from 'react-bootstrap';
 import propTypes from 'prop-types';
 import { VariableSizeGrid as Grid } from 'react-window';
@@ -91,6 +91,14 @@ export default class GraphView extends React.Component {
       );
     }
 
+    preventDefault = (e) => {
+      e = e || window.event;
+      e.stopPropagation();
+    }
+
+    outerElementType = forwardRef((props, ref) => (
+        <div ref={ref} onWheel={this.preventDefault} {...props} />
+    ));
 
     render() {
       if (this.state.loading) {
@@ -129,6 +137,7 @@ export default class GraphView extends React.Component {
                   rowCount={this.state.rowCount}
                   rowHeight={index => 20}
                   width={480}
+                  outerElementType={this.outerElementType}
                 >
                   {this.Cell}
                 </Grid>
