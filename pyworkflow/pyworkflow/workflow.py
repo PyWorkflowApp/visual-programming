@@ -66,14 +66,7 @@ class Workflow:
 
         Args:
             node - The Node object to update or add to the graph
-
-        TODO:
-            * validate() always returns True; this should perform actual validation
         """
-        # Do not add/update if invalid
-        if node.validate() is False:
-            raise WorkflowException('update_or_add_node', 'Node is invalid')
-
         # Select the correct graph to modify
         graph = self.flow_vars if node.is_global else self.graph
 
@@ -112,9 +105,6 @@ class Workflow:
 
         Returns:
             Tuple representing the new Edge (from, to)
-
-        TODO:
-            * validate() always returns True; this should perform actual validation
         """
         # Prevent duplicate edges between the same two nodes
         # TODO: This may be incorrect usage for a `node_to` that has multi-in
@@ -124,8 +114,7 @@ class Workflow:
         if self._graph.has_edge(from_id, to_id):
             raise WorkflowException('add_node', 'Edge between nodes already exists.')
 
-        if node_from.validate() and node_to.validate():
-            self._graph.add_edge(from_id, to_id)
+        self._graph.add_edge(from_id, to_id)
 
         return (from_id, to_id)
 

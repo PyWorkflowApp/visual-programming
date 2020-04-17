@@ -27,7 +27,16 @@ class Node:
         pass
 
     def validate(self):
-        return True
+        """Validate Node configuration
+
+        Checks all Node options and validates all Parameter classes using
+        their validation method.
+
+        Raises:
+            ParameterValidationError: invalid Parameter value
+        """
+        for option in self.options.values():
+            option.validate()
 
     def __str__(self):
         return "Test"
@@ -74,9 +83,6 @@ class IONode(Node):
 
     def execute(self, predecessor_data, flow_vars):
         pass
-
-    def validate(self):
-        return True
 
 
 class ReadCsvNode(IONode):
@@ -190,9 +196,6 @@ class ManipulationNode(Node):
 
     def execute(self, predecessor_data, flow_vars):
         pass
-
-    def validate(self):
-        return True
 
 
 class PivotNode(ManipulationNode):

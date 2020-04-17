@@ -2,7 +2,7 @@ import json
 
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from pyworkflow import Workflow, WorkflowException, Node, NodeException, node_factory
+from pyworkflow import Workflow, WorkflowException, Node, NodeException, node_factory, ParameterValidationError
 from rest_framework.decorators import api_view
 from drf_yasg.utils import swagger_auto_schema
 
@@ -190,6 +190,9 @@ def handle_node(request, node_id):
                     'updated_node': str(updated_node.is_global),
                 }, status=500)
 
+            # Validation raises exception if failed
+            updated_node.validate()
+
             request.pyworkflow.update_or_add_node(updated_node)
             response = JsonResponse(updated_node.__dict__, safe=False)
         elif request.method == 'DELETE':
@@ -203,6 +206,8 @@ def handle_node(request, node_id):
             }, status=405)
     except (NodeException, WorkflowException) as e:
         return JsonResponse({e.action: e.reason}, status=500)
+    except ParameterValidationError as e:
+        return JsonResponse({'message': str(e)}, status=500)
 
     return response
 
