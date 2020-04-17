@@ -87,6 +87,18 @@ class Node:
                 f'{self.node_key} requires {self.num_in} inputs. {num_input_data} were provided'
             )
 
+    def to_json(self):
+        return {
+            "name": self.name,
+            "node_id": self.node_id,
+            "node_type": self.node_type,
+            "node_key": self.node_key,
+            "data": self.data,
+            "is_global": self.is_global,
+            "option_values": self.option_values,
+            "option_replace": self.option_replace,
+        }
+
     def __str__(self):
         return "Test"
 

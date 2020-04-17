@@ -167,7 +167,6 @@ def handle_node(request, node_id):
         }, status=404)
 
     # Process request
-    # Node class not JSON serializable; pass __dict__ to response for display
     try:
         if request.method == 'GET':
             response = JsonResponse(retrieved_node.__dict__, safe=False)
@@ -194,7 +193,7 @@ def handle_node(request, node_id):
             updated_node.validate()
 
             request.pyworkflow.update_or_add_node(updated_node)
-            response = JsonResponse(updated_node.__dict__, safe=False)
+            response = JsonResponse(updated_node.to_json(), safe=False)
         elif request.method == 'DELETE':
             request.pyworkflow.remove_node(retrieved_node)
             response = JsonResponse({
