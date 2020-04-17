@@ -24,7 +24,7 @@ class Node:
             self.option_values.update(node_info["options"])
 
     def execute(self, predecessor_data, flow_vars):
-        pass
+        raise NotImplementedError()
 
     def validate(self):
         """Validate Node configuration
@@ -43,9 +43,15 @@ class Node:
 
 
 class FlowNode(Node):
-    """FlowNode object
+    """FlowNodes object.
+
+    FlowNodes do not execute. They specify a variable name and value to pass
+    to other Nodes as a way to dynamically change other parameter values.
     """
     display_name = "Flow Control"
+
+    def execute(self, predecessor_data, flow_vars):
+        return
 
 
 class StringNode(FlowNode):
@@ -82,7 +88,7 @@ class IONode(Node):
     display_name = "I/O"
 
     def execute(self, predecessor_data, flow_vars):
-        pass
+        raise NotImplementedError()
 
 
 class ReadCsvNode(IONode):
@@ -129,9 +135,6 @@ class ReadCsvNode(IONode):
             return df.to_json()
         except Exception as e:
             raise NodeException('read csv', str(e))
-
-    def __str__(self):
-        return "ReadCsvNode"
 
 
 class WriteCsvNode(IONode):
@@ -195,7 +198,7 @@ class ManipulationNode(Node):
     color = 'goldenrod'
 
     def execute(self, predecessor_data, flow_vars):
-        pass
+        raise NotImplementedError()
 
 
 class PivotNode(ManipulationNode):
@@ -303,9 +306,6 @@ class FilterNode(ManipulationNode):
             docstring='The axis to filter on.'
         )
     }
-
-    def __init__(self, node_info, options=dict()):
-        super().__init__(node_info, {**self.DEFAULT_OPTIONS, **options})
 
     def execute(self, predecessor_data, flow_vars):
         try:
