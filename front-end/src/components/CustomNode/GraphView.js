@@ -1,4 +1,4 @@
-import React, { forwardRef } from "react";
+import React, { forwardRef } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 import propTypes from 'prop-types';
 import { VariableSizeGrid as Grid } from 'react-window';
