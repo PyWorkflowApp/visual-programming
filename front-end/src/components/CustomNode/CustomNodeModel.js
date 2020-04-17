@@ -36,6 +36,10 @@ export default class CustomNodeModel extends NodeModel {
         }
     }
 
+    getNodeId() {
+      return this.options.node_id;
+    }
+
     serialize() {
         return {
             ...super.serialize(),
