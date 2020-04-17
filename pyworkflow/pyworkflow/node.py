@@ -38,6 +38,24 @@ class Node:
         for option in self.options.values():
             option.validate()
 
+    def validate_input_data(self, num_input_data):
+        """Validate Node input data.
+
+        Checks that input data, if any, matches with required number of input
+        ports.
+
+        Args:
+            num_input_data: Number of input data passed in
+
+        Raises:
+            NodeException on mis-matched input ports/data
+        """
+        if num_input_data != self.num_in:
+            raise NodeException(
+                'execute',
+                f'{self.node_key} requires {self.num_in} inputs. {num_input_data} were provided'
+            )
+
     def __str__(self):
         return "Test"
 
@@ -125,8 +143,6 @@ class ReadCsvNode(IONode):
 
     def execute(self, predecessor_data, flow_vars):
         try:
-            # Read CSV needs exactly 0 input DataFrame
-            NodeUtils.validate_predecessor_data(len(predecessor_data), self.num_in, self.node_key)
             NodeUtils.replace_flow_vars(self.options, flow_vars)
             fname = self.options["file"].get_value()
             sep = self.options["sep"].get_value()
@@ -170,9 +186,6 @@ class WriteCsvNode(IONode):
 
     def execute(self, predecessor_data, flow_vars):
         try:
-            # Write CSV needs exactly 1 input DataFrame
-            NodeUtils.validate_predecessor_data(len(predecessor_data), self.num_in, self.node_key)
-
             # Convert JSON data to DataFrame
             df = pd.DataFrame.from_dict(predecessor_data[0])
 
@@ -252,7 +265,6 @@ class PivotNode(ManipulationNode):
 
     def execute(self, predecessor_data, flow_vars):
         try:
-            NodeUtils.validate_predecessor_data(len(predecessor_data), self.num_in, self.node_key)
             input_df = pd.DataFrame.from_dict(predecessor_data[0])
             output_df = pd.DataFrame.pivot_table(input_df, **self.options)
             return output_df.to_json()
@@ -270,10 +282,7 @@ class JoinNode(ManipulationNode):
     }
 
     def execute(self, predecessor_data, flow_vars):
-        # Join cannot accept more than 2 input DataFrames
-        # TODO: Add more error-checking if 1, or no, DataFrames passed through
         try:
-            NodeUtils.validate_predecessor_data(len(predecessor_data), self.num_in, self.node_key)
             first_df = pd.DataFrame.from_dict(predecessor_data[0])
             second_df = pd.DataFrame.from_dict(predecessor_data[1])
             combined_df = pd.merge(first_df, second_df,
@@ -309,7 +318,6 @@ class FilterNode(ManipulationNode):
 
     def execute(self, predecessor_data, flow_vars):
         try:
-            NodeUtils.validate_predecessor_data(len(predecessor_data), self.num_in, self.node_key)
             input_df = pd.DataFrame.from_dict(predecessor_data[0])
             output_df = pd.DataFrame.filter(input_df, **self.options)
             return output_df.to_json()
@@ -328,25 +336,6 @@ class NodeException(Exception):
 
 class NodeUtils:
 
-    FIXED_INPUT_NODES = ['WriteCsvNode', 'FilterNode', 'JoinNode'] # nodes which can only have a fixed number of predecessors
-    MAX_INPUT_NODES = ['ReadCsvNode'] # nodes for which num_in represents a maximum number of predecessors
-
-    @staticmethod
-    def validate_predecessor_data(predecessor_data_len, num_in, node_key):
-        validation_failed = False
-        exception_txt = ""
-        if node_key in NodeUtils.FIXED_INPUT_NODES and predecessor_data_len != num_in:
-                validation_failed = True
-                exception_txt = '%s needs %d inputs. %d were provided'
-        elif (node_key in NodeUtils.MAX_INPUT_NODES and predecessor_data_len > num_in):
-                validation_failed = True
-                exception_txt = '%s can take up to %d inputs. %d were provided'
-
-        if validation_failed:
-            raise NodeException(
-                'execute',
-                exception_txt % (node_key, num_in, predecessor_data_len)
-            )
 
     @staticmethod
     def replace_flow_vars(node_options, flow_vars):
