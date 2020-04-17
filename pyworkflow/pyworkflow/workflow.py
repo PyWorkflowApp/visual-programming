@@ -182,12 +182,12 @@ class Workflow:
 
         # Load predecessor data and FlowNode values
         preceding_data = self.load_input_data(node_to_execute.node_id)
-        flow_nodes = self.load_flow_var_values(node_to_execute.option_replace)
+        flow_nodes = self.load_flow_nodes(node_to_execute.option_replace)
 
         try:
             # Validate input data, and replace flow variables
             node_to_execute.validate_input_data(len(preceding_data))
-            execution_options = node_to_execute.replace_flow_vars(flow_nodes)
+            execution_options = node_to_execute.get_execution_options(flow_nodes)
 
             # Pass in data to current Node to use in execution
             output = node_to_execute.execute(preceding_data, execution_options)
@@ -202,18 +202,32 @@ class Workflow:
 
         return node_to_execute
 
-    def load_flow_var_values(self, options):
+    def load_flow_nodes(self, option_replace):
         """Construct dict of FlowNodes indexed by option name.
 
+        During Node configuration, the user has the option to select FlowNodes
+        to replace a given parameter value. A FlowNode selection is structured
+        like the following JSON:
+
+            "option_replace": {
+                "sep": {
+                    "node_id": id,
+                    "is_global": true
+                }
+            }
+
+        This method retrieves the specified FlowNode where the replacement value
+        can then be retrieved.
+
         Args:
-            options: Flow variables user selected for a given Node.
+            option_replace: Flow variables user selected for a given Node.
 
         Returns:
             dict of FlowNode objects, indexed by the option name.
         """
-        flow_vars = dict()
+        flow_nodes = dict()
 
-        for key, option in options.items():
+        for key, option in option_replace.items():
             try:
                 flow_node_id = option["node_id"]
 
@@ -225,15 +239,18 @@ class Workflow:
                 if flow_node is None or flow_node.node_type != 'FlowNode':
                     raise WorkflowException('load flow vars', 'The workflow does not contain FlowNode %s' % flow_node_id)
 
-                flow_vars[key] = flow_node
+                flow_nodes[key] = flow_node
             except WorkflowException:
                 # TODO: Should this add a blank value, skip reading, or raise exception to view?
                 continue
 
-        return flow_vars
+        return flow_nodes
 
     def load_input_data(self, node_id):
         """Construct list of predecessor DataFrames
+
+        Retrieves the data file for all of a Node's predecessors. Ignores
+        exceptions for missing Nodes/data as this is checked prior to execution.
 
         Args:
             node_id: The Node with predecessors

@@ -30,7 +30,7 @@ class Node:
     def execute(self, predecessor_data, flow_vars):
         raise NotImplementedError()
 
-    def replace_flow_vars(self, flow_vars):
+    def get_execution_options(self, flow_nodes):
         """Replace Node options with flow variables.
 
         If the user has specified any flow variables to replace Node options,
@@ -39,7 +39,7 @@ class Node:
         a copy of all Node options unchanged.
 
         Args:
-            flow_vars: dict of variables to replace options
+            flow_nodes: dict of FlowNodes used to replace options
 
         Returns:
             dict containing options to use for execution
@@ -50,9 +50,8 @@ class Node:
         #       If none are included, we can just return `self.options`.
         for key, option in self.options.items():
 
-            if key in flow_vars:
-                replacement = flow_vars[key].get_replacement_value()
-                option.set_value(replacement)
+            if key in flow_nodes:
+                option.set_value(flow_nodes[key].get_replacement_value())
 
             execution_options[key] = option
 
