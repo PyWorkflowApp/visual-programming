@@ -61,6 +61,31 @@ class Workflow:
         node_info = self.flow_vars.nodes[node_id]
         return node_factory(node_info)
 
+    def get_all_flow_var_options(self, node_id):
+        """Retrieve all FlowNode options for a specified Node.
+
+        A Node can use all global FlowNodes, and any connected local FlowNodes
+        for variable substitution.
+
+        Args:
+            node_id: The Node to GET
+
+        Returns:
+            list of all FlowNode objects, converted to JSON
+        """
+        # Add global FlowNodes
+        graph_data = Workflow.to_graph_json(self.flow_vars)
+        flow_variables = graph_data['nodes']
+
+        # Append local FlowNodes
+        for predecessor_id in self.get_node_predecessors(node_id):
+            node = self.get_node(predecessor_id)
+
+            if node.node_type == 'FlowNode':
+                flow_variables.append(node.to_json())
+
+        return flow_variables
+
     def update_or_add_node(self, node: Node):
         """ Update or add a Node object to the graph.
 

@@ -169,7 +169,10 @@ def handle_node(request, node_id):
     # Process request
     try:
         if request.method == 'GET':
-            response = JsonResponse(retrieved_node.__dict__, safe=False)
+            response = JsonResponse({
+                "retrieved_node": retrieved_node.to_json(),
+                "flow_variables": request.pyworkflow.get_all_flow_var_options(node_id),
+            }, safe=False)
         elif request.method == 'POST':
             updated_node = create_node(request)
 
