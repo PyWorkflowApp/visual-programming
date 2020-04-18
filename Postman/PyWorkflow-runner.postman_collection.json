@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "9c395d44-e722-4f41-a8c8-5961a88b47c0",
+		"_postman_id": "ee0ff917-cc11-4f32-b9ea-7f894b301689",
 		"name": "Visual Programming-Tests",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -37,8 +37,17 @@
 				}
 			],
 			"request": {
-				"method": "GET",
+				"method": "POST",
 				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"id\": \"my_id\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
 				"url": {
 					"raw": "localhost:8000/workflow/new",
 					"host": [
@@ -79,7 +88,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"name\": null,\n    \"node_id\": \"1\",\n    \"node_type\": \"IONode\",\n    \"node_key\": \"ReadCsvNode\",\n    \"options\": {\n    \t\"filepath_or_buffer\": \"/tmp/sample.csv\"\n    }\n}",
+					"raw": "{\n    \"name\": null,\n    \"node_id\": \"1\",\n    \"node_type\": \"IONode\",\n    \"node_key\": \"ReadCsvNode\",\n    \"options\": {\n    \t\"file\": \"/tmp/sample.csv\"\n    }\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -102,21 +111,17 @@
 			"response": []
 		},
 		{
-			"name": "Add PivotNode (2)",
+			"name": "Add ReadCsvNode (2)",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
-						"id": "7a284d90-0a1a-4f77-8dab-70f63b09f031",
+						"id": "f9268535-3eaa-4925-91af-626cfb6fda41",
 						"exec": [
 							"pm.test(\"Status code is 200\", function() {",
 							"    pm.response.to.have.status(200)",
 							"})",
-							"",
-							"pm.test(\"Body of response contains all values\", function() {",
-							"    pm.response.to.have.body(",
-							"    {\"message\": \"Added new node to graph with id: 2\"})",
-							"})"
+							""
 						],
 						"type": "text/javascript"
 					}
@@ -127,7 +132,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"name\": null,\n    \"node_id\": \"2\",\n    \"node_type\": \"ManipulationNode\",\n    \"node_key\": \"PivotNode\",\n    \"options\": {\n    \t\"index\": [\"product\"],\n    \t\"aggfunc\": \"count\"\n    }\n}",
+					"raw": "{\n    \"name\": null,\n    \"node_id\": \"2\",\n    \"node_type\": \"IONode\",\n    \"node_key\": \"ReadCsvNode\",\n    \"options\": {\n    \t\"file\": \"/tmp/sample2.csv\"\n    }\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -150,7 +155,7 @@
 			"response": []
 		},
 		{
-			"name": "Add FilterNode (3)",
+			"name": "Add JoinNode (3)",
 			"event": [
 				{
 					"listen": "test",
@@ -175,7 +180,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"name\": null,\n    \"node_id\": \"3\",\n    \"node_type\": \"ManipulationNode\",\n    \"node_key\": \"FilterNode\",\n    \"options\": {\n    \t\"items\": [\"country\",\"date\"]\n    }\n}",
+					"raw": "{\n    \"name\": null,\n    \"node_id\": \"3\",\n    \"node_type\": \"ManipulationNode\",\n    \"node_key\": \"JoinNode\",\n    \"options\": {\n    \t\"on\": \"key\"\n    }\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -223,6 +228,54 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
+					"raw": "{\n    \"name\": null,\n    \"node_id\": \"4\",\n    \"node_type\": \"IONode\",\n    \"node_key\": \"WriteCsvNode\",\n    \"options\": {\n    \t\"file\": \"/tmp/sample_out.csv\"\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/node/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"node",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add WriteCsvNode (4-already exists)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "b64dd18e-c016-45df-ac55-df01b2a61667",
+						"exec": [
+							"pm.test(\"Status code is 400\", function() {",
+							"    pm.response.to.have.status(400)",
+							"})",
+							"",
+							"pm.test(\"Body of response contains all values\", function() {",
+							"    pm.response.to.have.body(",
+							"    {\"message\": \"A node with id 4 already exists in the graph.\"})",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
 					"raw": "{\n    \"name\": null,\n    \"node_id\": \"4\",\n    \"node_type\": \"IONode\",\n    \"node_key\": \"WriteCsvNode\",\n    \"options\": {\n    \t\"path_or_buf\": \"/tmp/sample_out.csv\"\n    }\n}",
 					"options": {
 						"raw": {
@@ -246,99 +299,7 @@
 			"response": []
 		},
 		{
-			"name": "Add WriteCsvNode (5)",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"id": "b64dd18e-c016-45df-ac55-df01b2a61667",
-						"exec": [
-							"pm.test(\"Status code is 200\", function() {",
-							"    pm.response.to.have.status(200)",
-							"})",
-							"",
-							"pm.test(\"Body of response contains all values\", function() {",
-							"    pm.response.to.have.body(",
-							"    {\"message\": \"Added new node to graph with id: 5\"})",
-							"})"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"name\": null,\n    \"node_id\": \"5\",\n    \"node_type\": \"IONode\",\n    \"node_key\": \"WriteCsvNode\",\n    \"options\": {\n    \t\"path_or_buf\": \"/tmp/sample_out.csv\"\n    }\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "http://localhost:8000/node/",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8000",
-					"path": [
-						"node",
-						""
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Add ReadCsvNode (6)",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"id": "f9268535-3eaa-4925-91af-626cfb6fda41",
-						"exec": [
-							"pm.test(\"Status code is 200\", function() {",
-							"    pm.response.to.have.status(200)",
-							"})",
-							""
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"name\": null,\n    \"node_id\": \"6\",\n    \"node_type\": \"IONode\",\n    \"node_key\": \"ReadCsvNode\",\n    \"options\": {\n    \t\"filepath_or_buffer\": \"/tmp/sample.csv\"\n    }\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "http://localhost:8000/node/",
-					"protocol": "http",
-					"host": [
-						"localhost"
-					],
-					"port": "8000",
-					"path": [
-						"node",
-						""
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Add edge (1 to 2)",
+			"name": "Add edge (1 to 3)",
 			"event": [
 				{
 					"listen": "test",
@@ -354,7 +315,7 @@
 							"    pm.response.to.have.body({",
 							"    \"edge_added\": [",
 							"        \"1\",",
-							"        \"2\"",
+							"        \"3\"",
 							"    ]",
 							"}",
 							"   )",
@@ -387,7 +348,7 @@
 					]
 				},
 				"url": {
-					"raw": "{{environment}}/node/edge/1/2",
+					"raw": "{{environment}}/node/edge/1/3",
 					"host": [
 						"{{environment}}"
 					],
@@ -395,7 +356,7 @@
 						"node",
 						"edge",
 						"1",
-						"2"
+						"3"
 					]
 				}
 			},
@@ -530,7 +491,7 @@
 			"response": []
 		},
 		{
-			"name": "Add edge (4 to 6)",
+			"name": "Add edge (4 to 6-does not exist)",
 			"event": [
 				{
 					"listen": "test",
@@ -538,17 +499,14 @@
 						"id": "6bf233ab-56e1-489d-ad58-d5680ba01d09",
 						"exec": [
 							"",
-							"pm.test(\"Status code is 200\", function() {",
-							"    pm.response.to.have.status(200)",
+							"pm.test(\"Status code is 404\", function() {",
+							"    pm.response.to.have.status(404)",
 							"})",
 							"",
 							"pm.test(\"Body of response contains all values\", function() {",
 							"    pm.response.to.have.body({",
-							"    \"edge_added\": [",
-							"        \"4\",",
-							"        \"6\"",
-							"    ]",
-							"}",
+							"    \"message\": \"The workflow does not contain the node(s) requested.\"",
+							"    }",
 							"   )",
 							"})",
 							"",
@@ -737,7 +695,7 @@
 					"script": {
 						"id": "01c42618-a9e8-4c20-875d-964513987320",
 						"exec": [
-							"pm.test(\"Status code is 200\", function() {",
+							"pm.test(\"Status code is 500\", function() {",
 							"    pm.response.to.have.status(500)",
 							"})",
 							""
