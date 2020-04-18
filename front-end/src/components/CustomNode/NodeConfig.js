@@ -28,7 +28,8 @@ export default function NodeConfig(props) {
     };
 
     return (
-            <Modal show={props.show} onHide={props.toggleShow} centered>
+            <Modal show={props.show} onHide={props.toggleShow} centered
+                onWheel={e => e.stopPropagation()}>
                 <Form onSubmit={handleSubmit} ref={form}>
                     <Modal.Header>
                         <Modal.Title><b>{props.node.options.name}</b> Configuration</Modal.Title>

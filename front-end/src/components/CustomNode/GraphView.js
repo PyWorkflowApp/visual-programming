@@ -99,7 +99,8 @@ export default class GraphView extends React.Component {
 
       if (this.state.columnCount < 1) {
         return (
-          <Modal show={this.props.show} onHide={this.props.toggleShow} centered>
+          <Modal show={this.props.show} onHide={this.props.toggleShow} centered
+             onWheel={e => e.stopPropagation()}>
           <Modal.Header>
               <Modal.Title><b>{this.props.node.options.name}</b> View</Modal.Title>
           </Modal.Header>
@@ -115,7 +116,8 @@ export default class GraphView extends React.Component {
       }
 
       return (
-              <Modal show={this.props.show} onHide={this.props.toggleShow} centered>
+              <Modal show={this.props.show} onHide={this.props.toggleShow} centered
+                  onWheel={e => e.stopPropagation()}>
               <Modal.Header>
                   <Modal.Title><b>{this.props.node.options.name}</b> View</Modal.Title>
               </Modal.Header>
