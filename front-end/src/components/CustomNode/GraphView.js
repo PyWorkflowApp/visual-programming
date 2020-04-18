@@ -3,7 +3,7 @@ import { Modal, Button } from 'react-bootstrap';
 import propTypes from 'prop-types';
 import { VariableSizeGrid as Grid } from 'react-window';
 import * as API from "../../API";
-import '../../styles/index.css';
+import '../../styles/GraphView.css';
 
 
 export default class GraphView extends React.Component {
