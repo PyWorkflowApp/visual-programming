@@ -15,7 +15,8 @@ pass_config = click.make_pass_decorator(Config, ensure=True)
 @pass_config
 def cli(config, file_directory):
     if file_directory is None:
-        file_directory = '.'
+        click.echo('Please specify a workflow to run')
+        return
     config.file_directory = file_directory
 
 
@@ -26,5 +27,5 @@ def execute(config):
         click.echo('Loading workflow file form %s' % config.file_directory)
         Workflow.execute_workflow(config.file_directory)
     except NodeException as ne:
-        click.echo("Issues during node exception")
+        click.echo("Issues during node execution")
         click.echo(ne)
