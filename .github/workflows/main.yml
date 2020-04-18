@@ -35,7 +35,6 @@ jobs:
         pipenv install
         pipenv run echo "SECRET_KEY='TEMPORARY SECRET KEY'" > vp/.environment
 
-      # Create sample data
         echo ",key,A
               0,K0,A0
               1,K1,A1
