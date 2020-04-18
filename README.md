@@ -56,3 +56,19 @@ data from `localhost:8000` **where the Django app must be running**.
 
 ### Start dev server
 - `npm start`
+
+---
+### Tests
+PyWorkflow currently has two sets of tests: API endpoints and unit tests.
+The API tests are written in Postman and can be run individually, by importing
+the collection and environment into your Postman application, or via the command
+line by [installing Newman](https://www.npmjs.com/package/newman) and running:
+
+- `cd Postman`
+- `newman run PyWorkflow-runner.postman_collection.json --environment Local-env.postman_environment.json`
+
+Unit tests for the PyWorkflow package are run using Python's built-in `unittest`
+package.
+
+- `cd pyworkflow/pyworkflow`
+- `pipenv run python3 -m unittest tests/*.py`
