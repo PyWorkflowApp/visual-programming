@@ -381,6 +381,26 @@ class Workflow:
         except nx.NetworkXError as e:
             raise WorkflowException('to_session_dict', str(e))
 
+    @staticmethod
+    def execute_workflow(workflow_location):
+        """Execute entire workflow at a certain location.
+           Current use case: CLI.
+        """
+        #load the file at workflow_location
+        with open(workflow_location) as f:
+            json_content = json.load(f)
+
+        #convert it to a workflow
+        workflow_instance = Workflow.from_json(json_content['pyworkflow'])
+
+        #get the execution order
+        execution_order = workflow_instance.execution_order()
+
+        #execute each node in the order returned by execution order method
+        #TODO exception handling: stop and provide details on which node failed to execute
+        for node in execution_order:
+            workflow_instance.execute(node)
+
 
 class WorkflowUtils:
     @staticmethod
