@@ -15,6 +15,8 @@ networkx = "~=2.4"
 pyworkflow = {path = "./pyworkflow",editable = true}
 djangorestframework = "*"
 drf-yasg = "*"
+click = "*"
+cli = {path = "./CLI",editable = true}
 
 [requires]
 python_version = "3.8"

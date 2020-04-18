@@ -3,7 +3,7 @@ import { Modal, Button } from 'react-bootstrap';
 import propTypes from 'prop-types';
 import { VariableSizeGrid as Grid } from 'react-window';
 import * as API from "../../API";
-import '../../styles/index.css';
+import '../../styles/GraphView.css';
 
 
 export default class GraphView extends React.Component {
@@ -99,7 +99,8 @@ export default class GraphView extends React.Component {
 
       if (this.state.columnCount < 1) {
         return (
-          <Modal show={this.props.show} onHide={this.props.toggleShow} centered>
+          <Modal show={this.props.show} onHide={this.props.toggleShow} centered
+             onWheel={e => e.stopPropagation()}>
           <Modal.Header>
               <Modal.Title><b>{this.props.node.options.name}</b> View</Modal.Title>
           </Modal.Header>
@@ -107,7 +108,7 @@ export default class GraphView extends React.Component {
           Loading the data might take a while depending on how big the data is.
           </Modal.Body>
           <Modal.Footer>
-              <Button variant="secondary" onClick={this.onClose}>Accept</Button>
+              <Button variant="secondary" onClick={this.onClose}>Cancel</Button>
               <Button variant="secondary" onClick={this.load}>Load</Button>
           </Modal.Footer>
           </Modal>
@@ -115,28 +116,26 @@ export default class GraphView extends React.Component {
       }
 
       return (
-              <Modal show={this.props.show} onHide={this.props.toggleShow} centered>
-              <Modal.Header>
+          <Modal show={this.props.show} onHide={this.props.toggleShow} centered
+              onWheel={e => e.stopPropagation()}>
+              <Modal.Header closeButton>
                   <Modal.Title><b>{this.props.node.options.name}</b> View</Modal.Title>
               </Modal.Header>
               <Modal.Body>
-              <Grid
-                  ref={this.state.gridRef}
-                  className="Grid"
-                  columnCount={this.state.columnCount}
-                  columnWidth={index => this.columnWidths(index)}
-                  height={150}
-                  rowCount={this.state.rowCount}
-                  rowHeight={index => 20}
-                  width={480}
-                >
-                  {this.Cell}
-                </Grid>
+                  <Grid
+                      ref={this.state.gridRef}
+                      className="Grid"
+                      columnCount={this.state.columnCount}
+                      columnWidth={index => this.columnWidths(index)}
+                      height={150}
+                      rowCount={this.state.rowCount}
+                      rowHeight={index => 20}
+                      width={480}
+                    >
+                      {this.Cell}
+                    </Grid>
               </Modal.Body>
-              <Modal.Footer>
-                  <Button variant="secondary" onClick={this.onClose}>Accept</Button>
-              </Modal.Footer>
-              </Modal>
+          </Modal>
       );
     }
 }

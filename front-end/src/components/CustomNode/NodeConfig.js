@@ -48,7 +48,8 @@ export default class NodeConfig extends React.Component {
 
     render() {
         return (
-            <Modal show={this.props.show} onHide={this.props.toggleShow} centered>
+            <Modal show={this.props.show} onHide={this.props.toggleShow} centered
+                onWheel={e => e.stopPropagation()}>
                 <Form onSubmit={this.handleSubmit}>
                     <Modal.Header>
                         <Modal.Title><b>{this.props.node.options.name}</b> Configuration</Modal.Title>
