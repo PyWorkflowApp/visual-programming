@@ -108,7 +108,7 @@ export default class GraphView extends React.Component {
           Loading the data might take a while depending on how big the data is.
           </Modal.Body>
           <Modal.Footer>
-              <Button variant="secondary" onClick={this.onClose}>Accept</Button>
+              <Button variant="secondary" onClick={this.onClose}>Cancel</Button>
               <Button variant="secondary" onClick={this.load}>Load</Button>
           </Modal.Footer>
           </Modal>
@@ -118,7 +118,7 @@ export default class GraphView extends React.Component {
       return (
               <Modal show={this.props.show} onHide={this.props.toggleShow} centered
                   onWheel={e => e.stopPropagation()}>
-              <Modal.Header>
+              <Modal.Header closeButton>
                   <Modal.Title><b>{this.props.node.options.name}</b> View</Modal.Title>
               </Modal.Header>
               <Modal.Body>
@@ -135,9 +135,6 @@ export default class GraphView extends React.Component {
                   {this.Cell}
                 </Grid>
               </Modal.Body>
-              <Modal.Footer>
-                  <Button variant="secondary" onClick={this.onClose}>Accept</Button>
-              </Modal.Footer>
               </Modal>
       );
     }
