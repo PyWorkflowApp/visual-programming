@@ -66,6 +66,7 @@ export default class NodeConfig extends React.Component {
                             <Form.Label>Node Description</Form.Label>
                             <Form.Control as="textarea" rows="2"
                                           name="description"
+                                          onChange={e => this.updateData("description", e.target.value)}
                                           defaultValue={this.props.node.config.description}/>
                         </Form.Group>
                     </Modal.Body>
