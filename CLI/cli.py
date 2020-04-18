@@ -1,6 +1,7 @@
 import click
 
 from pyworkflow import Workflow
+from pyworkflow import NodeException
 
 
 class Config(object):
@@ -21,5 +22,9 @@ def cli(config, file_directory):
 @cli.command()
 @pass_config
 def execute(config):
-    click.echo('Loading workflow file form %s' % config.file_directory)
-    Workflow.execute_workflow(config.file_directory)
+    try:
+        click.echo('Loading workflow file form %s' % config.file_directory)
+        Workflow.execute_workflow(config.file_directory)
+    except NodeException as ne:
+        click.echo("Issues during node exception")
+        click.echo(ne)
