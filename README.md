@@ -58,7 +58,13 @@ data from `localhost:8000` **where the Django app must be running**.
 - `npm start`
 
 ---
-### Tests
+## CLI
+1. Run pipenv shell.
+2. Create a workflow using UI and save it. 
+3. Run it as: pyworkflow --file-directory (path-to-json-workflow-file) execute
+
+---
+## Tests
 PyWorkflow currently has two sets of tests: API endpoints and unit tests.
 The API tests are written in Postman and can be run individually, by importing
 the collection and environment into your Postman application, or via the command
@@ -72,3 +78,4 @@ package.
 
 - `cd pyworkflow/pyworkflow`
 - `pipenv run python3 -m unittest tests/*.py`
+
