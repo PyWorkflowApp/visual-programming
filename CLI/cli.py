@@ -14,7 +14,6 @@ pass_config = click.make_pass_decorator(Config, ensure=True)
 @click.option('--file-directory', type=click.Path())
 @pass_config
 def cli(config, file_directory):
-    print('Unable to run file')
     config.file_directory = file_directory
 
 
