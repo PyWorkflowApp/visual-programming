@@ -89,7 +89,7 @@ class Workflow:
                 out_key = "options"
             graph.nodes[node.node_id][out_key] = node_dict[key]
 
-        return
+        return node
 
     @property
     def name(self):
@@ -159,7 +159,8 @@ class Workflow:
             graph = self.flow_vars if node.is_global else self.graph
 
             graph.remove_node(node.node_id)
-        except nx.NetworkXError:
+            return node
+        except (AttributeError, nx.NetworkXError):
             raise WorkflowException('remove_node', 'Node does not exist in graph.')
 
     def get_node_successors(self, node_id):
