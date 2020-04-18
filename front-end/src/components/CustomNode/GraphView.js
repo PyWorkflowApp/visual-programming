@@ -116,26 +116,26 @@ export default class GraphView extends React.Component {
       }
 
       return (
-              <Modal show={this.props.show} onHide={this.props.toggleShow} centered
-                  onWheel={e => e.stopPropagation()}>
+          <Modal show={this.props.show} onHide={this.props.toggleShow} centered
+              onWheel={e => e.stopPropagation()}>
               <Modal.Header closeButton>
                   <Modal.Title><b>{this.props.node.options.name}</b> View</Modal.Title>
               </Modal.Header>
               <Modal.Body>
-              <Grid
-                  ref={this.state.gridRef}
-                  className="Grid"
-                  columnCount={this.state.columnCount}
-                  columnWidth={index => this.columnWidths(index)}
-                  height={150}
-                  rowCount={this.state.rowCount}
-                  rowHeight={index => 20}
-                  width={480}
-                >
-                  {this.Cell}
-                </Grid>
+                  <Grid
+                      ref={this.state.gridRef}
+                      className="Grid"
+                      columnCount={this.state.columnCount}
+                      columnWidth={index => this.columnWidths(index)}
+                      height={150}
+                      rowCount={this.state.rowCount}
+                      rowHeight={index => 20}
+                      width={480}
+                    >
+                      {this.Cell}
+                    </Grid>
               </Modal.Body>
-              </Modal>
+          </Modal>
       );
     }
 }
