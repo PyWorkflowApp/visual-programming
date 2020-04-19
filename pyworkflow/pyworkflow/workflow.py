@@ -19,8 +19,13 @@ class Workflow:
     def __init__(self, name="Untitled", root_dir=None, graph=nx.DiGraph(), flow_vars=nx.Graph()):
         self._name = name
         self._root_dir = WorkflowUtils.set_root_dir(root_dir)
+        self._custom_node_dir = WorkflowUtils.set_custom_nodes_dir()
         self._graph = graph
         self._flow_vars = flow_vars
+
+    @property
+    def custom_node_dir(self):
+        return self._custom_node_dir
 
     @property
     def graph(self):
@@ -404,6 +409,15 @@ class Workflow:
 
 
 class WorkflowUtils:
+    @staticmethod
+    def set_custom_nodes_dir():
+        custom_node_dir = os.path.join(os.getcwd(), '../pyworkflow/custom_nodes')
+
+        if not os.path.exists(custom_node_dir):
+            os.makedirs(custom_node_dir)
+
+        return custom_node_dir
+
     @staticmethod
     def set_root_dir(root_dir):
         if root_dir is None:

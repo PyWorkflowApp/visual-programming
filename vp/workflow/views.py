@@ -217,6 +217,33 @@ def get_successors(request, node_id):
 
 
 @swagger_auto_schema(method='post',
+                     operation_summary='Uploads a custom node to server.',
+                     operation_description='Uploads a custom node to server location.',
+                     responses={
+                         200: 'File uploaded',
+                         404: 'No specified file'
+                     })
+@api_view(['POST'])
+def add_custom_node(request):
+    node_file = request.FILES.get('file')
+
+    if node_file is None:
+        return JsonResponse("Empty content", status=404)
+
+    to_open = os.path.join(request.pyworkflow.custom_node_dir, node_file.name)
+
+    try:
+        with open(to_open, 'wb') as f:
+            f.write(node_file.read())
+    except OSError as e:
+        return JsonResponse({'message': str(e)}, status=500)
+
+    node_file.close()
+
+    return JsonResponse({"filename": to_open}, status=201, safe=False)
+
+
+@swagger_auto_schema(method='post',
                      operation_summary='Uploads a file to server.',
                      operation_description='Uploads a new file to server location.',
                      responses={

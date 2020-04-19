@@ -10,5 +10,6 @@ urlpatterns = [
     path('execute/<str:node_id>/successors', views.get_successors, name='get node successors'),
     path('globals', views.global_vars, name="retrieve global variables"),
     path('upload', views.upload_file, name='upload file'),
-    path('download', views.download_file, name='download file')
+    path('download', views.download_file, name='download file'),
+    path('custom_node', views.add_custom_node, name='add custom node')
 ]
