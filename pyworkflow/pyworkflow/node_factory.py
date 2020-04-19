@@ -14,7 +14,7 @@ def node_factory(node_info):
     elif node_type == 'FlowNode':
         new_node = flow_node(node_key, node_info)
     else:
-        new_node = None
+        new_node = custom_node(node_type, node_key, node_info)
 
     return new_node
 
@@ -45,4 +45,16 @@ def manipulation_node(node_key, node_info):
     elif node_key == 'FilterNode':
         return FilterNode(node_info)
     else:
+        return None
+
+def custom_node(filename, node_key, node_info):
+    try:
+        package = __import__('custom_nodes.' + filename)
+        module = getattr(package, filename)
+        my_class = getattr(module, node_key)
+        instance = my_class(node_info)
+
+        return instance
+    except Exception as e:
+        print(str(e))
         return None
