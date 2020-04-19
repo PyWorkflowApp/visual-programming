@@ -3,6 +3,9 @@ from rest_framework.decorators import api_view
 from drf_yasg.utils import swagger_auto_schema
 from pyworkflow import Node
 
+import os
+import inspect
+
 
 @swagger_auto_schema(method='get', responses={200:'JSON response with data'})
 @api_view(['GET'])
@@ -63,3 +66,54 @@ def retrieve_nodes_for_user(request):
             data[key].append(child_node)
 
     return JsonResponse(data)
+
+
+@swagger_auto_schema(method='get',
+                     operation_summary='Retrieve a list of custom Nodes',
+                     operation_description='Retrieves a list of custom Nodes, in JSON.',
+                     responses={
+                         200: 'List of installed Nodes, in JSON',
+                     })
+@api_view(['GET'])
+def retrieve_custom_nodes_for_user(request):
+    data = dict()
+
+    # TODO: Workflow loading excluded in middleware for this route
+    #       Should probably have a way to access the 'custom_node` dir dynamically
+    custom_node_path = os.path.join(os.getcwd(), '../pyworkflow/custom_nodes')
+
+    try:
+        nodes = os.listdir(custom_node_path)
+    except OSError as e:
+        return JsonResponse({"message": str(e)}, status=500)
+
+    for node in nodes:
+        # Parse file type
+        node_name, ext = os.path.splitext(node)
+
+        try:
+            package = __import__('custom_nodes.' + node_name)
+            module = getattr(package, node_name)
+        except ModuleNotFoundError as e:
+            # TODO: This will only catch the first missing package. Can we get more?
+            data[node_name] = f"Please install missing packages and restart the server. Missing '{e.name}'"
+            continue
+
+        for name, klass in inspect.getmembers(module):
+            if inspect.isclass(klass) and klass.__module__.startswith('custom_nodes.'):
+                custom_node = {
+                    'name': klass.name,
+                    'node_key': name,
+                    'node_type': node_name,
+                    'num_in': klass.num_in,
+                    'num_out': klass.num_out,
+                    'color': klass.color or 'black',
+                    'doc': klass.__doc__,
+                    'options': {k: v.get_value() for k, v in klass.options.items()},
+                    'option_types': klass.option_types,
+                    'download_result': getattr(klass, "download_result", False)
+                }
+
+                data[node_name] = custom_node
+
+    return JsonResponse(data, safe=False)
