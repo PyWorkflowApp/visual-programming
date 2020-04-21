@@ -39,7 +39,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('info/', views.info),
     path('nodes/', views.retrieve_nodes_for_user),
-    path('custom_nodes/', views.retrieve_custom_nodes_for_user),
     path('node/', include('node.urls')),
     path('workflow/', include('workflow.urls'))
 ]
