@@ -1,5 +1,6 @@
 import os
 import json
+import sys
 
 from django.http import JsonResponse, HttpResponse
 from django.conf import settings
@@ -7,6 +8,7 @@ from rest_framework.decorators import api_view
 from pyworkflow import Workflow, WorkflowException
 from drf_yasg.utils import swagger_auto_schema
 
+from modulefinder import ModuleFinder
 
 @swagger_auto_schema(method='post',
                      operation_summary='Create a new workflow.',
@@ -240,7 +242,10 @@ def add_custom_node(request):
 
     node_file.close()
 
-    return JsonResponse({"filename": to_open}, status=201, safe=False)
+    return JsonResponse({
+        "filename": to_open,
+        "missing_packages": check_missing_packages(to_open)
+    }, status=201, safe=False)
 
 
 @swagger_auto_schema(method='post',
@@ -302,3 +307,14 @@ def download_file(request):
     except WorkflowException as e:
         return JsonResponse({e.action: e.reason}, status=500)
 
+
+def check_missing_packages(node_path):
+    finder = ModuleFinder(node_path)
+    finder.run_script(node_path)
+
+    uninstalled = list()
+    for missing_package in finder.badmodules.keys():
+        if missing_package not in sys.modules:
+            uninstalled.append(missing_package)
+
+    return uninstalled
