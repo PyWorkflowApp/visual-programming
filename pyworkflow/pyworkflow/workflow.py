@@ -2,7 +2,7 @@ import os
 import networkx as nx
 import json
 
-from .node import Node
+from .node import Node, ReadCsvNode
 from .node_factory import node_factory
 
 
@@ -382,8 +382,25 @@ class Workflow:
         except nx.NetworkXError as e:
             raise WorkflowException('to_session_dict', str(e))
 
+    def execute_read_csv(self, node_id, csv_location):
+        preceding_data = list()
+        flow_vars = list()
+        node_to_execute = self.get_node(node_id)
+        if node_to_execute is None:
+            raise WorkflowException('execute', 'The workflow does not contain node %s' % node_id)
+        # Pass in data to current Node to use in execution
+        output = node_to_execute.execute_for_read(preceding_data.append(None), flow_vars.append(None), csv_location)
+
+        # Save new execution data to disk
+        node_to_execute.data = Workflow.store_node_data(self, node_id, output)
+
+        if node_to_execute.data is None:
+            raise WorkflowException('execute', 'There was a problem saving node output.')
+
+        return node_to_execute
+
     @staticmethod
-    def execute_workflow(workflow_location):
+    def execute_workflow(workflow_location, stdin_files):
         """Execute entire workflow at a certain location.
            Current use case: CLI.
         """
@@ -400,7 +417,11 @@ class Workflow:
         #execute each node in the order returned by execution order method
         #TODO exception handling: stop and provide details on which node failed to execute
         for node in execution_order:
-            workflow_instance.execute(node)
+            if type(workflow_instance.get_node(node)) is ReadCsvNode:
+                csv_location = stdin_files[0]
+                workflow_instance.execute_read_csv(node, csv_location)
+            else:
+                workflow_instance.execute(node)
 
 
 class WorkflowUtils:
