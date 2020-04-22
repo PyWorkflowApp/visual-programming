@@ -112,7 +112,6 @@ class ReadCsvNode(IONode):
     def execute_for_read(self, predecessor_data, flow_vars, file_to_read):
         try:
             fname = file_to_read
-            print(fname)
             sep = self.options["sep"].get_value()
             hdr = self.options["header"].get_value()
             df = pd.read_csv(fname, sep=sep, header=hdr)
