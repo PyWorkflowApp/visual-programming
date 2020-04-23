@@ -383,6 +383,10 @@ class Workflow:
             raise WorkflowException('to_session_dict', str(e))
 
     def execute_read_csv(self, node_id, csv_location):
+        # TODO: some duplicated code here from execute common method. Need to refactor.
+        """Execute read_csv from a file specified to standard input.
+                  Current use case: CLI.
+        """
         preceding_data = list()
         flow_vars = list()
         node_to_execute = self.get_node(node_id)
@@ -420,6 +424,8 @@ class Workflow:
             if type(workflow_instance.get_node(node)) is ReadCsvNode and len(stdin_files) > 0:
                 csv_location = stdin_files[0]
                 workflow_instance.execute_read_csv(node, csv_location)
+                # delete file at index 0
+                del stdin_files[0]
             else:
                 workflow_instance.execute(node)
 
