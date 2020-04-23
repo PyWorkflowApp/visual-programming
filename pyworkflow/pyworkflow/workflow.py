@@ -417,7 +417,7 @@ class Workflow:
         #execute each node in the order returned by execution order method
         #TODO exception handling: stop and provide details on which node failed to execute
         for node in execution_order:
-            if type(workflow_instance.get_node(node)) is ReadCsvNode:
+            if type(workflow_instance.get_node(node)) is ReadCsvNode and len(stdin_files) > 0:
                 csv_location = stdin_files[0]
                 workflow_instance.execute_read_csv(node, csv_location)
             else:
