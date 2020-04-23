@@ -1,3 +1,5 @@
+import sys
+
 import click
 import os
 import uuid
@@ -17,19 +19,29 @@ pass_config = click.make_pass_decorator(Config, ensure=True)
 @pass_config
 def cli(config, file_directory):
     config.file_directory = file_directory
-    stdin_text = click.get_text_stream('stdin')
+
     stdin_files = []
 
-    #write standard in to a new file in local filesystem
-    #TODO should be done for each separate file coming from stdin
+    if not click.get_text_stream('stdin').isatty():
 
-    file_name = str(uuid.uuid4())
-    new_file_path = os.path.join(os.getcwd(), file_name)
-    #read from std in and upload a new file in project directory
-    with open(new_file_path, 'w') as f:
-        f.write(stdin_text.read())
-    stdin_files.append(file_name)
+        stdin_text = click.get_text_stream('stdin')
+
+        # TODO should be done for each separate file coming from stdin, currently working for one file, but easy to build up.
+
+        #write standard in to a new file in local filesystem
+        file_name = str(uuid.uuid4())
+
+        # TODO small issue here, might be better to upload this file to the workflow directory instead of cwd
+        new_file_path = os.path.join(os.getcwd(), file_name)
+
+        #read from std in and upload a new file in project directory
+        with open(new_file_path, 'w') as f:
+            f.write(stdin_text.read())
+
+        stdin_files.append(file_name)
+
     config.stdin_files = stdin_files
+
 
 @cli.command()
 @pass_config
