@@ -1,4 +1,3 @@
-from .node import *
 from .nodes import *
 import importlib
 
@@ -51,7 +50,7 @@ def manipulation_node(node_key, node_info):
 def custom_node(node_key, node_info):
     try:
         filename = node_info.get('filename')
-        module = importlib.import_module('pyworkflow.nodes.custom_nodes.' + filename)
+        module = importlib.import_module(f'pyworkflow.nodes.custom_nodes.{filename}')
         my_class = getattr(module, node_key)
         instance = my_class(node_info)
 

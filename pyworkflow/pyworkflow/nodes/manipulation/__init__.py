@@ -1,3 +1,3 @@
-from .filter_node import FilterNode
-from .join_node import JoinNode
-from .pivot_node import PivotNode
+from .filter import FilterNode
+from .join import JoinNode
+from .pivot import PivotNode
