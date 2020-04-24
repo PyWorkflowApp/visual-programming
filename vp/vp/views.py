@@ -29,41 +29,6 @@ def info(request):
 
 
 @swagger_auto_schema(method='get',
-                     operation_summary='Retrieve a list of installed Nodes',
-                     operation_description='Retrieves a list of installed Nodes, in JSON.',
-                     responses={
-                         200: 'List of installed Nodes, in JSON',
-                     })
-@api_view(['GET'])
-def retrieve_nodes_for_user(request):
-    """Assembles list of Nodes accessible to workflows.
-
-    Retrieve a list of classes from the Node module in `pyworkflow`.
-    List is split into 'types' (e.g., 'IO' and 'Manipulation') and
-    'keys', or individual command Nodes (e.g., 'ReadCsv', 'Pivot').
-    """
-    data = dict()
-
-    # Iterate through installed Nodes
-    for parent in Node.__subclasses__():
-        key = getattr(parent, "display_name", parent.__name__)
-        data[key] = list()
-
-        # Iterate through node 'keys'
-        for child in parent.__subclasses__():
-            node = extract_node_info(parent, child)
-            data[key].append(node)
-
-    # Check for any installed Custom Nodes
-    # TODO: Workflow loading excluded in middleware for this route
-    #       Should probably have a way to access the 'custom_node` dir dynamically
-    custom_node_path = os.path.join(os.getcwd(), '../pyworkflow/custom_nodes')
-    data['CustomNode'] = import_custom_node(custom_node_path)
-
-    return JsonResponse(data)
-
-
-def check_missing_packages(node_path):
     finder = ModuleFinder(node_path)
     finder.run_script(node_path)
 
