@@ -217,10 +217,10 @@ class Workflow:
         from_id = node_from.node_id
         to_id = node_to.node_id
 
-        if self._graph.has_edge(from_id, to_id):
+        if self.graph.has_edge(from_id, to_id):
             raise WorkflowException('add_node', 'Edge between nodes already exists.')
 
-        self._graph.add_edge(from_id, to_id)
+        self.graph.add_edge(from_id, to_id)
 
         return (from_id, to_id)
 
@@ -237,7 +237,7 @@ class Workflow:
         to_id = node_to.node_id
 
         try:
-            self._graph.remove_edge(from_id, to_id)
+            self.graph.remove_edge(from_id, to_id)
         except nx.NetworkXError:
             raise WorkflowException('remove_edge', 'Edge from %s to %s does not exist in graph.' % (from_id, to_id))
 
@@ -260,13 +260,13 @@ class Workflow:
 
     def get_node_successors(self, node_id):
         try:
-            return list(self._graph.successors(node_id))
+            return list(self.graph.successors(node_id))
         except nx.NetworkXError as e:
             raise WorkflowException('get node successors', str(e))
 
     def get_node_predecessors(self, node_id):
         try:
-            return list(self._graph.predecessors(node_id))
+            return list(self.graph.predecessors(node_id))
         except nx.NetworkXError as e:
             raise WorkflowException('get node predecessors', str(e))
 
@@ -385,7 +385,7 @@ class Workflow:
 
     def execution_order(self):
         try:
-            return list(nx.topological_sort(self._graph))
+            return list(nx.topological_sort(self.graph))
         except (nx.NetworkXError, nx.NetworkXUnfeasible) as e:
             raise WorkflowException('execution order', str(e))
         except RuntimeError as e:
