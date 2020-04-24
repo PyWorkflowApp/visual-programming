@@ -27,14 +27,14 @@ def new_workflow(request):
     """
     try:
         workflow_id = json.loads(request.body)
-    except json.JSONDecodeError as e:
+
+        # Create new Workflow
+        request.pyworkflow = Workflow(name=workflow_id['id'], root_dir=settings.MEDIA_ROOT)
+        request.session.update(request.pyworkflow.to_session_dict())
+
+        return JsonResponse(Workflow.to_graph_json(request.pyworkflow.graph))
+    except (json.JSONDecodeError, KeyError) as e:
         return JsonResponse({'No React model ID provided': str(e)}, status=500)
-
-    # Create new Workflow
-    request.pyworkflow = Workflow(name=workflow_id, root_dir=settings.MEDIA_ROOT)
-    request.session.update(request.pyworkflow.to_session_dict())
-
-    return JsonResponse(Workflow.to_graph_json(request.pyworkflow.graph))
 
 
 @swagger_auto_schema(method='post',

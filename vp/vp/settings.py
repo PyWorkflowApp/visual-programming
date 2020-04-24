@@ -82,12 +82,7 @@ WSGI_APPLICATION = 'vp.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 ### Not yet setup
-DATABASES = {
-    # 'default': {
-    #     'ENGINE': 'django.db.backends.postgresql',
-    #     'NAME': os.path.join(BASE_DIR, 'db.postgresql'),
-    # }
-}
+DATABASES = {}
 
 MEDIA_ROOT = '/tmp'
 

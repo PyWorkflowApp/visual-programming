@@ -8,7 +8,7 @@ import sys
 from collections import OrderedDict
 from modulefinder import ModuleFinder
 
-from .node import Node
+from .node import Node, NodeException
 from .node_factory import node_factory
 
 
@@ -119,25 +119,43 @@ class Workflow:
         Return:
             FlowNode object, if one exists. Otherwise, None.
         """
-        if self._flow_vars.has_node(node_id) is not True:
+        if self.flow_vars.has_node(node_id) is not True:
             return None
 
         node_info = self.flow_vars.nodes[node_id]
         return node_factory(node_info)
+
+    def get_all_flow_var_options(self, node_id):
+        """Retrieve all FlowNode options for a specified Node.
+
+        A Node can use all global FlowNodes, and any connected local FlowNodes
+        for variable substitution.
+
+        Args:
+            node_id: The Node to GET
+
+        Returns:
+            list of all FlowNode objects, converted to JSON
+        """
+        # Add global FlowNodes
+        graph_data = Workflow.to_graph_json(self.flow_vars)
+        flow_variables = graph_data['nodes']
+
+        # Append local FlowNodes
+        for predecessor_id in self.get_node_predecessors(node_id):
+            node = self.get_node(predecessor_id)
+
+            if node.node_type == 'FlowNode':
+                flow_variables.append(node.to_json())
+
+        return flow_variables
 
     def update_or_add_node(self, node: Node):
         """ Update or add a Node object to the graph.
 
         Args:
             node - The Node object to update or add to the graph
-
-        TODO:
-            * validate() always returns True; this should perform actual validation
         """
-        # Do not add/update if invalid
-        if node.validate() is False:
-            raise WorkflowException('update_or_add_node', 'Node is invalid')
-
         # Select the correct graph to modify
         graph = self.flow_vars if node.is_global else self.graph
 
@@ -176,9 +194,6 @@ class Workflow:
 
         Returns:
             Tuple representing the new Edge (from, to)
-
-        TODO:
-            * validate() always returns True; this should perform actual validation
         """
         # Prevent duplicate edges between the same two nodes
         # TODO: This may be incorrect usage for a `node_to` that has multi-in
@@ -188,8 +203,7 @@ class Workflow:
         if self._graph.has_edge(from_id, to_id):
             raise WorkflowException('add_node', 'Edge between nodes already exists.')
 
-        if node_from.validate() and node_to.validate():
-            self._graph.add_edge(from_id, to_id)
+        self._graph.add_edge(from_id, to_id)
 
         return (from_id, to_id)
 
@@ -256,37 +270,101 @@ class Workflow:
         if node_to_execute is None:
             raise WorkflowException('execute', 'The workflow does not contain node %s' % node_id)
 
-        # Read in any data from predecessor/flow nodes
-        # TODO: This should work for local FlowNodes, but global flow_vars still
-        #       need a way to be assigned/replace Node options
-        preceding_data = list()
-        flow_vars = list()
-        for predecessor in self.get_node_predecessors(node_id):
-            try:
-                node_to_retrieve = self.get_node(predecessor)
+        # Load predecessor data and FlowNode values
+        preceding_data = self.load_input_data(node_to_execute.node_id)
+        flow_nodes = self.load_flow_nodes(node_to_execute.option_replace)
 
-                if node_to_retrieve is None:
-                    raise WorkflowException('retrieve node data', 'The workflow does not contain node %s' % node_id)
+        try:
+            # Validate input data, and replace flow variables
+            node_to_execute.validate_input_data(len(preceding_data))
+            execution_options = node_to_execute.get_execution_options(flow_nodes)
 
-                if node_to_retrieve.node_type == 'FlowNode':
-                    flow_vars.append(node_to_retrieve.options)
-                else:
-                    preceding_data.append(self.retrieve_node_data(node_to_retrieve))
+            # Pass in data to current Node to use in execution
+            output = node_to_execute.execute(preceding_data, execution_options)
 
-            except WorkflowException:
-                # TODO: Should this append None, skip reading, or raise exception to view?
-                preceding_data.append(None)
-
-        # Pass in data to current Node to use in execution
-        output = node_to_execute.execute(preceding_data, flow_vars)
-
-        # Save new execution data to disk
-        node_to_execute.data = Workflow.store_node_data(self, node_id, output)
+            # Save new execution data to disk
+            node_to_execute.data = Workflow.store_node_data(self, node_id, output)
+        except NodeException as e:
+            raise e
 
         if node_to_execute.data is None:
             raise WorkflowException('execute', 'There was a problem saving node output.')
 
         return node_to_execute
+
+    def load_flow_nodes(self, option_replace):
+        """Construct dict of FlowNodes indexed by option name.
+
+        During Node configuration, the user has the option to select FlowNodes
+        to replace a given parameter value. A FlowNode selection is structured
+        like the following JSON:
+
+            "option_replace": {
+                "sep": {
+                    "node_id": id,
+                    "is_global": true
+                }
+            }
+
+        This method retrieves the specified FlowNode where the replacement value
+        can then be retrieved.
+
+        Args:
+            option_replace: Flow variables user selected for a given Node.
+
+        Returns:
+            dict of FlowNode objects, indexed by the option name.
+        """
+        flow_nodes = dict()
+
+        for key, option in option_replace.items():
+            try:
+                flow_node_id = option["node_id"]
+
+                if option["is_global"]:
+                    flow_node = self.get_flow_var(flow_node_id)
+                else:
+                    flow_node = self.get_node(flow_node_id)
+
+                if flow_node is None or flow_node.node_type != 'FlowNode':
+                    raise WorkflowException('load flow vars', 'The workflow does not contain FlowNode %s' % flow_node_id)
+
+                flow_nodes[key] = flow_node
+            except WorkflowException:
+                # TODO: Should this add a blank value, skip reading, or raise exception to view?
+                continue
+
+        return flow_nodes
+
+    def load_input_data(self, node_id):
+        """Construct list of predecessor DataFrames
+
+        Retrieves the data file for all of a Node's predecessors. Ignores
+        exceptions for missing Nodes/data as this is checked prior to execution.
+
+        Args:
+            node_id: The Node with predecessors
+
+        Returns:
+            list of dict-like DataFrames, used for Node execution
+        """
+        input_data = list()
+
+        for predecessor_id in self.get_node_predecessors(node_id):
+            try:
+                node_to_retrieve = self.get_node(predecessor_id)
+
+                if node_to_retrieve is None:
+                    raise WorkflowException('retrieve node data', 'The workflow does not contain node %s' % predecessor_id)
+
+                if node_to_retrieve.node_type != 'FlowNode':
+                    input_data.append(self.retrieve_node_data(node_to_retrieve))
+
+            except WorkflowException:
+                # TODO: Should this append None, skip reading, or raise exception to view?
+                continue
+
+        return input_data
 
     def execution_order(self):
         try:
