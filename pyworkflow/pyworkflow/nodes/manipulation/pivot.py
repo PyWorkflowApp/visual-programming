@@ -1,10 +1,10 @@
-from pyworkflow.node import Node, NodeException
+from pyworkflow.node import ManipulationNode, NodeException
 from pyworkflow.parameters import *
 
 import pandas as pd
 
 
-class PivotNode(Node):
+class PivotNode(ManipulationNode):
     name = "Pivoting"
     num_in = 1
     num_out = 3

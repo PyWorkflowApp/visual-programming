@@ -1,10 +1,10 @@
-from pyworkflow.node import Node, NodeException
+from pyworkflow.node import IONode, NodeException
 from pyworkflow.parameters import *
 
 import pandas as pd
 
 
-class WriteCsvNode(Node):
+class WriteCsvNode(IONode):
     """WriteCsvNode
 
     Writes the current DataFrame to a CSV file.

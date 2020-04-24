@@ -1,10 +1,10 @@
-from pyworkflow.node import Node, NodeException
+from pyworkflow.node import ManipulationNode, NodeException
 from pyworkflow.parameters import *
 
 import pandas as pd
 
 
-class FilterNode(Node):
+class FilterNode(ManipulationNode):
     name = "Filter"
     num_in = 1
     num_out = 1

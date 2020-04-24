@@ -1,10 +1,10 @@
-from pyworkflow.node import Node, NodeException
+from pyworkflow.node import IONode, NodeException
 from pyworkflow.parameters import *
 
 import pandas as pd
 
 
-class ReadCsvNode(Node):
+class ReadCsvNode(IONode):
     """ReadCsvNode
 
     Reads a CSV file into a pandas DataFrame.

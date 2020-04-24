@@ -116,6 +116,22 @@ class FlowNode(Node):
         return self.options['default_value'].get_value()
 
 
+class IONode(Node):
+    """IONodes deal with file-handling in/out of the Workflow."""
+    color = "green"
+
+    def execute(self, predecessor_data, flow_vars):
+        raise NotImplementedError()
+
+
+class ManipulationNode(Node):
+    """ManipulationNodes deal with data manipulation."""
+    color = "goldenrod"
+
+    def execute(self, predecessor_data, flow_vars):
+        raise NotImplementedError()
+
+
 class NodeException(Exception):
     def __init__(self, action: str, reason: str):
         self.action = action

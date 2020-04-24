@@ -1,10 +1,10 @@
-from pyworkflow.node import Node, NodeException
+from pyworkflow.node import ManipulationNode, NodeException
 from pyworkflow.parameters import *
 
 import pandas as pd
 
 
-class JoinNode(Node):
+class JoinNode(ManipulationNode):
     name = "Joiner"
     num_in = 2
     num_out = 1
