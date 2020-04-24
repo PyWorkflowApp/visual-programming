@@ -1,6 +1,12 @@
+import inspect
+import importlib
+import json
 import os
 import networkx as nx
-import json
+import sys
+
+from collections import OrderedDict
+from modulefinder import ModuleFinder
 
 from .node import Node
 from .node_factory import node_factory
@@ -12,14 +18,15 @@ class Workflow:
     Attributes:
         name: Name of the workflow
         root_dir: Used for reading/writing files to/from disk
+        custom_node_dir: Location of custom nodes
         graph: A NetworkX Directed Graph
         flow_vars: Global flow variables associated with workflow
     """
 
-    def __init__(self, name="Untitled", root_dir=None, graph=nx.DiGraph(), flow_vars=nx.Graph()):
+    def __init__(self, name="Untitled", root_dir=None, custom_node_dir=None, graph=nx.DiGraph(), flow_vars=nx.Graph()):
         self._name = name
         self._root_dir = WorkflowUtils.set_root_dir(root_dir)
-        self._custom_node_dir = WorkflowUtils.set_custom_nodes_dir()
+        self._custom_node_dir = WorkflowUtils.set_custom_nodes_dir(custom_node_dir)
         self._graph = graph
         self._flow_vars = flow_vars
 
@@ -41,6 +48,58 @@ class Workflow:
     @property
     def flow_vars(self):
         return self._flow_vars
+
+    def get_packaged_nodes(self, root_path=None, node_type=None):
+        if root_path is None:
+            root_path = self.custom_node_dir
+        print(f"\n\n{root_path}\n-----------------------")
+        # Get list of files in path
+        try:
+            files = os.listdir(root_path)
+        except OSError as e:
+            return None
+
+        print(files)
+        nodes = list()
+        data = OrderedDict()
+
+        for file in files:
+            # Check file is not a dir
+            node_path = os.path.join(root_path, file)
+            if os.path.isdir(node_path):
+                # Recurse per `node_type`
+                alt_node_type = file.replace('_', ' ').title()
+
+                data[alt_node_type] = self.get_packaged_nodes(node_path, file)
+                continue
+
+            node, ext = os.path.splitext(file)
+
+            if node == '__init__' or ext != '.py':
+                continue
+
+            try:
+                module = importlib.import_module('pyworkflow.nodes.' + node_type + '.' + node)
+            except ModuleNotFoundError as e:
+                print("MODULE NOT FOUND")
+                nodes.append({
+                    "filename": node,
+                    "missing_packages": WorkflowUtils.check_missing_packages(node_path)
+                })
+                continue
+
+            for name, klass in inspect.getmembers(module):
+                if inspect.isclass(klass) and klass.__module__.startswith('pyworkflow.nodes.' + node_type):
+                    parsed_node = WorkflowUtils.extract_node_info(node_type, klass)
+                    if node_type == 'custom_nodes':
+                        parsed_node['filename'] = node
+
+                    nodes.append(parsed_node)
+
+        if root_path == self.custom_node_dir:
+            return data
+        else:
+            return nodes
 
     def get_node(self, node_id):
         """Retrieves Node from workflow, if exists
@@ -410,13 +469,14 @@ class Workflow:
 
 class WorkflowUtils:
     @staticmethod
-    def set_custom_nodes_dir():
-        custom_node_dir = os.path.join(os.getcwd(), '../pyworkflow/custom_nodes')
+    def set_custom_nodes_dir(custom_node_path):
+        if custom_node_path is None:
+            custom_node_path = os.path.join(os.getcwd(), '../pyworkflow/pyworkflow/nodes')
 
-        if not os.path.exists(custom_node_dir):
-            os.makedirs(custom_node_dir)
+        if not os.path.exists(custom_node_path):
+            os.makedirs(custom_node_path)
 
-        return custom_node_dir
+        return custom_node_path
 
     @staticmethod
     def set_root_dir(root_dir):
@@ -427,6 +487,42 @@ class WorkflowUtils:
             os.makedirs(root_dir)
 
         return root_dir
+
+    @staticmethod
+    def check_missing_packages(node_path):
+        finder = ModuleFinder(node_path)
+        finder.run_script(node_path)
+
+        print("CHECKING PACKAGES")
+        print(finder.badmodules)
+        uninstalled = list()
+        for missing_package in finder.badmodules.keys():
+            if missing_package not in sys.modules:
+                uninstalled.append(missing_package)
+
+        print(uninstalled)
+        return uninstalled
+
+    @staticmethod
+    def extract_node_info(parent, node):
+        # TODO: check attribute(s) accessing is handled correctly
+        try:
+            color = node.color
+        except AttributeError:
+            color = 'black'
+
+        return {
+            'name': node.name,
+            'node_key': node.__name__,
+            'node_type': parent,
+            'num_in': node.num_in,
+            'num_out': node.num_out,
+            'color': color,
+            'doc': node.__doc__,
+            'options': {k: v.get_value() for k, v in node.options.items()},
+            'option_types': node.option_types,
+            'download_result': getattr(node, "download_result", False)
+        }
 
 
 class WorkflowException(Exception):

@@ -1,4 +1,6 @@
 from .node import *
+from .nodes import *
+import importlib
 
 
 def node_factory(node_info):
@@ -7,14 +9,14 @@ def node_factory(node_info):
     node_type = node_info.get('node_type')
     node_key = node_info.get('node_key')
 
-    if node_type == 'IONode':
+    if node_type == 'io':
         new_node = io_node(node_key, node_info)
-    elif node_type == 'ManipulationNode':
+    elif node_type == 'manipulation':
         new_node = manipulation_node(node_key, node_info)
-    elif node_type == 'FlowNode':
+    elif node_type == 'flow_control':
         new_node = flow_node(node_key, node_info)
     else:
-        new_node = custom_node(node_type, node_key, node_info)
+        new_node = custom_node(node_key, node_info)
 
     return new_node
 
@@ -40,18 +42,16 @@ def manipulation_node(node_key, node_info):
         return JoinNode(node_info)
     elif node_key == 'PivotNode':
         return PivotNode(node_info)
-    elif node_key == 'multi-in':
-        return ManipulationNode(node_info)
     elif node_key == 'FilterNode':
         return FilterNode(node_info)
     else:
         return None
 
 
-def custom_node(filename, node_key, node_info):
+def custom_node(node_key, node_info):
     try:
-        package = __import__('custom_nodes.' + filename)
-        module = getattr(package, filename)
+        filename = node_info.get('filename')
+        module = importlib.import_module('pyworkflow.nodes.custom_nodes.' + filename)
         my_class = getattr(module, node_key)
         instance = my_class(node_info)
 
