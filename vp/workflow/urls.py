@@ -11,6 +11,5 @@ urlpatterns = [
     path('globals', views.global_vars, name="retrieve global variables"),
     path('upload', views.upload_file, name='upload file'),
     path('download', views.download_file, name='download file'),
-    path('custom_node', views.add_custom_node, name='add custom node'),
     path('nodes', views.retrieve_nodes_for_user, name='retrieve node list'),
 ]

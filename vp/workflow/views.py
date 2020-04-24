@@ -10,6 +10,7 @@ from drf_yasg.utils import swagger_auto_schema
 
 from modulefinder import ModuleFinder
 
+
 @swagger_auto_schema(method='post',
                      operation_summary='Create a new workflow.',
                      operation_description='Creates a new workflow with empty DiGraph.',
@@ -219,36 +220,6 @@ def get_successors(request, node_id):
 
 
 @swagger_auto_schema(method='post',
-                     operation_summary='Uploads a custom node to server.',
-                     operation_description='Uploads a custom node to server location.',
-                     responses={
-                         200: 'File uploaded',
-                         404: 'No specified file'
-                     })
-@api_view(['POST'])
-def add_custom_node(request):
-    node_file = request.FILES.get('file')
-
-    if node_file is None:
-        return JsonResponse("Empty content", status=404)
-
-    to_open = os.path.join(request.pyworkflow.custom_node_dir, node_file.name)
-
-    try:
-        with open(to_open, 'wb') as f:
-            f.write(node_file.read())
-    except OSError as e:
-        return JsonResponse({'message': str(e)}, status=500)
-
-    node_file.close()
-
-    return JsonResponse({
-        "filename": to_open,
-        "missing_packages": check_missing_packages(to_open)
-    }, status=201, safe=False)
-
-
-@swagger_auto_schema(method='post',
                      operation_summary='Uploads a file to server.',
                      operation_description='Uploads a new file to server location.',
                      responses={
@@ -262,13 +233,22 @@ def upload_file(request):
     if f is None:
         return JsonResponse("Empty content", status=404)
 
-    node_id = request.POST.get('nodeId', '')
-
     try:
-        save_name = request.pyworkflow.upload_file(f, node_id)
-        return JsonResponse({"filename": save_name}, status=201, safe=False)
+        node_id = request.POST.get('nodeId')
+
+        if node_id is None:
+            # custom node file
+            file_path = request.pyworkflow.node_path('custom_node', f.name)
+        else:
+            # node data file
+            file_path = request.pyworkflow.path(f"{node_id}-{f.name}")
+
+        save_name = Workflow.upload_file(f, file_path)
     except WorkflowException as e:
         return JsonResponse({e.action: e.reason}, status=500)
+
+    return JsonResponse({"filename": save_name}, status=201, safe=False)
+
 
 @swagger_auto_schema(method='get',
                      operation_summary='Retrieve a list of installed Nodes',
@@ -288,6 +268,7 @@ def retrieve_nodes_for_user(request):
     data = request.pyworkflow.get_packaged_nodes()
     data.move_to_end('Custom Nodes')
     return JsonResponse(data, safe=False)
+
 
 @swagger_auto_schema(method='post',
                      operation_summary='Downloads a file from the server',
@@ -324,15 +305,3 @@ def download_file(request):
                             status=404)
     except WorkflowException as e:
         return JsonResponse({e.action: e.reason}, status=500)
-
-
-def check_missing_packages(node_path):
-    finder = ModuleFinder(node_path)
-    finder.run_script(node_path)
-
-    uninstalled = list()
-    for missing_package in finder.badmodules.keys():
-        if missing_package not in sys.modules:
-            uninstalled.append(missing_package)
-
-    return uninstalled

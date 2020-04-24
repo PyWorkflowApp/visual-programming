@@ -18,21 +18,21 @@ class Workflow:
     Attributes:
         name: Name of the workflow
         root_dir: Used for reading/writing files to/from disk
-        custom_node_dir: Location of custom nodes
+        node_dir: Location of custom nodes
         graph: A NetworkX Directed Graph
         flow_vars: Global flow variables associated with workflow
     """
 
-    def __init__(self, name="Untitled", root_dir=None, custom_node_dir=None, graph=nx.DiGraph(), flow_vars=nx.Graph()):
+    def __init__(self, name="Untitled", root_dir=None, node_dir=None, graph=nx.DiGraph(), flow_vars=nx.Graph()):
         self._name = name
         self._root_dir = WorkflowUtils.set_root_dir(root_dir)
-        self._custom_node_dir = WorkflowUtils.set_custom_nodes_dir(custom_node_dir)
+        self._node_dir = WorkflowUtils.set_custom_nodes_dir(node_dir)
         self._graph = graph
         self._flow_vars = flow_vars
 
     @property
-    def custom_node_dir(self):
-        return self._custom_node_dir
+    def node_dir(self):
+        return self._node_dir
 
     @property
     def graph(self):
@@ -40,6 +40,9 @@ class Workflow:
 
     def path(self, file_name):
         return os.path.join(self.root_dir, file_name)
+
+    def node_path(self, node_type, file_name):
+        return os.path.join(self.node_dir, node_type, file_name)
 
     @property
     def root_dir(self):
@@ -374,11 +377,9 @@ class Workflow:
         except RuntimeError as e:
             raise WorkflowException('execution order', 'The graph was changed while generating the execution order')
 
-    def upload_file(self, uploaded_file, node_id):
+    @staticmethod
+    def upload_file(uploaded_file, to_open):
         try:
-            file_name = f"{node_id}-{uploaded_file.name}"
-            to_open = self.path(file_name)
-
             # TODO: Change to a stream/other method for large files?
             with open(to_open, 'wb') as f:
                 f.write(uploaded_file.read())
