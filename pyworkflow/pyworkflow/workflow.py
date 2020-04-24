@@ -653,14 +653,15 @@ class WorkflowUtils:
                     'num_in': klass.num_in,
                     'num_out': klass.num_out,
                     'color': color,
+                    'filename': node,
                     'doc': klass.__doc__,
                     'options': {k: v.get_value() for k, v in klass.options.items()},
                     'option_types': klass.option_types,
                     'download_result': getattr(klass, "download_result", False)
                 }
 
-                if node_type == 'custom_nodes':
-                    parsed_node['filename'] = node
+                # if node_type == 'custom_nodes':
+                #     parsed_node['filename'] = node
 
                 return parsed_node
 

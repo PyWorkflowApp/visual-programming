@@ -14,7 +14,7 @@ class Node:
         self.node_type = node_info.get('node_type')
         self.node_key = node_info.get('node_key')
         self.data = node_info.get('data')
-
+        self.filename = node_info.get('filename')
         self.is_global = node_info.get('is_global') is True
 
         self.option_values = dict()
