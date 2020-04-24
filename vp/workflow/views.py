@@ -264,9 +264,7 @@ def retrieve_nodes_for_user(request):
     List is split into 'types' (e.g., 'IO' and 'Manipulation') and
     'keys', or individual command Nodes (e.g., 'ReadCsv', 'Pivot').
     """
-    packaged_nodes = os.path.join(os.getcwd(), '../pyworkflow/pyworkflow/nodes')
     data = request.pyworkflow.get_packaged_nodes()
-    data.move_to_end('Custom Nodes')
     return JsonResponse(data, safe=False)
 
 

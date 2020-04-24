@@ -54,54 +54,40 @@ class Workflow:
 
     def get_packaged_nodes(self, root_path=None, node_type=None):
         if root_path is None:
-            root_path = self.custom_node_dir
-        print(f"\n\n{root_path}\n-----------------------")
-        # Get list of files in path
+            root_path = self.node_dir
+
         try:
             files = os.listdir(root_path)
-        except OSError as e:
+        except OSError:
             return None
 
-        print(files)
         nodes = list()
         data = OrderedDict()
 
         for file in files:
-            # Check file is not a dir
-            node_path = os.path.join(root_path, file)
-            if os.path.isdir(node_path):
-                # Recurse per `node_type`
-                alt_node_type = file.replace('_', ' ').title()
+            file_path = os.path.join(root_path, file)
 
-                data[alt_node_type] = self.get_packaged_nodes(node_path, file)
+            if os.path.isdir(file_path):
+                # Recurse if file is a directory
+                display_name = WorkflowUtils.get_display_name(file)
+                data[display_name] = self.get_packaged_nodes(file_path, file)
                 continue
 
+            # Otherwise, try parsing file for a Node class
             node, ext = os.path.splitext(file)
 
+            # Skip init files or non-Python files
             if node == '__init__' or ext != '.py':
                 continue
 
-            try:
-                module = importlib.import_module('pyworkflow.nodes.' + node_type + '.' + node)
-            except ModuleNotFoundError as e:
-                print("MODULE NOT FOUND")
-                nodes.append({
-                    "filename": node,
-                    "missing_packages": WorkflowUtils.check_missing_packages(node_path)
-                })
-                continue
+            nodes.append(WorkflowUtils.extract_node_info(file_path, node, node_type))
 
-            for name, klass in inspect.getmembers(module):
-                if inspect.isclass(klass) and klass.__module__.startswith('pyworkflow.nodes.' + node_type):
-                    parsed_node = WorkflowUtils.extract_node_info(node_type, klass)
-                    if node_type == 'custom_nodes':
-                        parsed_node['filename'] = node
-
-                    nodes.append(parsed_node)
-
-        if root_path == self.custom_node_dir:
+        if root_path == self.node_dir:
+            # When traversal returns to `node_dir` return the entire OrderedDict()
+            data.move_to_end('Custom Nodes')
             return data
         else:
+            # Otherwise, return list containing all Nodes of a `node_type`
             return nodes
 
     def get_node(self, node_id):
@@ -548,6 +534,13 @@ class Workflow:
 
 class WorkflowUtils:
     @staticmethod
+    def get_display_name(file):
+        if file == 'io':
+            return 'I/O'
+        else:
+            return file.replace('_', ' ').title()
+
+    @staticmethod
     def set_custom_nodes_dir(custom_node_path):
         if custom_node_path is None:
             custom_node_path = os.path.join(os.getcwd(), '../pyworkflow/pyworkflow/nodes')
@@ -572,36 +565,51 @@ class WorkflowUtils:
         finder = ModuleFinder(node_path)
         finder.run_script(node_path)
 
-        print("CHECKING PACKAGES")
-        print(finder.badmodules)
         uninstalled = list()
         for missing_package in finder.badmodules.keys():
             if missing_package not in sys.modules:
                 uninstalled.append(missing_package)
 
-        print(uninstalled)
         return uninstalled
 
     @staticmethod
-    def extract_node_info(parent, node):
-        # TODO: check attribute(s) accessing is handled correctly
+    def extract_node_info(file_path, node, node_type):
+        # Check Node file for missing packages
         try:
-            color = node.color
-        except AttributeError:
-            color = 'black'
+            module = importlib.import_module('pyworkflow.nodes.' + node_type + '.' + node)
+        except ModuleNotFoundError:
+            return {
+                "filename": node,
+                "missing_packages": WorkflowUtils.check_missing_packages(file_path)
+            }
 
-        return {
-            'name': node.name,
-            'node_key': node.__name__,
-            'node_type': parent,
-            'num_in': node.num_in,
-            'num_out': node.num_out,
-            'color': color,
-            'doc': node.__doc__,
-            'options': {k: v.get_value() for k, v in node.options.items()},
-            'option_types': node.option_types,
-            'download_result': getattr(node, "download_result", False)
-        }
+        # Parse module for Node Class information
+        for name, klass in inspect.getmembers(module):
+            if inspect.isclass(klass) and klass.__module__.startswith('pyworkflow.nodes.' + node_type):
+                try:
+                    color = klass.color
+                except AttributeError:
+                    color = 'black'
+
+                parsed_node = {
+                    'name': klass.name,
+                    'node_key': klass.__name__,
+                    'node_type': node_type,
+                    'num_in': klass.num_in,
+                    'num_out': klass.num_out,
+                    'color': color,
+                    'doc': klass.__doc__,
+                    'options': {k: v.get_value() for k, v in klass.options.items()},
+                    'option_types': klass.option_types,
+                    'download_result': getattr(klass, "download_result", False)
+                }
+
+                if node_type == 'custom_nodes':
+                    parsed_node['filename'] = node
+
+                return parsed_node
+
+        return None
 
 
 class WorkflowException(Exception):
