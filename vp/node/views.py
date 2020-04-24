@@ -2,7 +2,7 @@ import json
 
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from pyworkflow import Workflow, WorkflowException, Node, NodeException, node_factory
+from pyworkflow import Workflow, WorkflowException, Node, NodeException, node_factory, ParameterValidationError
 from rest_framework.decorators import api_view
 from drf_yasg.utils import swagger_auto_schema
 
@@ -167,10 +167,12 @@ def handle_node(request, node_id):
         }, status=404)
 
     # Process request
-    # Node class not JSON serializable; pass __dict__ to response for display
     try:
         if request.method == 'GET':
-            response = JsonResponse(retrieved_node.__dict__, safe=False)
+            response = JsonResponse({
+                "retrieved_node": retrieved_node.to_json(),
+                "flow_variables": request.pyworkflow.get_all_flow_var_options(node_id),
+            }, safe=False)
         elif request.method == 'POST':
             updated_node = create_node(request)
 
@@ -190,8 +192,11 @@ def handle_node(request, node_id):
                     'updated_node': str(updated_node.is_global),
                 }, status=500)
 
+            # Validation raises exception if failed
+            updated_node.validate()
+
             request.pyworkflow.update_or_add_node(updated_node)
-            response = JsonResponse(updated_node.__dict__, safe=False)
+            response = JsonResponse(updated_node.to_json(), safe=False)
         elif request.method == 'DELETE':
             request.pyworkflow.remove_node(retrieved_node)
             response = JsonResponse({
@@ -203,6 +208,8 @@ def handle_node(request, node_id):
             }, status=405)
     except (NodeException, WorkflowException) as e:
         return JsonResponse({e.action: e.reason}, status=500)
+    except ParameterValidationError as e:
+        return JsonResponse({'message': str(e)}, status=500)
 
     return response
 
