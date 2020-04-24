@@ -53,6 +53,34 @@ class Workflow:
         return self._flow_vars
 
     def get_packaged_nodes(self, root_path=None, node_type=None):
+        """Retrieve list of Nodes available to the Workflow.
+
+        Recursively searches the `root_path` where Nodes are located. If none
+        specified, the default is `self.node_path`.
+
+        Each directory represents a given `node_type` (e.g. 'manipulation',
+        'io', etc.). Individual Node classes are defined in files within these
+        directories. Any custom nodes that the user has installed are included
+        in this search, given they are located in the 'custom_nodes' directory.
+
+        Args:
+            root_path: Root location where Nodes are defined.
+            node_type: The type of Node, defined by sub-directory name.
+
+        Returns:
+            OrderedDict() of Nodes, structured like the following
+
+            {
+                'I/O': [
+                    {node1},
+                    {node2},
+                ],
+                'Manipulation': [
+                    ...
+                ]
+                ...
+            }
+        """
         if root_path is None:
             root_path = self.node_dir
 
@@ -80,7 +108,7 @@ class Workflow:
             if node == '__init__' or ext != '.py':
                 continue
 
-            nodes.append(WorkflowUtils.extract_node_info(file_path, node, node_type))
+            nodes.append(WorkflowUtils.extract_node_info(node_type, node, file_path))
 
         if root_path == self.node_dir:
             # When traversal returns to `node_dir` return the entire OrderedDict()
@@ -562,6 +590,18 @@ class WorkflowUtils:
 
     @staticmethod
     def check_missing_packages(node_path):
+        """Check Python file for uninstalled packages.
+
+        When compiling the list of installed Nodes for a Workflow, if any
+        module throws a `ModuleNotFoundError`, this method is called to
+        compile a list of missing packages.
+
+        Args:
+            node_path: Location of the Node file.
+
+        Returns:
+            list of package names that are not installed
+        """
         finder = ModuleFinder(node_path)
         finder.run_script(node_path)
 
@@ -573,7 +613,22 @@ class WorkflowUtils:
         return uninstalled
 
     @staticmethod
-    def extract_node_info(file_path, node, node_type):
+    def extract_node_info(node_type, node, file_path):
+        """Extract information about a Node Class from a Python file.
+
+        Takes an individual Python file, representing a Node subclass and
+        extracts the attributes needed. If a module has packages that are not
+        installed, the filename and missing package names are returned.
+
+        Args:
+            node_type: The type of Node.
+            node: Name of the specific Node.
+            file_path: Where the Node's file is located.
+
+        Returns:
+            dict-like with extracted Node information. On `ModuleNotFoundError`
+            the filename and missing packages are returned.
+        """
         # Check Node file for missing packages
         try:
             module = importlib.import_module('pyworkflow.nodes.' + node_type + '.' + node)
