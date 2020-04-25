@@ -1,6 +1,7 @@
 import React from 'react';
 import * as _ from 'lodash';
 import { Col } from 'react-bootstrap';
+import CustomNodeUpload from "./CustomNodeUpload";
 
 
 export default function NodeMenu(props) {
@@ -24,6 +25,7 @@ export default function NodeMenu(props) {
                     </ul>
                 </div>
             )}
+            <CustomNodeUpload onUpload={props.onUpload} />
         </Col>
     );
 }

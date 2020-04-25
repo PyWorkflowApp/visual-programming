@@ -115,7 +115,7 @@ class Workspace extends React.Component {
                     </Col>
                 </Row>
                 <Row className="Workspace">
-                    <NodeMenu nodes={this.state.nodes} />
+                    <NodeMenu nodes={this.state.nodes} onUpload={this.getAvailableNodes}/>
                     <Col xs={10}>
                         <div style={{position: 'relative', flexGrow: 1}}
                             onDrop={event => this.handleNodeCreation(event)}
