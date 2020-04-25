@@ -23,12 +23,20 @@ class Workflow:
         flow_vars: Global flow variables associated with workflow
     """
 
-    def __init__(self, name="Untitled", root_dir=None, node_dir=None, graph=nx.DiGraph(), flow_vars=nx.Graph()):
-        self._name = name
-        self._root_dir = WorkflowUtils.set_root_dir(root_dir)
-        self._node_dir = WorkflowUtils.set_custom_nodes_dir(node_dir)
-        self._graph = graph
-        self._flow_vars = flow_vars
+    DEFAULT_ROOT_PATH = os.getcwd()
+    DEFAULT_NODE_PATH = os.path.join(os.getcwd(), '../pyworkflow/pyworkflow/nodes')
+
+    def __init__(self, name="Untitled", root_dir=DEFAULT_ROOT_PATH,
+                 node_dir=DEFAULT_NODE_PATH, graph=nx.DiGraph(),
+                 flow_vars=nx.Graph()):
+        try:
+            self._name = name
+            self._root_dir = WorkflowUtils.set_dir(root_dir)
+            self._node_dir = WorkflowUtils.set_dir(node_dir, custom_nodes=True)
+            self._graph = graph
+            self._flow_vars = flow_vars
+        except OSError as e:
+            raise WorkflowException('init workflow', str(e))
 
     @property
     def node_dir(self):
@@ -569,24 +577,29 @@ class WorkflowUtils:
             return file.replace('_', ' ').title()
 
     @staticmethod
-    def set_custom_nodes_dir(custom_node_path):
-        if custom_node_path is None:
-            custom_node_path = os.path.join(os.getcwd(), '../pyworkflow/pyworkflow/nodes')
+    def set_dir(dir_path, custom_nodes=False):
+        """Makes directories to ensure path is valid.
 
-        if not os.path.exists(custom_node_path):
-            os.makedirs(custom_node_path)
+        To prevent OSErrors for missing directories, especially in the case of
+        non-default Workflow locations, this method ensures the `dir_path`
+        specified exists.
 
-        return custom_node_path
+        Args:
+            dir_path: Fully-qualified directory to check/make
+            custom_nodes: Creates a 'custom_nodes' sub directory when True
 
-    @staticmethod
-    def set_root_dir(root_dir):
-        if root_dir is None:
-            root_dir = os.getcwd()
+        Returns:
+            The `dir_path` requested, with guarantee the path exists.
+        """
+        if custom_nodes:
+            make_dir = os.path.join(dir_path, 'custom_nodes')
+        else:
+            make_dir = dir_path
 
-        if not os.path.exists(root_dir):
-            os.makedirs(root_dir)
+        if not os.path.exists(make_dir):
+            os.makedirs(make_dir)
 
-        return root_dir
+        return dir_path
 
     @staticmethod
     def check_missing_packages(node_path):
