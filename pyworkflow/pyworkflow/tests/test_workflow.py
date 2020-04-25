@@ -10,7 +10,7 @@ class WorkflowTestCase(unittest.TestCase):
         self.read_csv_node = {
             "name": "Read CSV",
             "node_id": "1",
-            "node_type": "IONode",
+            "node_type": "io",
             "node_key": "ReadCsvNode",
             "is_global": False,
             "options": {
@@ -21,7 +21,7 @@ class WorkflowTestCase(unittest.TestCase):
         self.write_csv_node = {
             "name": "Write CSV",
             "node_id": "2",
-            "node_type": "IONode",
+            "node_type": "io",
             "node_key": "WriteCsvNode",
             "is_global": False,
             "options": {
@@ -32,7 +32,7 @@ class WorkflowTestCase(unittest.TestCase):
         self.join_node = {
             "name": "Joiner",
             "node_id": "3",
-            "node_type": "ManipulationNode",
+            "node_type": "manipulation",
             "node_key": "JoinNode",
             "is_global": False,
             "options": {

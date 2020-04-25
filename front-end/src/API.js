@@ -95,7 +95,7 @@ export async function save(diagramData) {
  * @returns {Promise<Object>} - server response (node menu items)
  */
 export async function getNodes() {
-    return fetchWrapper("/nodes");
+    return fetchWrapper("/workflow/nodes");
 }
 
 
