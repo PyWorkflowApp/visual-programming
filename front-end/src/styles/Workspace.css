@@ -16,14 +16,22 @@
         linear-gradient(to bottom, rgba(54, 169, 231, 0.1) 1px, transparent 1px);
 }
 .NodeMenuItem {
-    cursor: pointer;
     background-color: white;
-    border-radius: 5px;
     margin-bottom: 3px;
+    box-shadow: 0px 2px 4px gray;
 }
-.NodeMenuItem::before {
+.NodeMenuItem[draggable] {
+    cursor: pointer;
+}
+.NodeMenuItem[draggable]::before {
     content: "+";
     padding-right: 10px;
     padding-left: 5px;
     color: black;
+}
+.NodeMenuItem.invalid::before {
+    content: "\26a0";
+    padding-right: 10px;
+    padding-left: 5px;
+    color: red;
 }

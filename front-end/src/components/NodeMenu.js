@@ -19,7 +19,8 @@ export default function NodeMenu(props) {
                             const config = data.options;
                             delete data.options;
                             return (
-                                <NodeMenuItem key={data.node_key} nodeInfo={data} config={config} />
+                                <NodeMenuItem key={data.node_key || data.filename}
+                                              nodeInfo={data} config={config} />
                             )}
                         )}
                     </ul>
@@ -32,16 +33,23 @@ export default function NodeMenu(props) {
 
 
 function NodeMenuItem(props) {
+    if (!props.nodeInfo.missing_packages) {
+        return (
+                <li className="NodeMenuItem"
+                    draggable={true}
+                    onDragStart={event => {
+                        event.dataTransfer.setData(
+                            'storm-diagram-node',
+                            JSON.stringify(props));
+                    }}
+                    style={{color: props.nodeInfo.color}}>
+                    {props.nodeInfo.name}
+                </li>
+    } else {
+        return (
+                <li className="NodeMenuItem invalid">{props.nodeInfo.filename}</li>
+        )
+    }
     return (
-        <li className="NodeMenuItem"
-            draggable={true}
-            onDragStart={event => {
-                event.dataTransfer.setData(
-                    'storm-diagram-node',
-                    JSON.stringify(props));
-            }}
-            style={{ color: props.nodeInfo.color }}>
-            {props.nodeInfo.name}
-        </li>
     )
 }
