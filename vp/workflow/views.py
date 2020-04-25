@@ -238,7 +238,7 @@ def upload_file(request):
 
         if node_id is None:
             # custom node file
-            file_path = request.pyworkflow.node_path('custom_node', f.name)
+            file_path = request.pyworkflow.node_path('custom_nodes', f.name)
         else:
             # node data file
             file_path = request.pyworkflow.path(f"{node_id}-{f.name}")
