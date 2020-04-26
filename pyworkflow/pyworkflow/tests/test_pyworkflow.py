@@ -75,6 +75,7 @@ class PyWorkflowTestCase(unittest.TestCase):
         self.edges = [("1", "3"), ("2", "3"), ("3", "4")]
 
     def create_workflow(self):
+        # When created in setUp(), duplicate Node/Edge errors would arise
         for node in self.nodes:
             self.pyworkflow.update_or_add_node(node)
 
@@ -83,18 +84,25 @@ class PyWorkflowTestCase(unittest.TestCase):
             target_node = self.pyworkflow.get_node(edge[1])
             self.pyworkflow.add_edge(source_node, target_node)
 
-    def test_a_get_execution_order(self):
+    def test_get_execution_order(self):
         self.create_workflow()
         order = self.pyworkflow.execution_order()
         self.assertEqual(order, ["2", "1", "3", "4"])
 
-    def test_b_execute_workflow(self):
+    def test_execute_workflow(self):
         order = self.pyworkflow.execution_order()
 
         for node in order:
             executed_node = self.pyworkflow.execute(node)
             self.pyworkflow.update_or_add_node(executed_node)
 
-    def test_c_fail_execute_node(self):
+    def test_fail_execute_node(self):
         with self.assertRaises(WorkflowException):
             self.pyworkflow.execute("100")
+
+    def test_upload_file(self):
+        with open('/tmp/sample1.csv', 'rb') as f:
+            to_open = '/tmp/sample_upload.csv'
+            saved_filed = self.pyworkflow.upload_file(f, to_open)
+
+            self.assertEqual(to_open, saved_filed)

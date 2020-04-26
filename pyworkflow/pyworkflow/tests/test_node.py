@@ -141,20 +141,14 @@ class NodeTestCase(unittest.TestCase):
         self.assertIsInstance(node_to_add, StringNode)
 
     def test_fail_add_node(self):
-        node_to_add = node_factory(self.bad_node_type)
-        self.assertIsNone(node_to_add)
-
-    def test_fail_add_flow_node(self):
-        node_to_add = node_factory(self.bad_flow_node)
-        self.assertIsNone(node_to_add)
-
-    def test_fail_add_io_node(self):
-        node_to_add = node_factory(self.bad_io_node)
-        self.assertIsNone(node_to_add)
-
-    def test_fail_add_manipulation_node(self):
-        node_to_add = node_factory(self.bad_manipulation_node)
-        self.assertIsNone(node_to_add)
+        bad_nodes = [
+            node_factory(self.bad_node_type),
+            node_factory(self.bad_flow_node),
+            node_factory(self.bad_io_node),
+            node_factory(self.bad_manipulation_node)
+        ]
+        for bad_node in bad_nodes:
+            self.assertIsNone(bad_node)
 
     def test_node_execute_not_implemented(self):
         test_node = Node(dict())
@@ -166,6 +160,16 @@ class NodeTestCase(unittest.TestCase):
         for node_to_execute in nodes:
             with self.assertRaises(NotImplementedError):
                 node_to_execute.execute(None, None)
+
+    def test_node_execute_exception(self):
+        read_csv_node = node_factory(self.read_csv_node)
+        write_csv_node = node_factory(self.write_csv_node)
+        join_node = node_factory(self.join_node)
+
+        nodes = [read_csv_node, write_csv_node, join_node]
+        for node_to_execute in nodes:
+            with self.assertRaises(NodeException):
+                node_to_execute.execute(dict(), dict())
 
     def test_add_global_flow_var(self):
         node_to_add = Node(self.global_flow_var)

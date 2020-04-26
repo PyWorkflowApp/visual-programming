@@ -1,11 +1,12 @@
 import unittest
+import os
 from pyworkflow import Workflow, WorkflowException, Node, NodeException, node_factory
 import networkx as nx
 
 
 class WorkflowTestCase(unittest.TestCase):
     def setUp(self):
-        self.workflow = Workflow("Untitled", root_dir="/tmp")
+        self.workflow = Workflow("Untitled", root_dir="/tmp", node_dir=os.path.join(os.getcwd(), 'nodes'))
 
         self.read_csv_node = {
             "name": "Read CSV",
@@ -14,7 +15,7 @@ class WorkflowTestCase(unittest.TestCase):
             "node_key": "ReadCsvNode",
             "is_global": False,
             "options": {
-                "file": "/tmp/sample.csv"
+                "file": "/tmp/sample1.csv"
             }
         }
 
@@ -29,25 +30,23 @@ class WorkflowTestCase(unittest.TestCase):
             }
         }
 
-        self.global_flow_var = {
-            "name": "String Input",
-            "node_id": "1",
-            "node_type": "flow_control",
-            "node_key": "StringNode",
-            "is_global": True,
-        }
-
         self.join_node = {
             "name": "Joiner",
             "node_id": "3",
             "node_type": "manipulation",
             "node_key": "JoinNode",
             "is_global": False,
-
             "options": {
-                "default_value": "My value",
-                "var_name": "my_var"
+                "on": "key"
             }
+        }
+
+        self.global_flow_var = {
+            "name": "String Input",
+            "node_id": "1",
+            "node_type": "flow_control",
+            "node_key": "StringNode",
+            "is_global": True,
         }
 
     def add_node(self, node_info, node_id):
@@ -59,8 +58,17 @@ class WorkflowTestCase(unittest.TestCase):
         response = self.workflow.add_edge(source_node, target_node)
         self.assertEqual(response, (source_node.node_id, target_node.node_id))
 
+    ##########################
+    # Workflow getters/setters
+    ##########################
     def test_workflow_name(self):
         self.assertEqual(self.workflow.name, "Untitled")
+
+    def test_workflow_node_dir(self):
+        self.assertEqual(self.workflow.node_dir, os.path.join(os.getcwd(), 'nodes'))
+
+    def test_workflow_node_path(self):
+        self.assertEqual(self.workflow.node_path('io', 'read_csv.py'), os.path.join(os.getcwd(), 'nodes/io/read_csv.py'))
 
     def test_set_workflow_name(self):
         self.workflow.name = "My Workflow"
@@ -69,65 +77,12 @@ class WorkflowTestCase(unittest.TestCase):
     def test_workflow_filename(self):
         self.assertEqual(self.workflow.filename, "Untitled.json")
 
-    def test_add_read_csv_node(self):
-        node_to_add = Node(self.read_csv_node)
-        added_node = self.add_node(self.read_csv_node, "1")
-
-        self.assertDictEqual(node_to_add.__dict__, added_node.__dict__)
-
-    def test_add_write_csv_node(self):
-        node_to_add = Node(self.write_csv_node)
-        added_node = self.add_node(self.write_csv_node, "2")
-
-        self.assertDictEqual(node_to_add.__dict__, added_node.__dict__)
-
-    def test_add_string_node(self):
-        node_to_add = Node(self.global_flow_var)
-        added_node = self.add_node(self.global_flow_var, "1")
-
-        self.assertDictEqual(node_to_add.__dict__, added_node.__dict__)
-
-    def test_fail_get_node(self):
-        retrieved_node = self.workflow.get_flow_var("100")
-
-        self.assertIsNone(retrieved_node)
-
-    def test_get_node(self):
-        retrieved_node = self.workflow.get_node("1")
-        read_csv_node = Node(self.read_csv_node)
-
-        self.assertDictEqual(retrieved_node.__dict__, read_csv_node.__dict__)
-
-    def test_get_flow_var(self):
-        retrieved_node = self.workflow.get_flow_var("1")
-        global_flow_var = Node(self.global_flow_var)
-
-        self.assertDictEqual(retrieved_node.__dict__, global_flow_var.__dict__)
-
-    def test_add_xedge_1_to_2(self):
-        node_1 = self.workflow.get_node("1")
-        node_2 = self.workflow.get_node("2")
-        self.add_edge(node_1, node_2)
-        return
-
-    def test_add_xedge_duplicated(self):
-        node_1 = self.workflow.get_node("1")
-        node_2 = self.workflow.get_node("2")
-
-        with self.assertRaises(WorkflowException):
-            self.workflow.add_edge(node_1, node_2)
-
-    def test_execute_node(self):
-        node_to_execute = self.workflow.get_node("1")
-
-        response = self.workflow.execute("1")
-        node_to_execute.data = 'Untitled-1'
-
-        self.assertDictEqual(node_to_execute.__dict__, response.__dict__)
-
-    def test_fail_execute_node(self):
-        with self.assertRaises(WorkflowException):
-            self.workflow.execute("100")
+    ##########################
+    # Node lists
+    ##########################
+    def test_workflow_packaged_nodes(self):
+        nodes = self.workflow.get_packaged_nodes()
+        self.assertEqual(len(nodes), 4)
 
     def test_get_flow_variables(self):
         flow_var_options = self.workflow.get_all_flow_var_options("1")
@@ -158,6 +113,80 @@ class WorkflowTestCase(unittest.TestCase):
             copied_workflow._graph = nx.Graph()
             copied_workflow.execution_order()
 
+    ##########################
+    # Node operations
+    ##########################
+    def test_add_read_csv_node(self):
+        node_to_add = Node(self.read_csv_node)
+        added_node = self.add_node(self.read_csv_node, "1")
+
+        self.assertDictEqual(node_to_add.__dict__, added_node.__dict__)
+
+    def test_add_write_csv_node(self):
+        node_to_add = Node(self.write_csv_node)
+        added_node = self.add_node(self.write_csv_node, "2")
+
+        self.assertDictEqual(node_to_add.__dict__, added_node.__dict__)
+
+    def test_add_join_node(self):
+        node_to_add = Node(self.join_node)
+        added_node = self.add_node(self.join_node, "3")
+
+        self.assertDictEqual(node_to_add.__dict__, added_node.__dict__)
+
+    def test_get_node(self):
+        retrieved_node = self.workflow.get_node("1")
+        read_csv_node = Node(self.read_csv_node)
+
+        self.assertDictEqual(retrieved_node.__dict__, read_csv_node.__dict__)
+
+    def test_fail_get_node(self):
+        retrieved_node = self.workflow.get_flow_var("100")
+
+        self.assertIsNone(retrieved_node)
+
+    def test_remove_node(self):
+        node_to_remove = self.workflow.get_node("1")
+        removed_node = self.workflow.remove_node(node_to_remove)
+
+        self.assertDictEqual(node_to_remove.__dict__, removed_node.__dict__)
+
+    def test_remove_node_error(self):
+        node_to_remove = self.workflow.get_node("1")
+        with self.assertRaises(WorkflowException):
+            self.workflow.remove_node(node_to_remove)
+
+    ##########################
+    # Flow variable operations
+    ##########################
+    def test_add_string_node(self):
+        node_to_add = Node(self.global_flow_var)
+        added_node = self.add_node(self.global_flow_var, "1")
+
+        self.assertDictEqual(node_to_add.__dict__, added_node.__dict__)
+
+    def test_get_flow_var(self):
+        retrieved_node = self.workflow.get_flow_var("1")
+        global_flow_var = Node(self.global_flow_var)
+
+        self.assertDictEqual(retrieved_node.__dict__, global_flow_var.__dict__)
+
+    ##########################
+    # Edge operations
+    ##########################
+    def test_add_xedge_1_to_2(self):
+        node_1 = self.workflow.get_node("1")
+        node_2 = self.workflow.get_node("2")
+        self.add_edge(node_1, node_2)
+        return
+
+    def test_add_xedge_duplicated(self):
+        node_1 = self.workflow.get_node("1")
+        node_2 = self.workflow.get_node("2")
+
+        with self.assertRaises(WorkflowException):
+            self.workflow.add_edge(node_1, node_2)
+
     def test_remove_edge(self):
         node_1 = self.workflow.get_node("1")
         node_2 = self.workflow.get_node("2")
@@ -172,13 +201,34 @@ class WorkflowTestCase(unittest.TestCase):
         with self.assertRaises(WorkflowException):
             self.workflow.remove_edge(node_1, node_2)
 
-    def test_remove_node(self):
-        node_to_remove = self.workflow.get_node("1")
-        removed_node = self.workflow.remove_node(node_to_remove)
+    ##########################
+    # Flow variable operations
+    ##########################
+    def test_execute_node(self):
+        node_to_execute = self.workflow.get_node("1")
 
-        self.assertDictEqual(node_to_remove.__dict__, removed_node.__dict__)
+        response = self.workflow.execute("1")
+        node_to_execute.data = 'Untitled-1'
 
-    def test_remove_node_error(self):
-        node_to_remove = self.workflow.get_node("1")
+        self.assertDictEqual(node_to_execute.__dict__, response.__dict__)
+
+    def test_fail_execute_node(self):
         with self.assertRaises(WorkflowException):
-            self.workflow.remove_node(node_to_remove)
+            self.workflow.execute("100")
+
+    ##########################
+    # File I/O operations
+    ##########################
+    def test_download_file(self):
+        file = self.workflow.download_file("1")
+
+        self.assertEqual(file.name, "/tmp/sample1.csv")
+        file.close()
+
+    def test_download_file_error(self):
+        self.assertIsNone(self.workflow.download_file("100"))
+
+    def test_download_file_wrong_type(self):
+        with self.assertRaises(WorkflowException):
+            self.workflow.download_file("3")
+
