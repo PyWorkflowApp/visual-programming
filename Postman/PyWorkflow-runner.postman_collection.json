@@ -88,7 +88,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"name\": null,\n    \"node_id\": \"1\",\n    \"node_type\": \"IONode\",\n    \"node_key\": \"ReadCsvNode\",\n    \"options\": {\n    \t\"file\": \"/tmp/sample.csv\"\n    }\n}",
+					"raw": "{\n    \"name\": null,\n    \"node_id\": \"1\",\n    \"node_type\": \"io\",\n    \"node_key\": \"ReadCsvNode\",\n    \"options\": {\n    \t\"file\": \"/tmp/sample.csv\",\n    \t\"sep\": \",\"\n    }\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -132,7 +132,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"name\": null,\n    \"node_id\": \"2\",\n    \"node_type\": \"IONode\",\n    \"node_key\": \"ReadCsvNode\",\n    \"options\": {\n    \t\"file\": \"/tmp/sample2.csv\"\n    }\n}",
+					"raw": "{\n    \"name\": null,\n    \"node_id\": \"2\",\n    \"node_type\": \"io\",\n    \"node_key\": \"ReadCsvNode\",\n    \"options\": {\n    \t\"file\": \"/tmp/sample2.csv\"\n    }\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -180,7 +180,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"name\": null,\n    \"node_id\": \"3\",\n    \"node_type\": \"ManipulationNode\",\n    \"node_key\": \"JoinNode\",\n    \"options\": {\n    \t\"on\": \"key\"\n    }\n}",
+					"raw": "{\n    \"name\": null,\n    \"node_id\": \"3\",\n    \"node_type\": \"manipulation\",\n    \"node_key\": \"JoinNode\",\n    \"options\": {\n    \t\"on\": \"key\"\n    }\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -228,7 +228,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"name\": null,\n    \"node_id\": \"4\",\n    \"node_type\": \"IONode\",\n    \"node_key\": \"WriteCsvNode\",\n    \"options\": {\n    \t\"file\": \"/tmp/sample_out.csv\"\n    }\n}",
+					"raw": "{\n    \"name\": null,\n    \"node_id\": \"4\",\n    \"node_type\": \"io\",\n    \"node_key\": \"WriteCsvNode\",\n    \"options\": {\n    \t\"file\": \"/tmp/sample_out.csv\"\n    }\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -276,7 +276,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"name\": null,\n    \"node_id\": \"4\",\n    \"node_type\": \"IONode\",\n    \"node_key\": \"WriteCsvNode\",\n    \"options\": {\n    \t\"path_or_buf\": \"/tmp/sample_out.csv\"\n    }\n}",
+					"raw": "{\n    \"name\": null,\n    \"node_id\": \"4\",\n    \"node_type\": \"io\",\n    \"node_key\": \"WriteCsvNode\",\n    \"options\": {\n    \t\"path_or_buf\": \"/tmp/sample_out.csv\"\n    }\n}",
 					"options": {
 						"raw": {
 							"language": "json"
