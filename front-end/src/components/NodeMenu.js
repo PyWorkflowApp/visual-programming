@@ -32,9 +32,26 @@ export default function NodeMenu(props) {
 }
 
 
+/**
+ * Format docstring with newlines into tooltip content
+ * @param string - node docstring
+ * @returns {array} - array of strings and HTML elements
+ */
+function formatTooltip(string) {
+    const split = string.split("\n");
+    const out = [];
+    split.forEach((line, i) => {
+        out.push(line);
+        out.push(<br  key={i} />);
+    });
+    out.pop();
+    return out;
+}
+
+
 function NodeMenuItem(props) {
     if (!props.nodeInfo.missing_packages) {
-        const tooltip = props.nodeInfo.doc || "This node has no documentation."
+        const tooltip = props.nodeInfo.doc ? formatTooltip(props.nodeInfo.doc) : "This node has no documentation."
         return (
             <OverlayTrigger
                 placement="right"
@@ -53,8 +70,9 @@ function NodeMenuItem(props) {
             </OverlayTrigger>
         )
     } else {
-        let tooltip = "These Python modules could not be imported: ";
-        tooltip += props.nodeInfo.missing_packages.join(", ");
+        let tooltip = "These Python modules could not be imported:\n\n"
+            + props.nodeInfo.missing_packages.join("\n");
+        tooltip = formatTooltip(tooltip);
         return (
             <OverlayTrigger
                 placement="right"
@@ -70,7 +88,11 @@ function NodeMenuItem(props) {
 // Overlay with props has to use ref forwarding
 const NodeTooltip = React.forwardRef((props, ref) => {
     return (
-        <Tooltip {...props} ref={ref}>{props.message}</Tooltip>
+        <Tooltip {...props} ref={ref}>
+            <div style={{textAlign: "left"}}>
+                {props.message}
+            </div>
+        </Tooltip>
     )
 });
 
