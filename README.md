@@ -83,3 +83,10 @@ package.
 - `cd pyworkflow/pyworkflow`
 - `pipenv run python3 -m unittest tests/*.py`
 
+To see coverage, you can use the `coverage` package. This is included in the Pipfile
+but must be installed with `pipenv install -dev`. Then, while still in the pyworkflow
+directory, you can run
+
+- `coverage run -m unittest tests/*.py`
+- `coverage report` (to see a report via the CLI)
+- `coverage html && open /htmlcov/index.html` (to view interactive coverage)
