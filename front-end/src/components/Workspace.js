@@ -9,6 +9,7 @@ import VPPortFactory from './VPPort/VPPortFactory';
 import * as API from '../API';
 import NodeMenu from './NodeMenu';
 import '../styles/Workspace.css';
+import GlobalFlowMenu from "./GlobalFlowMenu";
 
 class Workspace extends React.Component {
 
@@ -21,8 +22,9 @@ class Workspace extends React.Component {
         this.model = new DiagramModel();
         this.engine.setModel(this.model);
         this.engine.setMaxNumberPointsPerLink(0);
-        this.state = {nodes: []};
+        this.state = {nodes: [], globals: []};
         this.getAvailableNodes = this.getAvailableNodes.bind(this);
+        this.getGlobalVars = this.getGlobalVars.bind(this);
         this.load = this.load.bind(this);
         this.clear = this.clear.bind(this);
         this.handleNodeCreation = this.handleNodeCreation.bind(this);
@@ -31,6 +33,7 @@ class Workspace extends React.Component {
 
     componentDidMount() {
         this.getAvailableNodes();
+        this.getGlobalVars();
         API.initWorkflow(this.model).catch(err => console.log(err));
     }
 
@@ -40,6 +43,12 @@ class Workspace extends React.Component {
     getAvailableNodes() {
         API.getNodes()
             .then(nodes => this.setState({nodes: nodes}))
+            .catch(err => console.log(err));
+    }
+
+    getGlobalVars() {
+        API.getGlobalVars()
+            .then(vars => this.setState({globals: vars}))
             .catch(err => console.log(err));
     }
 
@@ -60,6 +69,7 @@ class Workspace extends React.Component {
         if (window.confirm("Clear diagram? You will lose all work.")) {
             this.model.getNodes().forEach(n => n.remove());
             API.initWorkflow(this.model).catch(err => console.log(err));
+            this.getGlobalVars();
             this.engine.repaintCanvas();
         }
     }
@@ -115,8 +125,14 @@ class Workspace extends React.Component {
                     </Col>
                 </Row>
                 <Row className="Workspace">
-                    <NodeMenu nodes={this.state.nodes} onUpload={this.getAvailableNodes}/>
-                    <Col xs={10}>
+                    <Col xs={3}>
+                        <GlobalFlowMenu menuItems={this.state.nodes["Flow Control"] || []}
+                                        nodes={this.state.globals}
+                                        onUpdate={this.getGlobalVars}
+                                        diagramModel={this.model}/>
+                        <NodeMenu nodes={this.state.nodes} onUpload={this.getAvailableNodes}/>
+                    </Col>
+                    <Col xs={9} style={{paddingLeft: 0}}>
                         <div style={{position: 'relative', flexGrow: 1}}
                             onDrop={event => this.handleNodeCreation(event)}
                             onDragOver={event => event.preventDefault() }>
