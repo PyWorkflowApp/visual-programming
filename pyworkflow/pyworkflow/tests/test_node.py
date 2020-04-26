@@ -1,5 +1,6 @@
 import unittest
 from pyworkflow import *
+from pyworkflow.nodes import *
 import networkx as nx
 
 
@@ -10,7 +11,7 @@ class NodeTestCase(unittest.TestCase):
         self.read_csv_node = {
             "name": "Read CSV",
             "node_id": "1",
-            "node_type": "IONode",
+            "node_type": "io",
             "node_key": "ReadCsvNode",
             "is_global": False,
             "options": {
@@ -21,7 +22,7 @@ class NodeTestCase(unittest.TestCase):
         self.write_csv_node = {
             "name": "Write CSV",
             "node_id": "2",
-            "node_type": "IONode",
+            "node_type": "io",
             "node_key": "WriteCsvNode",
             "is_global": False,
             "options": {
@@ -32,7 +33,7 @@ class NodeTestCase(unittest.TestCase):
         self.join_node = {
             "name": "Joiner",
             "node_id": "3",
-            "node_type": "ManipulationNode",
+            "node_type": "manipulation",
             "node_key": "JoinNode",
             "is_global": False,
             "options": {
@@ -43,7 +44,7 @@ class NodeTestCase(unittest.TestCase):
         self.filter_node = {
             "name": "Filter",
             "node_id": "4",
-            "node_type": "ManipulationNode",
+            "node_type": "manipulation",
             "node_key": "FilterNode",
             "is_global": False,
             "options": {
@@ -54,7 +55,7 @@ class NodeTestCase(unittest.TestCase):
         self.pivot_node = {
             "name": "Pivoting",
             "node_id": "5",
-            "node_type": "ManipulationNode",
+            "node_type": "manipulation",
             "node_key": "PivotNode",
             "is_global": False,
             "options": {
@@ -65,7 +66,7 @@ class NodeTestCase(unittest.TestCase):
         self.string_input = {
             "name": "String Input",
             "node_id": "6",
-            "node_type": "FlowNode",
+            "node_type": "flow_control",
             "node_key": "StringNode",
             "is_global": False,
             "options": {
@@ -77,7 +78,7 @@ class NodeTestCase(unittest.TestCase):
         self.global_flow_var = {
             "name": "String Input",
             "node_id": "1",
-            "node_type": "FlowNode",
+            "node_type": "flow_control",
             "node_key": "StringNode",
             "is_global": True,
             "options": {
@@ -89,7 +90,7 @@ class NodeTestCase(unittest.TestCase):
         self.bad_flow_node = {
             "name": "Foobar",
             "node_id": "1",
-            "node_type": "FlowNode",
+            "node_type": "flow_control",
             "node_key": "foobar",
             "is_global": False,
         }
@@ -97,7 +98,7 @@ class NodeTestCase(unittest.TestCase):
         self.bad_io_node = {
             "name": "Foobar",
             "node_id": "1",
-            "node_type": "IONode",
+            "node_type": "io",
             "node_key": "foobar",
             "is_global": False,
         }
@@ -105,7 +106,7 @@ class NodeTestCase(unittest.TestCase):
         self.bad_manipulation_node = {
             "name": "Foobar",
             "node_id": "1",
-            "node_type": "ManipulationNode",
+            "node_type": "manipulation",
             "node_key": "foobar",
             "is_global": False,
         }

@@ -29,13 +29,13 @@ class WorkflowTestCase(unittest.TestCase):
             }
         }
 
-
         self.global_flow_var = {
             "name": "String Input",
             "node_id": "1",
-            "node_type": "FlowNode",
+            "node_type": "flow_control",
             "node_key": "StringNode",
             "is_global": True,
+        }
 
         self.join_node = {
             "name": "Joiner",
@@ -137,7 +137,7 @@ class WorkflowTestCase(unittest.TestCase):
     def test_get_node_successors(self):
         successors = self.workflow.get_node_successors("1")
 
-        self.assertEqual(successors, ["2"])
+        self.assertEqual(successors, ["3", "2"])
 
     def test_fail_get_node_successors(self):
         with self.assertRaises(WorkflowException):
