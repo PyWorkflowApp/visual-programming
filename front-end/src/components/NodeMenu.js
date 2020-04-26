@@ -1,18 +1,19 @@
 import React from 'react';
 import * as _ from 'lodash';
-import { Col, OverlayTrigger, Tooltip } from 'react-bootstrap';
+import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import CustomNodeUpload from "./CustomNodeUpload";
 
 
 export default function NodeMenu(props) {
     // construct menu from JSON of node types
     return (
-        <Col xs={2} className="node-menu">
+        <div className="NodeMenu">
+            <h3>Node Menu</h3>
             <div>Drag-and-drop nodes to build a workflow.</div>
             <hr />
             {_.map(props.nodes, (items, section) =>
                 <div key={`node-menu-${section}`}>
-                    <b>{section}</b>
+                    <span className="node-section-title">{section}</span>
                     <ul>
                         { _.map(items, item => {
                             const data = {...item}; // copy so we can mutate
@@ -27,7 +28,7 @@ export default function NodeMenu(props) {
                 </div>
             )}
             <CustomNodeUpload onUpload={props.onUpload} />
-        </Col>
+       </div>
     );
 }
 
