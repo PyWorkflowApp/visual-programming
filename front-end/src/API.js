@@ -68,7 +68,8 @@ export async function updateNode(node, config) {
         method: "POST",
         body: JSON.stringify(payload)
     };
-    return fetchWrapper(`/node/${node.options.id}`, options)
+    const endpoint = node.options.is_global ? "node/global" : "node";
+    return fetchWrapper(`/${endpoint}/${node.options.id}`, options)
 }
 
 
@@ -96,6 +97,15 @@ export async function save(diagramData) {
  */
 export async function getNodes() {
     return fetchWrapper("/workflow/nodes");
+}
+
+
+/**
+ * Get global flow variables for workflow
+ * @returns {Promise<Object>} - server response (global flow variables)
+ */
+export async function getGlobalVars() {
+    return fetchWrapper("/workflow/globals");
 }
 
 
