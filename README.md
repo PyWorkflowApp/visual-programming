@@ -1,4 +1,8 @@
-# visual-programming
+# Introduction
+![Postman Tests](https://github.com/matthew-t-smith/visual-programming/workflows/Postman%20Tests/badge.svg)
+![Code Coverage](./docs/media/coverage.svg)
+
+![Pyworkflow UI](./docs/media/pyworkflow-ui.png)
 
 So far the app comprises a Django app and a SPA React app (bootstrapped with
 create-react-app). For React to request data from Django, the `proxy` field is
