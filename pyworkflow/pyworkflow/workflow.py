@@ -1,6 +1,12 @@
+import inspect
+import importlib
+import json
 import os
 import networkx as nx
-import json
+import sys
+
+from collections import OrderedDict
+from modulefinder import ModuleFinder
 
 from .node import Node, NodeException
 from .node_factory import node_factory
@@ -12,15 +18,29 @@ class Workflow:
     Attributes:
         name: Name of the workflow
         root_dir: Used for reading/writing files to/from disk
+        node_dir: Location of custom nodes
         graph: A NetworkX Directed Graph
         flow_vars: Global flow variables associated with workflow
     """
 
-    def __init__(self, name="Untitled", root_dir=None, graph=nx.DiGraph(), flow_vars=nx.Graph()):
-        self._name = name
-        self._root_dir = WorkflowUtils.set_root_dir(root_dir)
-        self._graph = graph
-        self._flow_vars = flow_vars
+    DEFAULT_ROOT_PATH = os.getcwd()
+    DEFAULT_NODE_PATH = os.path.join(os.getcwd(), '../pyworkflow/pyworkflow/nodes')
+
+    def __init__(self, name="Untitled", root_dir=DEFAULT_ROOT_PATH,
+                 node_dir=DEFAULT_NODE_PATH, graph=nx.DiGraph(),
+                 flow_vars=nx.Graph()):
+        try:
+            self._name = name
+            self._root_dir = WorkflowUtils.set_dir(root_dir)
+            self._node_dir = WorkflowUtils.set_dir(node_dir, custom_nodes=True)
+            self._graph = graph
+            self._flow_vars = flow_vars
+        except OSError as e:
+            raise WorkflowException('init workflow', str(e))
+
+    @property
+    def node_dir(self):
+        return self._node_dir
 
     @property
     def graph(self):
@@ -29,6 +49,9 @@ class Workflow:
     def path(self, file_name):
         return os.path.join(self.root_dir, file_name)
 
+    def node_path(self, node_type, file_name):
+        return os.path.join(self.node_dir, node_type, file_name)
+
     @property
     def root_dir(self):
         return self._root_dir
@@ -36,6 +59,72 @@ class Workflow:
     @property
     def flow_vars(self):
         return self._flow_vars
+
+    def get_packaged_nodes(self, root_path=None, node_type=None):
+        """Retrieve list of Nodes available to the Workflow.
+
+        Recursively searches the `root_path` where Nodes are located. If none
+        specified, the default is `self.node_path`.
+
+        Each directory represents a given `node_type` (e.g. 'manipulation',
+        'io', etc.). Individual Node classes are defined in files within these
+        directories. Any custom nodes that the user has installed are included
+        in this search, given they are located in the 'custom_nodes' directory.
+
+        Args:
+            root_path: Root location where Nodes are defined.
+            node_type: The type of Node, defined by sub-directory name.
+
+        Returns:
+            OrderedDict() of Nodes, structured like the following
+
+            {
+                'I/O': [
+                    {node1},
+                    {node2},
+                ],
+                'Manipulation': [
+                    ...
+                ]
+                ...
+            }
+        """
+        if root_path is None:
+            root_path = self.node_dir
+
+        try:
+            files = os.listdir(root_path)
+        except OSError:
+            return None
+
+        nodes = list()
+        data = OrderedDict()
+
+        for file in files:
+            file_path = os.path.join(root_path, file)
+
+            if os.path.isdir(file_path):
+                # Recurse if file is a directory
+                display_name = WorkflowUtils.get_display_name(file)
+                data[display_name] = self.get_packaged_nodes(file_path, file)
+                continue
+
+            # Otherwise, try parsing file for a Node class
+            node, ext = os.path.splitext(file)
+
+            # Skip init files or non-Python files
+            if node == '__init__' or ext != '.py':
+                continue
+
+            nodes.append(WorkflowUtils.extract_node_info(node_type, node, file_path))
+
+        if root_path == self.node_dir:
+            # When traversal returns to `node_dir` return the entire OrderedDict()
+            data.move_to_end('Custom Nodes')
+            return data
+        else:
+            # Otherwise, return list containing all Nodes of a `node_type`
+            return nodes
 
     def get_node(self, node_id):
         """Retrieves Node from workflow, if exists
@@ -136,10 +225,10 @@ class Workflow:
         from_id = node_from.node_id
         to_id = node_to.node_id
 
-        if self._graph.has_edge(from_id, to_id):
+        if self.graph.has_edge(from_id, to_id):
             raise WorkflowException('add_node', 'Edge between nodes already exists.')
 
-        self._graph.add_edge(from_id, to_id)
+        self.graph.add_edge(from_id, to_id)
 
         return (from_id, to_id)
 
@@ -156,7 +245,7 @@ class Workflow:
         to_id = node_to.node_id
 
         try:
-            self._graph.remove_edge(from_id, to_id)
+            self.graph.remove_edge(from_id, to_id)
         except nx.NetworkXError:
             raise WorkflowException('remove_edge', 'Edge from %s to %s does not exist in graph.' % (from_id, to_id))
 
@@ -179,13 +268,13 @@ class Workflow:
 
     def get_node_successors(self, node_id):
         try:
-            return list(self._graph.successors(node_id))
+            return list(self.graph.successors(node_id))
         except nx.NetworkXError as e:
             raise WorkflowException('get node successors', str(e))
 
     def get_node_predecessors(self, node_id):
         try:
-            return list(self._graph.predecessors(node_id))
+            return list(self.graph.predecessors(node_id))
         except nx.NetworkXError as e:
             raise WorkflowException('get node predecessors', str(e))
 
@@ -304,17 +393,15 @@ class Workflow:
 
     def execution_order(self):
         try:
-            return list(nx.topological_sort(self._graph))
+            return list(nx.topological_sort(self.graph))
         except (nx.NetworkXError, nx.NetworkXUnfeasible) as e:
             raise WorkflowException('execution order', str(e))
         except RuntimeError as e:
             raise WorkflowException('execution order', 'The graph was changed while generating the execution order')
 
-    def upload_file(self, uploaded_file, node_id):
+    @staticmethod
+    def upload_file(uploaded_file, to_open):
         try:
-            file_name = f"{node_id}-{uploaded_file.name}"
-            to_open = self.path(file_name)
-
             # TODO: Change to a stream/other method for large files?
             with open(to_open, 'wb') as f:
                 f.write(uploaded_file.read())
@@ -483,14 +570,115 @@ class Workflow:
 
 class WorkflowUtils:
     @staticmethod
-    def set_root_dir(root_dir):
-        if root_dir is None:
-            root_dir = os.getcwd()
+    def get_display_name(file):
+        if file == 'io':
+            return 'I/O'
+        else:
+            return file.replace('_', ' ').title()
 
-        if not os.path.exists(root_dir):
-            os.makedirs(root_dir)
+    @staticmethod
+    def set_dir(dir_path, custom_nodes=False):
+        """Makes directories to ensure path is valid.
 
-        return root_dir
+        To prevent OSErrors for missing directories, especially in the case of
+        non-default Workflow locations, this method ensures the `dir_path`
+        specified exists.
+
+        Args:
+            dir_path: Fully-qualified directory to check/make
+            custom_nodes: Creates a 'custom_nodes' sub directory when True
+
+        Returns:
+            The `dir_path` requested, with guarantee the path exists.
+        """
+        if custom_nodes:
+            make_dir = os.path.join(dir_path, 'custom_nodes')
+        else:
+            make_dir = dir_path
+
+        if not os.path.exists(make_dir):
+            os.makedirs(make_dir)
+
+        return dir_path
+
+    @staticmethod
+    def check_missing_packages(node_path):
+        """Check Python file for uninstalled packages.
+
+        When compiling the list of installed Nodes for a Workflow, if any
+        module throws a `ModuleNotFoundError`, this method is called to
+        compile a list of missing packages.
+
+        Args:
+            node_path: Location of the Node file.
+
+        Returns:
+            list of package names that are not installed
+        """
+        finder = ModuleFinder(node_path)
+        finder.run_script(node_path)
+
+        uninstalled = list()
+        for missing_package in finder.badmodules.keys():
+            if missing_package not in sys.modules:
+                uninstalled.append(missing_package)
+
+        return uninstalled
+
+    @staticmethod
+    def extract_node_info(node_type, node, file_path):
+        """Extract information about a Node Class from a Python file.
+
+        Takes an individual Python file, representing a Node subclass and
+        extracts the attributes needed. If a module has packages that are not
+        installed, the filename and missing package names are returned.
+
+        Args:
+            node_type: The type of Node.
+            node: Name of the specific Node.
+            file_path: Where the Node's file is located.
+
+        Returns:
+            dict-like with extracted Node information. On `ModuleNotFoundError`
+            the filename and missing packages are returned.
+        """
+        # Check Node file for missing packages
+        try:
+            module = importlib.import_module('pyworkflow.nodes.' + node_type + '.' + node)
+        except ModuleNotFoundError:
+            return {
+                "filename": node,
+                "missing_packages": WorkflowUtils.check_missing_packages(file_path)
+            }
+
+        # Parse module for Node Class information
+        for name, klass in inspect.getmembers(module):
+            if inspect.isclass(klass) and klass.__module__.startswith('pyworkflow.nodes.' + node_type):
+                try:
+                    color = klass.color
+                except AttributeError:
+                    color = 'black'
+
+                parsed_node = {
+                    'name': klass.name,
+                    'node_key': klass.__name__,
+                    'node_type': node_type,
+                    'num_in': klass.num_in,
+                    'num_out': klass.num_out,
+                    'color': color,
+                    'filename': node,
+                    'doc': klass.__doc__,
+                    'options': {k: v.get_value() for k, v in klass.options.items()},
+                    'option_types': klass.option_types,
+                    'download_result': getattr(klass, "download_result", False)
+                }
+
+                # if node_type == 'custom_nodes':
+                #     parsed_node['filename'] = node
+
+                return parsed_node
+
+        return None
 
 
 class WorkflowException(Exception):
