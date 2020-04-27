@@ -1,4 +1,4 @@
-version: "3.8"
+version: "3.3"
 services:
   back-end:
     build: ./back-end
@@ -6,10 +6,7 @@ services:
       - ./backend:/visual-programming/back-end
     ports:
       - "8000:8000"
-    env_file: ./backend/.env
-    stdin_open: true
-    tty: true
-    command: cd vp && pipenv run python manage.py runserver 0.0.0.0:8000
+    command: bash -c cd vp && pipenv run python manage.py runserver 0.0.0.0:8000
   front-end:
     build: ./front-end
     volumes:
@@ -21,5 +18,7 @@ services:
     environment:
       - NODE_ENV=development
     depends_on:
+      - back-end
+    links:
       - back-end
     command: npm start
