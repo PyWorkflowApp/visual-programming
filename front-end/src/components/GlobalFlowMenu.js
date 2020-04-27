@@ -54,6 +54,16 @@ export default function GlobalFlowMenu(props) {
         }
     };
 
+    const handleDelete = (data) => {
+        const msg = "Are you sure you want to delete the global flow variable?";
+        if (window.confirm(msg)) {
+            const node = nodeFromData(data)
+            API.deleteNode(node)
+                .then(() => props.onUpdate())
+                .catch(err => console.log(err));
+        }
+    };
+
     return (
         <div className="GlobalFlowMenu">
             <h3>Flow Variables</h3>
@@ -63,6 +73,8 @@ export default function GlobalFlowMenu(props) {
                         <th>Name</th>
                         <th>Type</th>
                         <th>Value</th>
+                        <th></th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -71,8 +83,13 @@ export default function GlobalFlowMenu(props) {
                         <td>{node.options.var_name}</td>
                         <td>{node.name}</td>
                         <td className="text-primary">{node.options.default_value}</td>
-                        <td onClick={() => handleEdit(node, false)}>
+                        <td className="edit-global"
+                            onClick={() => handleEdit(node, false)}>
                             &#x270E;
+                        </td>
+                        <td className="delete-global"
+                            onClick={() => handleDelete(node)}>
+                            x
                         </td>
                     </tr>
                 )}
