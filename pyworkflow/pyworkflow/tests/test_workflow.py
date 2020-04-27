@@ -3,51 +3,15 @@ import os
 from pyworkflow import Workflow, WorkflowException, Node, NodeException, node_factory
 import networkx as nx
 
-
+from pyworkflow.tests.sample_test_data import GOOD_NODES, BAD_NODES, DATA_FILES
 class WorkflowTestCase(unittest.TestCase):
     def setUp(self):
         self.workflow = Workflow("Untitled", root_dir="/tmp", node_dir=os.path.join(os.getcwd(), 'nodes'))
 
-        self.read_csv_node = {
-            "name": "Read CSV",
-            "node_id": "1",
-            "node_type": "io",
-            "node_key": "ReadCsvNode",
-            "is_global": False,
-            "options": {
-                "file": "/tmp/sample1.csv"
-            }
-        }
-
-        self.write_csv_node = {
-            "name": "Write CSV",
-            "node_id": "2",
-            "node_type": "io",
-            "node_key": "WriteCsvNode",
-            "is_global": False,
-            "options": {
-                "file": "/tmp/sample_out.csv"
-            }
-        }
-
-        self.join_node = {
-            "name": "Joiner",
-            "node_id": "3",
-            "node_type": "manipulation",
-            "node_key": "JoinNode",
-            "is_global": False,
-            "options": {
-                "on": "key"
-            }
-        }
-
-        self.global_flow_var = {
-            "name": "String Input",
-            "node_id": "1",
-            "node_type": "flow_control",
-            "node_key": "StringNode",
-            "is_global": True,
-        }
+        self.read_csv_node = GOOD_NODES["read_csv_node"]
+        self.write_csv_node = GOOD_NODES["write_csv_node"]
+        self.join_node = GOOD_NODES["join_node"]
+        self.global_flow_var = GOOD_NODES["global_flow_var"]
 
     def add_node(self, node_info, node_id):
         node_info["node_id"] = node_id
@@ -125,12 +89,6 @@ class WorkflowTestCase(unittest.TestCase):
     def test_add_write_csv_node(self):
         node_to_add = Node(self.write_csv_node)
         added_node = self.add_node(self.write_csv_node, "2")
-
-        self.assertDictEqual(node_to_add.__dict__, added_node.__dict__)
-
-    def test_add_join_node(self):
-        node_to_add = Node(self.join_node)
-        added_node = self.add_node(self.join_node, "3")
 
         self.assertDictEqual(node_to_add.__dict__, added_node.__dict__)
 

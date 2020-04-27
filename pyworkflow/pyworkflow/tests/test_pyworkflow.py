@@ -3,27 +3,17 @@ from pyworkflow import Workflow, WorkflowException, Node, NodeException, node_fa
 from pyworkflow.nodes import *
 import networkx as nx
 
+from pyworkflow.tests.sample_test_data import GOOD_NODES, BAD_NODES, DATA_FILES
+
 
 class PyWorkflowTestCase(unittest.TestCase):
     def setUp(self):
-        self.sample1 = (',key,A\n'
-                        '0,K0,A0\n'
-                        '1,K1,A1\n'
-                        '2,K2,A2\n'
-                        '3,K3,A3\n'
-                        '4,K4,A4\n'
-                        '5,K5,A5\n')
-
-        self.sample2 = (',key,B\n'
-                        '0,K0,B0\n'
-                        '1,K1,B1\n'
-                        '2,K2,B2\n')
 
         with open('/tmp/sample1.csv', 'w') as f:
-            f.write(self.sample1)
+            f.write(DATA_FILES["sample1"])
 
         with open('/tmp/sample2.csv', 'w') as f:
-            f.write(self.sample2)
+            f.write(DATA_FILES["sample2"])
 
         self.pyworkflow = Workflow("My Workflow", root_dir="/tmp")
 
