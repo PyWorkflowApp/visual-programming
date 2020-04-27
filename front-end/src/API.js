@@ -95,7 +95,7 @@ export async function save(diagramData) {
  * @returns {Promise<Object>} - server response (node menu items)
  */
 export async function getNodes() {
-    return fetchWrapper("/nodes");
+    return fetchWrapper("/workflow/nodes");
 }
 
 
@@ -107,7 +107,9 @@ export async function getNodes() {
 export async function initWorkflow(model) {
     const options = {
         method: "POST",
-        body: JSON.stringify(model.options.id)
+        body: JSON.stringify({
+            "id": model.options.id
+        })
     };
 
     return fetchWrapper("/workflow/new", options);

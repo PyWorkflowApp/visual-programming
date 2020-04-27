@@ -1,5 +1,3 @@
-import pandas as pd
-
 from .parameters import *
 
 
@@ -16,98 +14,88 @@ class Node:
         self.node_type = node_info.get('node_type')
         self.node_key = node_info.get('node_key')
         self.data = node_info.get('data')
-
+        self.filename = node_info.get('filename')
         self.is_global = node_info.get('is_global') is True
 
         self.option_values = dict()
         if node_info.get("options"):
             self.option_values.update(node_info["options"])
 
+        self.option_replace = dict()
+        if node_info.get("option_replace"):
+            self.option_replace.update(node_info["option_replace"])
+
     def execute(self, predecessor_data, flow_vars):
-        pass
+        raise NotImplementedError()
+
+    def get_execution_options(self, flow_nodes):
+        """Replace Node options with flow variables.
+
+        If the user has specified any flow variables to replace Node options,
+        perform the replacement and return a dict with all options to use for
+        execution. If no flow variables are included, this method will return
+        a copy of all Node options unchanged.
+
+        Args:
+            flow_nodes: dict of FlowNodes used to replace options
+
+        Returns:
+            dict containing options to use for execution
+        """
+        execution_options = dict()
+
+        # TODO: Can we iterate through flow_vars instead?
+        #       If none are included, we can just return `self.options`.
+        for key, option in self.options.items():
+
+            if key in flow_nodes:
+                option.set_value(flow_nodes[key].get_replacement_value())
+
+            execution_options[key] = option
+
+        return execution_options
 
     def validate(self):
-        return True
+        """Validate Node configuration
 
-    def __str__(self):
-        return "Test"
+        Checks all Node options and validates all Parameter classes using
+        their validation method.
 
+        Raises:
+            ParameterValidationError: invalid Parameter value
+        """
+        for option in self.options.values():
+            option.validate()
 
-class FlowNode(Node):
-    """FlowNode object
-    """
-    display_name = "Flow Control"
+    def validate_input_data(self, num_input_data):
+        """Validate Node input data.
 
+        Checks that input data, if any, matches with required number of input
+        ports.
 
-class StringNode(FlowNode):
-    """StringNode object
+        Args:
+            num_input_data: Number of input data passed in
 
-    Allows for Strings to replace 'string' fields in Nodes
-    """
-    name = "String Input"
-    num_in = 1
-    num_out = 1
-    color = 'purple'
+        Raises:
+            NodeException on mis-matched input ports/data
+        """
+        if num_input_data != self.num_in:
+            raise NodeException(
+                'execute',
+                f'{self.node_key} requires {self.num_in} inputs. {num_input_data} were provided'
+            )
 
-    OPTIONS = {
-        "default_value": StringParameter("Default Value",
-                                         docstring="Value this node will pass as a flow variable"),
-        "var_name": StringParameter("Variable Name", default="my_var",
-                                    docstring="Name of the variable to use in another Node")
-    }
-
-
-class IONode(Node):
-    """IONodes deal with file-handling in/out of the Workflow.
-
-    Possible types:
-        Read CSV
-        Write CSV
-    """
-    color = 'black'
-    display_name = "I/O"
-
-    def execute(self, predecessor_data, flow_vars):
-        pass
-
-    def validate(self):
-        return True
-
-
-class ReadCsvNode(IONode):
-    """ReadCsvNode
-
-    Reads a CSV file into a pandas DataFrame.
-
-    Raises:
-         NodeException: any error reading CSV file, converting
-            to DataFrame.
-    """
-    name = "Read CSV"
-    num_in = 0
-    num_out = 1
-
-    OPTIONS = {
-        "file": FileParameter("File", docstring="CSV File"),
-        "sep": StringParameter("Delimiter", default=",", docstring="Column delimiter"),
-        # user-specified headers are probably integers, but haven't figured out
-        # arguments with multiple possible types
-        "header": StringParameter("Header Row", default="infer",
-                                   docstring="Row number containing column names (0-indexed)"),
-    }
-
-    def execute(self, predecessor_data, flow_vars):
-        try:
-            # Read CSV needs exactly 0 input DataFrame
-            NodeUtils.validate_predecessor_data(len(predecessor_data), self.num_in, self.node_key)
-            NodeUtils.replace_flow_vars(self.options, flow_vars)
-            fname = self.options["file"].get_value()
-            sep = self.options["sep"].get_value()
-            hdr = self.options["header"].get_value()
-            df = pd.read_csv(fname, sep=sep, header=hdr)
-            return df.to_json()
-        except Exception as e:
-            raise NodeException('read csv', str(e))
+    def to_json(self):
+        return {
+            "name": self.name,
+            "node_id": self.node_id,
+            "node_type": self.node_type,
+            "node_key": self.node_key,
+            "data": self.data,
+            "is_global": self.is_global,
+            "option_values": self.option_values,
+            "option_replace": self.option_replace,
+        }
 
     def execute_for_read(self, predecessor_data, flow_vars, file_to_read):
         try:
@@ -120,210 +108,38 @@ class ReadCsvNode(IONode):
             raise NodeException('read csv', str(e))
 
     def __str__(self):
-        return "ReadCsvNode"
+        return "Test"
 
 
-class WriteCsvNode(IONode):
-    """WriteCsvNode
+class FlowNode(Node):
+    """FlowNodes object.
 
-    Writes the current DataFrame to a CSV file.
-
-    Raises:
-        NodeException: any error writing CSV file, converting
-            from DataFrame.
+    FlowNodes do not execute. They specify a variable name and value to pass
+    to other Nodes as a way to dynamically change other parameter values.
     """
-    name = "Write CSV"
-    num_in = 1
-    num_out = 0
-    download_result = True
-
-    OPTIONS = {
-        "file": StringParameter("Filename", docstring="CSV file to write"),
-        "sep": StringParameter("Delimiter", default=",", docstring="Column delimiter"),
-        "index": BooleanParameter("Write Index", default=True, docstring="Write index as column?"),
-    }
+    display_name = "Flow Control"
 
     def execute(self, predecessor_data, flow_vars):
-        try:
-            # Write CSV needs exactly 1 input DataFrame
-            NodeUtils.validate_predecessor_data(len(predecessor_data), self.num_in, self.node_key)
+        return
 
-            # Convert JSON data to DataFrame
-            df = pd.DataFrame.from_dict(predecessor_data[0])
+    def get_replacement_value(self):
+        return self.options['default_value'].get_value()
 
-            # Write to CSV and save
-            fname = self.options["file"].get_value()
-            sep = self.options["sep"].get_value()
-            index = self.options["index"].get_value()
-            df.to_csv(fname, sep=sep, index=index)
-            return df.to_json()
-        except Exception as e:
-            raise NodeException('write csv', str(e))
+
+class IONode(Node):
+    """IONodes deal with file-handling in/out of the Workflow."""
+    color = "green"
+
+    def execute(self, predecessor_data, flow_vars):
+        raise NotImplementedError()
 
 
 class ManipulationNode(Node):
-    """ManipulationNodes deal with data manipulation.
-
-    Possible types:
-        Pivot
-        Filter
-        Multi-in
-    """
-    display_name = "Manipulation"
-    color = 'goldenrod'
+    """ManipulationNodes deal with data manipulation."""
+    color = "goldenrod"
 
     def execute(self, predecessor_data, flow_vars):
-        pass
-
-    def validate(self):
-        return True
-
-
-class PivotNode(ManipulationNode):
-    name = "Pivoting"
-    num_in = 1
-    num_out = 3
-
-    DEFAULT_OPTIONS = {
-        'index': None,
-        'values': None,
-        'columns': None,
-        'aggfunc': 'mean',
-        'fill_value': None,
-        'margins': False,
-        'dropna': True,
-        'margins_name': 'All',
-        'observed': False
-    }
-
-    OPTION_TYPES = {
-        'index': {
-            "type": "column, grouper, array or list",
-            "name": "Index",
-            "desc": "Column to aggregate"
-        },
-        'values': {
-            "type": "column, grouper, array or list",
-            "name": "Values",
-            "desc": "Column name to use to populate new frame's values"
-        },
-        'columns': {
-            "type": "column, grouper, array or list",
-            "name": "Column Name Row",
-            "desc": "Column(s) to use for populating new frame values.'"
-        },
-        'aggfunc': {
-            "type": "function, list of functions, dict, default numpy.mean",
-            "name": "Aggregation function",
-            "desc": "Function used for aggregation"
-        },
-        'fill_value': {
-            "type": "scalar",
-            "name": "Fill value",
-            "desc": "Value to replace missing values with"
-        },
-        'margins': {
-            "type": "boolean",
-            "name": "Margins name",
-            "desc": "Add all rows/columns"
-        },
-
-        'dropna': {
-            "type": "boolean",
-            "name": "Drop NaN columns",
-            "desc": "Ignore columns with all NaN entries"
-        },
-        'margins_name': {
-            "type": "string",
-            "name": "Margins name",
-            "desc": "Name of the row/column that will contain the totals when margins is True"
-        },
-        'observed': {
-            "type": "string",
-            "name": "Column Name Row",
-            "desc": "Row number with column names (0-indexed) or 'infer'"
-        }
-    }
-
-    def execute(self, predecessor_data, flow_vars):
-        try:
-            NodeUtils.validate_predecessor_data(len(predecessor_data), self.num_in, self.node_key)
-            input_df = pd.DataFrame.from_dict(predecessor_data[0])
-            output_df = pd.DataFrame.pivot_table(input_df, **self.options)
-            return output_df.to_json()
-        except Exception as e:
-            raise NodeException('pivot', str(e))
-
-
-class JoinNode(ManipulationNode):
-    name = "Joiner"
-    num_in = 2
-    num_out = 1
-
-    OPTIONS = {
-        "on": StringParameter("Join Column", docstring="Name of column to join on")
-    }
-
-    def execute(self, predecessor_data, flow_vars):
-        # Join cannot accept more than 2 input DataFrames
-        # TODO: Add more error-checking if 1, or no, DataFrames passed through
-        try:
-            NodeUtils.validate_predecessor_data(len(predecessor_data), self.num_in, self.node_key)
-            first_df = pd.DataFrame.from_dict(predecessor_data[0])
-            second_df = pd.DataFrame.from_dict(predecessor_data[1])
-            combined_df = pd.merge(first_df, second_df,
-                                   on=self.options["on"].get_value())
-            return combined_df.to_json()
-        except Exception as e:
-            raise NodeException('join', str(e))
-
-
-class FilterNode(ManipulationNode):
-    name = "Filter"
-    num_in = 1
-    num_out = 1
-
-    DEFAULT_OPTIONS = {
-        'items': None,
-        'like': None,
-        'regex': None,
-        'axis': None
-    }
-
-    OPTION_TYPES = {
-        'items': {
-            "type": "list",
-            "name": "Items",
-            "desc": "Keep labels from axis which are in items"
-        },
-        'like': {
-            "type": "string",
-            "name": "Like",
-            "desc": "Keep labels from axis for which like in label == True."
-        },
-        'regex': {
-            "type": "string",
-            "name": "Regex",
-            "desc": "Keep labels from axis for which re.search(regex, label) == True."
-        },
-        'axis': {
-            "type": "int or string",
-            "name": "Axis",
-            "desc": "The axis to filter on."
-        }
-    }
-
-    def __init__(self, node_info, options=dict()):
-        super().__init__(node_info, {**self.DEFAULT_OPTIONS, **options})
-
-    def execute(self, predecessor_data, flow_vars):
-        try:
-            NodeUtils.validate_predecessor_data(len(predecessor_data), self.num_in, self.node_key)
-            input_df = pd.DataFrame.from_dict(predecessor_data[0])
-            output_df = pd.DataFrame.filter(input_df, **self.options)
-            return output_df.to_json()
-        except Exception as e:
-            raise NodeException('filter', str(e))
+        raise NotImplementedError()
 
 
 class NodeException(Exception):
@@ -333,36 +149,3 @@ class NodeException(Exception):
 
     def __str__(self):
         return self.action + ': ' + self.reason
-
-
-class NodeUtils:
-
-    FIXED_INPUT_NODES = ['WriteCsvNode', 'FilterNode', 'JoinNode'] # nodes which can only have a fixed number of predecessors
-    MAX_INPUT_NODES = ['ReadCsvNode'] # nodes for which num_in represents a maximum number of predecessors
-
-    @staticmethod
-    def validate_predecessor_data(predecessor_data_len, num_in, node_key):
-        validation_failed = False
-        exception_txt = ""
-        if node_key in NodeUtils.FIXED_INPUT_NODES and predecessor_data_len != num_in:
-                validation_failed = True
-                exception_txt = '%s needs %d inputs. %d were provided'
-        elif (node_key in NodeUtils.MAX_INPUT_NODES and predecessor_data_len > num_in):
-                validation_failed = True
-                exception_txt = '%s can take up to %d inputs. %d were provided'
-
-        if validation_failed:
-            raise NodeException(
-                'execute',
-                exception_txt % (node_key, num_in, predecessor_data_len)
-            )
-
-    @staticmethod
-    def replace_flow_vars(node_options, flow_vars):
-        # TODO: this will no longer work with the Node.options descriptor,
-        #       which uses Node.option_values to populate the Parameter
-        #       class values upon access
-        for var in flow_vars:
-            node_options[var['var_name']] = var['default_value']
-
-        return

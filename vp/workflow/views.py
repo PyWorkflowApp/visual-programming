@@ -1,11 +1,14 @@
 import os
 import json
+import sys
 
 from django.http import JsonResponse, HttpResponse
 from django.conf import settings
 from rest_framework.decorators import api_view
 from pyworkflow import Workflow, WorkflowException
 from drf_yasg.utils import swagger_auto_schema
+
+from modulefinder import ModuleFinder
 
 
 @swagger_auto_schema(method='post',
@@ -25,14 +28,14 @@ def new_workflow(request):
     """
     try:
         workflow_id = json.loads(request.body)
-    except json.JSONDecodeError as e:
+
+        # Create new Workflow
+        request.pyworkflow = Workflow(name=workflow_id['id'], root_dir=settings.MEDIA_ROOT)
+        request.session.update(request.pyworkflow.to_session_dict())
+
+        return JsonResponse(Workflow.to_graph_json(request.pyworkflow.graph))
+    except (json.JSONDecodeError, KeyError) as e:
         return JsonResponse({'No React model ID provided': str(e)}, status=500)
-
-    # Create new Workflow
-    request.pyworkflow = Workflow(name=workflow_id, root_dir=settings.MEDIA_ROOT)
-    request.session.update(request.pyworkflow.to_session_dict())
-
-    return JsonResponse(Workflow.to_graph_json(request.pyworkflow.graph))
 
 
 @swagger_auto_schema(method='post',
@@ -230,13 +233,39 @@ def upload_file(request):
     if f is None:
         return JsonResponse("Empty content", status=404)
 
-    node_id = request.POST.get('nodeId', '')
-
     try:
-        save_name = request.pyworkflow.upload_file(f, node_id)
-        return JsonResponse({"filename": save_name}, status=201, safe=False)
+        node_id = request.POST.get('nodeId')
+
+        if node_id is None:
+            # custom node file
+            file_path = request.pyworkflow.node_path('custom_nodes', f.name)
+        else:
+            # node data file
+            file_path = request.pyworkflow.path(f"{node_id}-{f.name}")
+
+        save_name = Workflow.upload_file(f, file_path)
     except WorkflowException as e:
         return JsonResponse({e.action: e.reason}, status=500)
+
+    return JsonResponse({"filename": save_name}, status=201, safe=False)
+
+
+@swagger_auto_schema(method='get',
+                     operation_summary='Retrieve a list of installed Nodes',
+                     operation_description='Retrieves a list of installed Nodes, in JSON.',
+                     responses={
+                         200: 'List of installed Nodes, in JSON',
+                     })
+@api_view(['GET'])
+def retrieve_nodes_for_user(request):
+    """Assembles list of Nodes accessible to workflows.
+
+    Retrieve a list of classes from the Node module in `pyworkflow`.
+    List is split into 'types' (e.g., 'IO' and 'Manipulation') and
+    'keys', or individual command Nodes (e.g., 'ReadCsv', 'Pivot').
+    """
+    data = request.pyworkflow.get_packaged_nodes()
+    return JsonResponse(data, safe=False)
 
 
 @swagger_auto_schema(method='post',
@@ -274,4 +303,3 @@ def download_file(request):
                             status=404)
     except WorkflowException as e:
         return JsonResponse({e.action: e.reason}, status=500)
-
