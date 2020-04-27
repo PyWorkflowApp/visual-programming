@@ -51,7 +51,8 @@ export async function deleteNode(node) {
     const options = {
         method: "DELETE"
     };
-    return fetchWrapper(`/node/${id}`, options);
+    const endpoint = node.options.is_global ? "node/global" : "node";
+    return fetchWrapper(`/${endpoint}/${id}`, options);
 }
 
 
