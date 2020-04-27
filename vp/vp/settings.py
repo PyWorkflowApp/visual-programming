@@ -11,21 +11,25 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
+from dotenv import load_dotenv, find_dotenv
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
+BACKEND_DIR = BASE_DIR
+FRONTEND_DIR = os.path.abspath(
+    os.path.join(BACKEND_DIR, '..', 'front-end'))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ['SECRET_KEY']
+load_dotenv(find_dotenv())
+#os.path.join(BACKEND_DIR, 'vp', '.environment')
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
+DEBUG = os.getenv('DJANGO_ENV') == 'development'
+ALLOWED_HOSTS = ['localhost', '0.0.0.0', '127.0.0.1']
 
 
 # Application definition
@@ -36,15 +40,18 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'whitenoise.runserver_nostatic',
     'django.contrib.staticfiles',
     # Project apps
     'workflow.apps.WorkflowConfig',
     'node.apps.NodeConfig',
-    'drf_yasg'
+    'drf_yasg',
+    'webpack_loader'
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -61,7 +68,7 @@ ROOT_URLCONF = 'vp.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(FRONTEND_DIR, 'build')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -78,13 +85,10 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.file'
 
 WSGI_APPLICATION = 'vp.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
-### Not yet setup
+# Not yet setup
 DATABASES = {}
-
-MEDIA_ROOT = '/tmp'
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
@@ -123,3 +127,29 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+
+BUILD_DIR = os.path.join(FRONTEND_DIR, 'build')
+
+# where Django's collectstatic looks to copy and sync staticfiles to STATIC_URL
+STATICFILES_DIRS = [os.path.join(BUILD_DIR, 'static')]
+
+# where Django's collectstatic puts the static files from STATICFILES_DIRS
+STATIC_ROOT = os.path.join(BACKEND_DIR, 'staticfiles')
+
+# tells Django which pack to load into template
+WEBPACK_LOADER = {
+    'DEFAULT': {
+        'BUNDLE_DIR_NAME': os.path.join(BUILD_DIR, 'builds'),
+        'STATS_FILE': os.path.join(BUILD_DIR, 'webpack-stats.json'),
+    }
+}
+
+# absolute path to directory of files served at the root of the app;
+#   location of files like favicon.ico
+WHITENOISE_ROOT = os.path.join(FRONTEND_DIR, 'public')
+
+# used for uploaded media by the client
+MEDIA_ROOT = '/tmp'
+
+# used by WhiteNoise to handle compression and caching of files
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'

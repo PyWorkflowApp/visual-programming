@@ -40,12 +40,20 @@ data from `localhost:8000` **where the Django app must be running**.
 ### Installing new packages
 - Simply install via: `pipenv install [package-name]`
 
-### Create dotenv file with app secret
-- `echo "SECRET_KEY='TEMPORARY SECRET KEY'" > vp/.environment`
+### Create dotenv file with app secret and dev environment
+- `echo "SECRET_KEY='TEMPORARY SECRET KEY'" > vp/.env`
+- `echo "DJANGO_ENV='development'" > vp/.env`
 
-### Start dev server from app root
-- `cd vp`
-- `pipenv run python manage.py runserver`
+### Build and collect static files from front-end
+- `cd front-end`
+- `npm run build`
+- `cd ../vp`
+- `python manage.py collectstatic --noinput`
+
+### Start dev server from back-end root (./vp)
+- `waitress-serve vp.wsgi:application`
+<!-- - `pipenv run DJANGO_ENV=development python manage.py runserver`
+  - only `DJANGO_ENV=development python manage.py runserver` may be required if pipenv has created the virtualenv in your terminal -->
 
 ---
 ## React
