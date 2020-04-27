@@ -191,12 +191,13 @@ function SimpleInput(props) {
         setValue(event.target.value);
     };
 
-    const {keyName, onChange} = props;
+    const {keyName, onChange, type} = props;
     // whenever value changes, fire callback to update config form
     useEffect(() => {
-            onChange(keyName, value);
+            const formValue = type === "number" ? Number(value) : value;
+            onChange(keyName, formValue);
         },
-        [value, keyName, onChange]);
+        [value, keyName, onChange, type]);
 
     return  (
         <Form.Control type={props.type} name={props.keyName}
