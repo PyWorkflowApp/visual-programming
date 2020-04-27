@@ -3,12 +3,8 @@
 import os
 import sys
 
-import dotenv
-
 
 def main():
-    dotenv.load_dotenv(".environment")
-
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'vp.settings')
     try:
         from django.core.management import execute_from_command_line

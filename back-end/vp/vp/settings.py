@@ -76,12 +76,10 @@ TEMPLATES = [
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.file'
 
-WSGI_APPLICATION = 'vp.wsgi.application'
-
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
-### Not yet setup
+# Not yet setup
 DATABASES = {}
 
 MEDIA_ROOT = '/tmp'
