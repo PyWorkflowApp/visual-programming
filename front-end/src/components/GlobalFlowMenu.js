@@ -11,23 +11,31 @@ export default function GlobalFlowMenu(props) {
     const [creating, setCreating] = useState(false);
     const toggleShow = () => setShow(!show);
 
-    function lookupOptionTypes(nodeKey) {
-        const keyMatches = props.menuItems.filter(d => d.node_key === nodeKey);
-        if (!keyMatches.length) return {};
-        return keyMatches[0].option_types || {};
-    };
-
-    const handleEdit = (data, create = false) => {
-        setCreating(create);
+    // Create CustomNodeModel from JSON data,
+    // whether from menu item or global flow variable
+    function nodeFromData(data) {
         const info = {...data, is_global: true};
         const config = info.options;
         delete info.options;
         if (!info.option_types) {
             info.option_types = lookupOptionTypes(info.node_key);
         }
-        console.log(info, config);
         const node = new CustomNodeModel(info, config);
-        console.log(node);
+        return node;
+    }
+
+    // Look up option types from appropriate menu item.
+    // The option types aren't included in the global flow
+    // serialization from the server.
+    function lookupOptionTypes(nodeKey) {
+        const keyMatches = props.menuItems.filter(d => d.node_key === nodeKey);
+        if (!keyMatches.length) return {};
+        return keyMatches[0].option_types || {};
+    }
+
+    const handleEdit = (data, create = false) => {
+        setCreating(create);
+        const node = nodeFromData(data);
         setActiveNode(node);
         setShow(true);
     };
