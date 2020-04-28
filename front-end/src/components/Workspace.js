@@ -22,6 +22,7 @@ class Workspace extends React.Component {
         this.engine.setModel(this.model);
         this.engine.setMaxNumberPointsPerLink(0);
         this.state = {nodes: []};
+        this.getAvailableNodes = this.getAvailableNodes.bind(this);
         this.load = this.load.bind(this);
         this.clear = this.clear.bind(this);
         this.handleNodeCreation = this.handleNodeCreation.bind(this);
@@ -29,10 +30,17 @@ class Workspace extends React.Component {
     }
 
     componentDidMount() {
+        this.getAvailableNodes();
+        API.initWorkflow(this.model).catch(err => console.log(err));
+    }
+
+    /**
+     * Retrieve available nodes from server to display in menu
+     */
+    getAvailableNodes() {
         API.getNodes()
             .then(nodes => this.setState({nodes: nodes}))
             .catch(err => console.log(err));
-        API.initWorkflow(this.model).catch(err => console.log(err));
     }
 
     /**
@@ -107,7 +115,7 @@ class Workspace extends React.Component {
                     </Col>
                 </Row>
                 <Row className="Workspace">
-                    <NodeMenu nodes={this.state.nodes} />
+                    <NodeMenu nodes={this.state.nodes} onUpload={this.getAvailableNodes}/>
                     <Col xs={10}>
                         <div style={{position: 'relative', flexGrow: 1}}
                             onDrop={event => this.handleNodeCreation(event)}
