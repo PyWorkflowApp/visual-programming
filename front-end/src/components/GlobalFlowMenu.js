@@ -83,11 +83,11 @@ export default function GlobalFlowMenu(props) {
                         <td>{node.options.var_name}</td>
                         <td>{node.name}</td>
                         <td className="text-primary">{node.options.default_value}</td>
-                        <td className="edit-global"
+                        <td className="edit-global" title="Edit Variable"
                             onClick={() => handleEdit(node, false)}>
                             &#x270E;
                         </td>
-                        <td className="delete-global"
+                        <td className="delete-global" title="Delete Variable"
                             onClick={() => handleDelete(node)}>
                             x
                         </td>
