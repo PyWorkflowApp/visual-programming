@@ -1,4 +1,4 @@
-FROM node:current-slim
+FROM node:14-alpine
 
 WORKDIR /visual-programming/front-end
 

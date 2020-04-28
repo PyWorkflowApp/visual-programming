@@ -6,7 +6,9 @@ services:
       - ./back-end:/visual-programming/back-end
     ports:
       - "8000:8000"
-    command: bash -c "cd vp && pipenv run python manage.py runserver 0.0.0.0:8000"
+    command: bash -c "pipenv run python manage.py runserver 0.0.0.0:8000"
+    environment:
+      - DJANGO_ENV=development
   front-end:
     build: ./front-end
     volumes:
