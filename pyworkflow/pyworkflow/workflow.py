@@ -8,7 +8,8 @@ import sys
 from collections import OrderedDict
 from modulefinder import ModuleFinder
 
-from .node import Node, NodeException, ReadCsvNode
+from pyworkflow.nodes import ReadCsvNode
+from .node import Node, NodeException
 from .node_factory import node_factory
 
 
@@ -291,6 +292,8 @@ class Workflow:
 
         """
         node_to_execute = self.get_node(node_id)
+
+        print(node_id)
 
         if node_to_execute is None:
             raise WorkflowException('execute', 'The workflow does not contain node %s' % node_id)
