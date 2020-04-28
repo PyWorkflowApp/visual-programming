@@ -33,8 +33,9 @@ class Workspace extends React.Component {
 
     componentDidMount() {
         this.getAvailableNodes();
-        this.getGlobalVars();
-        API.initWorkflow(this.model).catch(err => console.log(err));
+        API.initWorkflow(this.model)
+            .then(() => this.getGlobalVars())
+            .catch(err => console.log(err));
     }
 
     /**
@@ -60,6 +61,7 @@ class Workspace extends React.Component {
         this.model.deserializeModel(diagramData, this.engine);
         // redraw is buggy if you don't wait a little bit
         setTimeout(() => this.engine.repaintCanvas(), 100);
+        this.getGlobalVars();
     }
 
     /**
@@ -68,8 +70,9 @@ class Workspace extends React.Component {
     clear() {
         if (window.confirm("Clear diagram? You will lose all work.")) {
             this.model.getNodes().forEach(n => n.remove());
-            API.initWorkflow(this.model).catch(err => console.log(err));
-            this.getGlobalVars();
+            API.initWorkflow(this.model)
+                .then(() => this.getGlobalVars())
+                .catch(err => console.log(err));
             this.engine.repaintCanvas();
         }
     }
