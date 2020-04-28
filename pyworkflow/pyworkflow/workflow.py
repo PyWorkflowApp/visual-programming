@@ -293,8 +293,6 @@ class Workflow:
         """
         node_to_execute = self.get_node(node_id)
 
-        print(node_id)
-
         if node_to_execute is None:
             raise WorkflowException('execute', 'The workflow does not contain node %s' % node_id)
 
