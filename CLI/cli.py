@@ -20,34 +20,35 @@ def cli():
 
 
 @cli.command()
-@click.argument('filename', type=click.Path(exists=True))
+@click.argument('filename', type=click.Path(exists=True), nargs=-1)
 def execute(filename):
 
-    stdin_files = []
+    #execute each one of the workflows in the ar
+    for workflow_file in filename:
 
-    if not click.get_text_stream('stdin').isatty():
-        stdin_text = click.get_text_stream('stdin')
+        stdin_files = []
 
-        # TODO should be done for each separate file coming from stdin, currently working for one file, but easy to build up.
+        if not click.get_text_stream('stdin').isatty():
+            stdin_text = click.get_text_stream('stdin')
 
-        # write standard in to a new file in local filesystem
-        file_name = str(uuid.uuid4())
+            # write standard in to a new file in local filesystem
+            file_name = str(uuid.uuid4())
 
-        # TODO small issue here, might be better to upload this file to the workflow directory instead of cwd
-        new_file_path = os.path.join(os.getcwd(), file_name)
+            # TODO small issue here, might be better to upload this file to the workflow directory instead of cwd
+            new_file_path = os.path.join(os.getcwd(), file_name)
 
-        # read from std in and upload a new file in project directory
-        with open(new_file_path, 'w') as f:
-            f.write(stdin_text.read())
+            # read from std in and upload a new file in project directory
+            with open(new_file_path, 'w') as f:
+                f.write(stdin_text.read())
 
-        stdin_files.append(file_name)
+            stdin_files.append(file_name)
 
-    if filename is None:
-        click.echo('Please specify a workflow to run')
-        return
-    try:
-        click.echo('Loading workflow file form %s' % filename)
-        Workflow.execute_workflow(filename, stdin_files)
-    except NodeException as ne:
-        click.echo("Issues during node execution")
-        click.echo(ne)
+        if workflow_file is None:
+            click.echo('Please specify a workflow to run')
+            return
+        try:
+            click.echo('Loading workflow file form %s' % workflow_file)
+            Workflow.execute_workflow(workflow_file, stdin_files)
+        except NodeException as ne:
+            click.echo("Issues during node execution")
+            click.echo(ne)
