@@ -23,12 +23,13 @@
     "react-dom": "^16.13.0",
     "react-scripts": "3.4.1",
     "react-window": "^1.8.5",
+    "regenerator-runtime": "^0.13.5",
     "resize-observer-polyfill": "^1.5.1"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "jest --collect-coverage",
+    "test": "jest --collect-coverage --passWithNoTests",
     "eject": "react-scripts eject"
   },
   "jest": {
@@ -43,7 +44,9 @@
     "moduleNameMapper": {
       "\\.(css|less)$": "<rootDir>/__mocks__/css/styleMock.js"
     },
-    "setupFilesAfterEnv": ["./__tests__/setupTests.js"]
+    "setupFilesAfterEnv": [
+      "./setupTests.js"
+    ]
   },
   "eslintConfig": {
     "extends": "react-app"

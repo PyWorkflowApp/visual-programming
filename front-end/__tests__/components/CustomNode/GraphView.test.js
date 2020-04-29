@@ -1,18 +1,18 @@
 import React from 'react'
-import renderer from 'react-test-renderer';
+import { render } from '@testing-library/react'
 import CustomNodeModel from '../../../src/components/CustomNode/CustomNodeModel';
 import GraphView from '../../../src/components/CustomNode/GraphView';
 
 describe('Validate Graph Modal', () => {
   it('Display warning message', () => {
     const node = new CustomNodeModel({id: "myId"});
-    const graphView = renderer.create(
+    const graphView = render(
       <GraphView node={node}
           show={true}
           toggleShow={() => {}}
           onDelete={() => {}}
           onSubmit={() => {}}  />
-    ).toJSON();
+    );
     expect(graphView).toMatchSnapshot();
   });
 });
