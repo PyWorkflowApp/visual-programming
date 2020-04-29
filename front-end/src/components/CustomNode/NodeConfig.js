@@ -10,7 +10,8 @@ export default class NodeConfig extends React.Component {
         super(props);
         this.state = {
             disabled: false,
-            data: {}
+            data: {},
+            flowData: {}
         };
         this.updateData = this.updateData.bind(this);
         this.handleDelete = this.handleDelete.bind(this);
@@ -19,15 +20,26 @@ export default class NodeConfig extends React.Component {
 
     // callback to update form data in state;
     // resulting state will be sent to node config callback
-    updateData(key, value) {
-        this.setState((prevState) => ({
-                ...prevState,
-                data: {
-                    ...prevState.data,
-                    [key]: value
-                }
-            })
-        );
+    updateData(key, value, flow = false) {
+        if (flow) {
+            this.setState((prevState) => ({
+                    ...prevState,
+                    flowData: {
+                        ...prevState.flowData,
+                        [key]: value
+                    }
+                })
+            );
+        } else {
+            this.setState((prevState) => ({
+                    ...prevState,
+                    data: {
+                        ...prevState.data,
+                        [key]: value
+                    }
+                })
+            );
+        }
     };
 
     // confirm, fire delete callback, close modal
@@ -42,7 +54,12 @@ export default class NodeConfig extends React.Component {
     handleSubmit(e) {
         e.preventDefault();
         console.log(this.state.data);
-        this.props.onSubmit(this.state.data);
+        // remove items from flow vars if null
+        const flowData = {...this.state.flowData};
+        for (let key in flowData) {
+            if (flowData[key] === null) delete flowData[key];
+        }
+        this.props.onSubmit(this.state.data, flowData);
         this.props.toggleShow();
     };
 
