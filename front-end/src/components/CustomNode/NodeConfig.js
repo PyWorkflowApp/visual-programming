@@ -131,13 +131,13 @@ function OptionInput(props) {
 
     let inputComp;
     if (props.type === "file") {
-        inputComp = <FileUploadInput {...props} />
+        inputComp = <FileUploadInput {...props} disabled={isFlow} />
     } else if (props.type === "string") {
-        inputComp = <SimpleInput {...props} type="text" />
+        inputComp = <SimpleInput {...props} type="text" disabled={isFlow} />
     } else if (props.type === "int") {
-        inputComp = <SimpleInput {...props} type="number" />
+        inputComp = <SimpleInput {...props} type="number" disabled={isFlow} />
     } else if (props.type === "boolean") {
-        inputComp = <BooleanInput {...props} />
+        inputComp = <BooleanInput {...props} disabled={isFlow} />
     } else {
         return (<></>)
     }
@@ -247,8 +247,9 @@ function SimpleInput(props) {
 
     return  (
         <Form.Control type={props.type} name={props.keyName}
-                          defaultValue={props.value}
-                          onChange={handleChange} />
+                      disabled={props.disabled}
+                      defaultValue={props.value}
+                      onChange={handleChange} />
     )
 }
 
@@ -269,8 +270,9 @@ function BooleanInput(props) {
 
     return  (
         <Form.Check type="checkbox" name={props.keyName}
-                      checked={value}
-                      onChange={handleChange} />
+                    disabled={props.disabled}
+                    checked={value}
+                    onChange={handleChange} />
 
 
 function FlowVariableOverride(props) {
