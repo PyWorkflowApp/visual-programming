@@ -78,6 +78,9 @@ export default class NodeConfig extends React.Component {
                                          onChange={this.updateData}
                                          node={this.props.node}
                                          value={this.props.node.config[key]}
+                                         flowValue={this.props.node.options.option_replace ?
+                                            this.props.node.options.option_replace[key] : null}
+                                         globals={this.props.globals}
                                          disableFunc={(v) => this.setState({disabled: v})}/>
                         )}
                         <Form.Group>
@@ -113,6 +116,19 @@ NodeConfig.propTypes = {
  */
 function OptionInput(props) {
 
+    const [isFlow, setIsFlow] = useState(props.flowValue ? true : false);
+
+    const handleFlowCheck = (bool) => {
+        // if un-checking, fire callback with null so no stale value is in `option_replace`
+        if (!bool) props.onChange(props.keyName, null, true);
+        setIsFlow(bool);
+    };
+
+    // fire callback to update `option_replace` with flow node info
+    const handleFlowVariable = (value) => {
+        props.onChange(props.keyName, value, true);
+    };
+
     let inputComp;
     if (props.type === "file") {
         inputComp = <FileUploadInput {...props} />
@@ -125,11 +141,24 @@ function OptionInput(props) {
     } else {
         return (<></>)
     }
+
+    const hideFlow = props.node.options.node_type === "flow_control"
+                        || props.type === "file" || props.globals.length === 0
     return (
         <Form.Group>
-                <Form.Label>{props.label}</Form.Label>
-                <div style={{fontSize: '0.7rem'}}>{props.docstring}</div>
-                { inputComp }
+            <Form.Label>{props.label}</Form.Label>
+            <div className="option-docstring">{props.docstring}</div>
+            <Form.Row>
+                <Col xs={hideFlow ? 12 : 8}>{ inputComp }</Col>
+                {hideFlow ? null :
+                    <FlowVariableOverride keyName={props.keyName}
+                                          flowValue={props.flowValue || {}}
+                                          flowNodes={props.globals || []}
+                                          checked={isFlow}
+                                          onFlowCheck={handleFlowCheck}
+                                          onChange={handleFlowVariable} />
+                }
+            </Form.Row>
         </Form.Group>
     )
 }
