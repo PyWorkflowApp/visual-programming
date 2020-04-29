@@ -65,6 +65,7 @@ export default class CustomNodeWidget extends React.Component {
                 <div className="custom-node" style={{ borderColor: this.props.node.options.color }}>
                     <div className="custom-node-configure" onClick={this.toggleConfig}>{String.fromCharCode(this.icon)}</div>
                     <NodeConfig node={this.props.node}
+                        globals={this.props.engine.model.globals || []}
                         show={this.state.showConfig}
                         toggleShow={this.toggleConfig}
                         onDelete={this.handleDelete}
