@@ -32,9 +32,11 @@ class Workspace extends React.Component {
     }
 
     componentDidMount() {
-        this.getAvailableNodes();
         API.initWorkflow(this.model)
-            .then(() => this.getGlobalVars())
+            .then(() => {
+                this.getAvailableNodes();
+                this.getGlobalVars();
+            })
             .catch(err => console.log(err));
     }
 
