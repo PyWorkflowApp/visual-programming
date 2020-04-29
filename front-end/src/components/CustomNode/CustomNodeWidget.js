@@ -37,8 +37,8 @@ export default class CustomNodeWidget extends React.Component {
         }).catch(err => console.log(err));
     }
 
-    acceptConfiguration(formData) {
-        API.updateNode(this.props.node, formData).then(() => {
+    acceptConfiguration(optionsData, flowData) {
+        API.updateNode(this.props.node, optionsData, flowData).then(() => {
             this.props.node.setStatus("configured");
             this.forceUpdate();
             this.props.engine.repaintCanvas();

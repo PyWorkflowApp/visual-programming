@@ -60,10 +60,12 @@ export async function deleteNode(node) {
  * Update configuration of node in server-side workflow
  * @param {CustomNodeModel} node - JS node to remove
  * @param {Object} config - configuration from options form
+ * @param {Object} flowConfig - flow variable configuration options
  * @returns {Promise<Object>} - server response (serialized node)
  */
-export async function updateNode(node, config) {
+export async function updateNode(node, config, flowConfig) {
     node.config = config;
+    node.options.option_replace = flowConfig;
     const payload = {...node.options, options: node.config};
     const options = {
         method: "POST",
