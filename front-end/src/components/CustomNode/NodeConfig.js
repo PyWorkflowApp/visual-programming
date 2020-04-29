@@ -1,8 +1,9 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Modal, Button, Form } from 'react-bootstrap';
+import { Col, Modal, Button, Form } from 'react-bootstrap';
 import propTypes from 'prop-types';
 import * as _ from 'lodash';
-import * as API from "../../API";
+import * as API from '../../API';
+import '../../styles/NodeConfig.css';
 
 export default class NodeConfig extends React.Component {
 
@@ -67,7 +68,8 @@ export default class NodeConfig extends React.Component {
         if (!this.props.node) return null;
         return (
             <Modal show={this.props.show} onHide={this.props.toggleShow} centered
-                onWheel={e => e.stopPropagation()}>
+                   dialogClassName="NodeConfig"
+                   onWheel={e => e.stopPropagation()}>
                 <Form onSubmit={this.handleSubmit}>
                     <Modal.Header>
                         <Modal.Title><b>{this.props.node.options.name}</b> Configuration</Modal.Title>
