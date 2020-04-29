@@ -242,5 +242,38 @@ function BooleanInput(props) {
         <Form.Check type="checkbox" name={props.keyName}
                       checked={value}
                       onChange={handleChange} />
+
+
+function FlowVariableOverride(props) {
+
+    const handleSelect = (event) => {
+        const uuid = event.target.value;
+        const flow = props.flowNodes.find(d => d.id === uuid);
+        const obj = {
+            node_id: uuid,
+            is_global: flow.is_global
+        };
+        props.onChange(obj);
+    };
+    const handleCheck = (event) => { props.onFlowCheck(event.target.checked) };
+
+    return  (
+        <Col>
+            <Form.Check type="checkbox" inline
+                        label="Use Flow Variable"
+                        checked={props.checked} onChange={handleCheck} />
+            {props.checked ?
+                <Form.Control as="select" name={props.keyName} onChange={handleSelect}
+                              value={props.flowValue.node_id}>
+                    <option/>
+                    {props.flowNodes.map(gfv =>
+                        <option  key={gfv.id} value={gfv.id}>
+                            {gfv.options.var_name}
+                        </option>
+                    )}
+                </Form.Control>
+                : null
+            }
+        </Col>
     )
 }
