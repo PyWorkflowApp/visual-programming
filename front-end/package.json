@@ -39,7 +39,11 @@
         "lines": 80,
         "statements": 80
       }
-    }
+    },
+    "moduleNameMapper": {
+      "\\.(css|less)$": "<rootDir>/__mocks__/css/styleMock.js"
+    },
+    "setupFilesAfterEnv": ["./__tests__/setupTests.js"]
   },
   "eslintConfig": {
     "extends": "react-app"
