@@ -31,6 +31,7 @@ jobs:
       run: |
         python3 -m pip install --upgrade pip
         pip3 install pipenv
+        cd back-end
         pipenv install
         pipenv run echo "SECRET_KEY='TEMPORARY SECRET KEY'" > vp/.environment
 
