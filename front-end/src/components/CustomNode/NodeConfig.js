@@ -144,7 +144,7 @@ function OptionInput(props) {
         return (<></>)
     }
 
-    const hideFlow = props.node.options.node_type === "flow_control"
+    const hideFlow = props.node.options.is_global
                         || props.type === "file" || props.globals.length === 0
     return (
         <Form.Group>
