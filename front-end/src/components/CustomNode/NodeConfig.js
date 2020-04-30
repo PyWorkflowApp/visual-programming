@@ -275,6 +275,8 @@ function BooleanInput(props) {
                     disabled={props.disabled}
                     checked={value}
                     onChange={handleChange} />
+    )
+}
 
 
 function FlowVariableOverride(props) {
