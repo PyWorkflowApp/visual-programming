@@ -64,8 +64,9 @@ class Node:
         Raises:
             ParameterValidationError: invalid Parameter value
         """
-        for option in self.options.values():
-            option.validate()
+        for key, option in self.options.items():
+            if key not in self.option_replace:
+                option.validate()
 
     def validate_input_data(self, num_input_data):
         """Validate Node input data.
