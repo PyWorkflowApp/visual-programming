@@ -351,7 +351,7 @@ class Workflow:
                 else:
                     flow_node = self.get_node(flow_node_id)
 
-                if flow_node is None or flow_node.node_type != 'FlowNode':
+                if flow_node is None or flow_node.node_type != 'flow_control':
                     raise WorkflowException('load flow vars', 'The workflow does not contain FlowNode %s' % flow_node_id)
 
                 flow_nodes[key] = flow_node
