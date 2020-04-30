@@ -47,6 +47,7 @@ export default class NodeConfig extends React.Component {
     };
 
     render() {
+        if (!this.props.node) return null;
         return (
             <Modal show={this.props.show} onHide={this.props.toggleShow} centered
                 onWheel={e => e.stopPropagation()}>
@@ -190,12 +191,13 @@ function SimpleInput(props) {
         setValue(event.target.value);
     };
 
-    const {keyName, onChange} = props;
+    const {keyName, onChange, type} = props;
     // whenever value changes, fire callback to update config form
     useEffect(() => {
-            onChange(keyName, value);
+            const formValue = type === "number" ? Number(value) : value;
+            onChange(keyName, formValue);
         },
-        [value, keyName, onChange]);
+        [value, keyName, onChange, type]);
 
     return  (
         <Form.Control type={props.type} name={props.keyName}

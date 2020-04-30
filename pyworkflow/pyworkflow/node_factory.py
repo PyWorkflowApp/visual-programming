@@ -23,6 +23,8 @@ def node_factory(node_info):
 def flow_node(node_key, node_info):
     if node_key == 'StringNode':
         return StringNode(node_info)
+    elif node_key == 'IntegerNode':
+        return IntegerNode(node_info)
     else:
         return None
 
