@@ -8,7 +8,8 @@ import sys
 from collections import OrderedDict
 from modulefinder import ModuleFinder
 
-from pyworkflow.nodes import ReadCsvNode
+from pyworkflow.nodes import ReadCsvNode, WriteCsvNode
+
 from .node import Node, NodeException
 from .node_factory import node_factory
 
@@ -569,8 +570,39 @@ class Workflow:
 
         return node_to_execute
 
+    def execute_write_csv(self, node_id):
+        node_to_execute = self.get_node(node_id)
+
+        if node_to_execute is None:
+            raise WorkflowException('execute', 'The workflow does not contain node %s' % node_id)
+
+        # Load predecessor data and FlowNode values
+        preceding_data = self.load_input_data(node_to_execute.node_id)
+        flow_nodes = self.load_flow_nodes(node_to_execute.option_replace)
+
+        try:
+            # Validate input data, and replace flow variables
+            node_to_execute.validate_input_data(len(preceding_data))
+            execution_options = node_to_execute.get_execution_options(flow_nodes)
+
+            # Pass in data to current Node to use in execution
+            output = node_to_execute.execute(preceding_data, execution_options)
+
+            #printing the output in order to include in std_out
+            print(output)
+
+            # Save new execution data to disk
+            node_to_execute.data = Workflow.store_node_data(self, node_id, output)
+        except NodeException as e:
+            raise e
+
+        if node_to_execute.data is None:
+            raise WorkflowException('execute', 'There was a problem saving node output.')
+
+        return node_to_execute
+
     @staticmethod
-    def execute_workflow(workflow_location, stdin_files):
+    def execute_workflow(workflow_location, stdin_files, write_to_stdout):
         """Execute entire workflow at a certain location.
            Current use case: CLI.
         """
@@ -589,11 +621,15 @@ class Workflow:
         for node in execution_order:
             if type(workflow_instance.get_node(node)) is ReadCsvNode and len(stdin_files) > 0:
                 csv_location = stdin_files[0]
-                workflow_instance.execute_read_csv(node, csv_location)
+                executed_node = workflow_instance.execute_read_csv(node, csv_location)
                 # delete file at index 0
                 del stdin_files[0]
+            elif type(workflow_instance.get_node(node)) is WriteCsvNode and write_to_stdout:
+                executed_node = workflow_instance.execute_write_csv(node)
             else:
-                workflow_instance.execute(node)
+                executed_node = workflow_instance.execute(node)
+
+            workflow_instance.update_or_add_node(executed_node)
 
 
 class WorkflowUtils:

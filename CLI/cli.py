@@ -23,6 +23,8 @@ def cli():
 @click.argument('filename', type=click.Path(exists=True), nargs=-1)
 def execute(filename):
 
+    write_to_stdout = not click.get_text_stream('stdout').isatty()
+
     #execute each one of the workflows in the ar
     for workflow_file in filename:
 
@@ -43,12 +45,17 @@ def execute(filename):
 
             stdin_files.append(file_name)
 
+
+
         if workflow_file is None:
             click.echo('Please specify a workflow to run')
             return
         try:
-            click.echo('Loading workflow file form %s' % workflow_file)
-            Workflow.execute_workflow(workflow_file, stdin_files)
+            if not write_to_stdout:
+                click.echo('Loading workflow file from %s' % workflow_file)
+            Workflow.execute_workflow(workflow_file, stdin_files, write_to_stdout)
+
+
         except NodeException as ne:
             click.echo("Issues during node execution")
             click.echo(ne)
