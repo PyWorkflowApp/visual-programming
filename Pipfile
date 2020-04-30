@@ -4,6 +4,9 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+coverage = "~=5.1"
+coverage-badge = "~=1.0"
+v = {editable = true,version = "*"}
 
 [packages]
 autopep8 = "~=1.5"
