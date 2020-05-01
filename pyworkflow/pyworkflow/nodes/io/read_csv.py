@@ -46,3 +46,13 @@ class ReadCsvNode(IONode):
             return df.to_json()
         except Exception as e:
             raise NodeException('read csv', str(e))
+
+    def execute_for_read(self, predecessor_data, flow_vars, file_to_read):
+        try:
+            fname = file_to_read
+            sep = self.options["sep"].get_value()
+            hdr = self.options["header"].get_value()
+            df = pd.read_csv(fname, sep=sep, header=hdr)
+            return df.to_json()
+        except Exception as e:
+            raise NodeException('read csv', str(e))
