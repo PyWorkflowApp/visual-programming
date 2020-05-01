@@ -1,6 +1,7 @@
 .Grid {
     border: 1px solid #d9dddd;
     width: auto;
+    margin: auto;
 }
 
 .GridItemEven, .GridItemOdd {
@@ -16,5 +17,5 @@
 }
 
 .GraphView {
-    max-width: 825px;
+    max-width: 925px;
 }

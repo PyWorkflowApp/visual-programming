@@ -132,7 +132,7 @@ export default class GraphView extends React.Component {
                   height={displayHeight < 600 ? displayHeight + 5 : 600}
                   rowCount={this.state.rows.length}
                   rowHeight={index => 20}
-                  width={displayWidth < 800 ? displayWidth : 800}
+                  width={displayWidth < 900 ? displayWidth : 900}
               >
                 {this.Cell}
               </Grid>
