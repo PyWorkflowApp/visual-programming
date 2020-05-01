@@ -130,7 +130,7 @@ export default class GraphView extends React.Component {
                   height={displayHeight < 600 ? displayHeight + 5 : 600}
                   rowCount={this.state.rows.length}
                   rowHeight={index => 20}
-                  width={displayWidth < 1000 ? displayWidth : 1000}
+                  width={displayWidth < 800 ? displayWidth : 800}
               >
                 {this.Cell}
               </Grid>
@@ -142,6 +142,7 @@ export default class GraphView extends React.Component {
               show={this.props.show}
               onHide={this.props.toggleShow}
               centered
+              dialogClassName={"GraphView"}
               onWheel={e => e.stopPropagation()}
           >
           <Modal.Header closeButton>

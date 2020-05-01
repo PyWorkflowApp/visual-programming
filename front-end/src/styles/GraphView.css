@@ -15,6 +15,6 @@
     background-color: #f8f8f0;
 }
 
-.modal-dialog, .GraphView {
-    max-width: 70%;
+.GraphView {
+    max-width: 825px;
 }
