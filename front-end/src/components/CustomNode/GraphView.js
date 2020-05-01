@@ -14,16 +14,16 @@ export default class GraphView extends React.Component {
     this.key_id = props.node.getNodeId();
     this.state = {
       loading: false,
-      rowCount: 0,
-      columnCount: 0,
       data: [],
-      keys: [],
+      rows: [],
+      columns: [],
+      maxWidth: 0,
       gridRef: React.createRef()};
-  }
+  };
 
   columnWidths = (index) => {
     return 10 * this.state.widths[index];
-  }
+  };
 
   rowHeights = () => new Array(765)
     .fill(true)
@@ -33,45 +33,62 @@ export default class GraphView extends React.Component {
         this.props.toggleShow();
   };
 
-  computeWidths = (columnCount, rowCount, json) => {
-    const widths = new Array(columnCount);
-    const keys = Object.keys(json);
-    for (let index = 0; index < columnCount; index++) {
-        const key = keys[index];
-        widths[index] = key.length;
-        for (let rowIndex = 0; rowIndex < rowCount; rowIndex++) {
-          const value = json[key][rowIndex.toString()];
-          if (value != null && value.length > widths[index]) {
-            widths[index] = value.length;
-          }
-        }
-    }
+  /**
+   * Compute width of grid columns.
+   *
+   * Width is based on the maximum-length cell contained within the JSON data.
+   *
+   * @param {Object} columns The column information from the data
+   * @param {int} rowCount Number of rows in the data
+   * @param {Object} data The raw data from Node execution
+   * @returns {any[]}
+   */
+    computeWidths = (columns, rowCount, data) => {
+        const columnCount = columns.length;
+        const widths = new Array(columnCount);
 
-    return widths;
-  }
+        for (let index = 0; index < columnCount; index++) {
+            const column = columns[index];
+            widths[index] = column.length;
+
+            for (let rowIndex = 0; rowIndex < rowCount; rowIndex++) {
+              const row = data[column][rowIndex.toString()];
+
+              if (row != null && row.length > widths[index]) {
+                widths[index] = row.length;
+              }
+
+              this.state.maxWidth += (widths[index] * 10);
+            }
+        }
+
+        return widths;
+    };
 
   load = async () => {
-          this.setState({loading: true})
-          API.retrieveData(this.key_id)
+      this.setState({loading: true});
+
+      API.retrieveData(this.key_id)
           .then(json => {
-            const keys = Object.keys(json);
-            const columnCount = keys.length;
-            const rows = Object.keys(json[keys[0]]);
-            const rowCount = rows.length;
-            const widths = this.computeWidths(columnCount, rowCount, json);
-            this.setState({ data: json,
-              keys: keys,
-              columnCount: columnCount,
-              rowCount: rowCount,
-              loading: false,
-              widths: widths});
-          }).catch(err => console.log(err));
-    }
+            const columns = Object.keys(json);
+            const rows = Object.keys(json[columns[0]]);
+            const widths = this.computeWidths(columns, rows.length, json);
+
+            this.setState({
+                data: json,
+                columns: columns,
+                rows: rows,
+                loading: false,
+                widths: widths
+            });
+          })
+          .catch(err => console.error(err));
+  };
 
     Cell = ({ columnIndex, rowIndex, style }) => {
       const className = (rowIndex % 2 === 0) ? 'GridItemEven' : 'GridItemOdd';
       const column = this.state.columns[columnIndex];
-      
+
       return (
         <div className={className} style={style}>
           {(rowIndex === 0) ? column : this.state.data[column][rowIndex.toString()]}
@@ -85,9 +102,9 @@ export default class GraphView extends React.Component {
       let footer;
 
       if (this.state.loading) {
-          // Print loading message
+          // Print loading spinner
           body = (<Roller color="black" />);
-      } else if (this.state.columns.length < 1) {
+      } else if (this.state.data.length < 1) {
           // Print instructions about loading
           body = "Loading the data might take a while depending on how big the data is.";
           footer = (
@@ -101,16 +118,19 @@ export default class GraphView extends React.Component {
           );
       } else {
           // Display the grid
+          let displayHeight = this.state.rows.length * 20;
+          let displayWidth = this.state.maxWidth;
+
           body = (
               <Grid
                   ref={this.state.gridRef}
                   className="Grid"
                   columnCount={this.state.columns.length}
                   columnWidth={index => this.columnWidths(index)}
-                  height={500}
+                  height={displayHeight < 600 ? displayHeight + 5 : 600}
                   rowCount={this.state.rows.length}
                   rowHeight={index => 20}
-                  width={800}
+                  width={displayWidth < 1000 ? displayWidth : 1000}
               >
                 {this.Cell}
               </Grid>
@@ -121,17 +141,16 @@ export default class GraphView extends React.Component {
           <Modal
               show={this.props.show}
               onHide={this.props.toggleShow}
-              refreshData={this.props.refreshData}
               centered
               onWheel={e => e.stopPropagation()}
           >
-              <Modal.Header closeButton>
-                   <Modal.Title><b>{this.props.node.options.name}</b> View</Modal.Title>
-              </Modal.Header>
-              <Modal.Body>
-                  {body}
-              </Modal.Body>
-              {footer}
+          <Modal.Header closeButton>
+               <Modal.Title><b>{this.props.node.options.name}</b> View</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+              {body}
+          </Modal.Body>
+          {footer}
           </Modal>
       );
     }
