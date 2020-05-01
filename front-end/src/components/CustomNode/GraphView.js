@@ -1,4 +1,5 @@
 import React from 'react';
+import { Roller } from 'react-spinners-css';
 import { Modal, Button } from 'react-bootstrap';
 import propTypes from 'prop-types';
 import { VariableSizeGrid as Grid } from 'react-window';
@@ -93,48 +94,57 @@ export default class GraphView extends React.Component {
 
 
     render() {
-      if (this.state.loading) {
-        return (<div>Loading data...</div>);
-      }
+      let body;
+      let footer;
 
-      if (this.state.columnCount < 1) {
-        return (
-          <Modal show={this.props.show} onHide={this.props.toggleShow} centered
-             onWheel={e => e.stopPropagation()}>
-          <Modal.Header>
-              <Modal.Title><b>{this.props.node.options.name}</b> View</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-          Loading the data might take a while depending on how big the data is.
-          </Modal.Body>
-          <Modal.Footer>
-              <Button variant="secondary" onClick={this.onClose}>Cancel</Button>
-              <Button variant="secondary" onClick={this.load}>Load</Button>
-          </Modal.Footer>
-          </Modal>
-        );
+      if (this.state.loading) {
+          // Print loading message
+          body = (<Roller color="black" />);
+      } else if (this.state.columns.length < 1) {
+          // Print instructions about loading
+          body = "Loading the data might take a while depending on how big the data is.";
+          footer = (
+              <Modal.Footer>
+                <Button variant="secondary" onClick={this.onClose}>Cancel</Button>
+                <Button variant="secondary"
+                        disabled={this.props.node.options.status !== "complete"}
+                        onClick={this.load}>Load
+                </Button>
+              </Modal.Footer>
+          );
+      } else {
+          // Display the grid
+          body = (
+              <Grid
+                  ref={this.state.gridRef}
+                  className="Grid"
+                  columnCount={this.state.columns.length}
+                  columnWidth={index => this.columnWidths(index)}
+                  height={500}
+                  rowCount={this.state.rows.length}
+                  rowHeight={index => 20}
+                  width={800}
+              >
+                {this.Cell}
+              </Grid>
+          );
       }
 
       return (
-          <Modal show={this.props.show} onHide={this.props.toggleShow} centered
-              onWheel={e => e.stopPropagation()}>
+          <Modal
+              show={this.props.show}
+              onHide={this.props.toggleShow}
+              refreshData={this.props.refreshData}
+              centered
+              onWheel={e => e.stopPropagation()}
+          >
               <Modal.Header closeButton>
-                  <Modal.Title><b>{this.props.node.options.name}</b> View</Modal.Title>
+                   <Modal.Title><b>{this.props.node.options.name}</b> View</Modal.Title>
               </Modal.Header>
               <Modal.Body>
-                  <Grid
-                      ref={this.state.gridRef}
-                      className="Grid"
-                      columnCount={this.state.columnCount}
-                      columnWidth={index => this.columnWidths(index)}
-                      height={150}
-                      rowCount={this.state.rowCount}
-                      rowHeight={index => 20}
-                      width={480}
-                    >
-                      {this.Cell}
-                    </Grid>
+                  {body}
               </Modal.Body>
+              {footer}
           </Modal>
       );
     }
@@ -145,4 +155,4 @@ GraphView.propTypes = {
     show: propTypes.bool,
     toggleShow: propTypes.func,
     onClose: propTypes.func,
-}
+};
