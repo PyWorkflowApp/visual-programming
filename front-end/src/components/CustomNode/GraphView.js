@@ -46,6 +46,7 @@ export default class GraphView extends React.Component {
     computeWidths = (columns, rowCount, data) => {
         const columnCount = columns.length;
         const widths = new Array(columnCount);
+        let maxWidth = this.state.maxWidth;
 
         for (let index = 0; index < columnCount; index++) {
             const column = columns[index];
@@ -58,10 +59,11 @@ export default class GraphView extends React.Component {
                 widths[index] = row.length;
               }
 
-              this.state.maxWidth += (widths[index] * 10);
+            maxWidth += widths[index] * 10;
             }
         }
 
+        this.setState({maxWidth: maxWidth});
         return widths;
     };
 
