@@ -302,7 +302,7 @@ class Workflow:
         try:
             # Validate input data, and replace flow variables
             node_to_execute.validate_input_data(len(preceding_data))
-            execution_options = node_to_execute.get_execution_options(flow_nodes)
+            execution_options = node_to_execute.get_execution_options(self, flow_nodes)
 
             # Pass in data to current Node to use in execution
             output = node_to_execute.execute(preceding_data, execution_options)
@@ -417,8 +417,15 @@ class Workflow:
             return None
 
         try:
-            # TODO: Change to generic "file" option to allow for more than WriteCsv
-            to_open = self.path(node.options['file'].get_value())
+            # Check if file option is overridden by flow variable
+            if 'file' in node.option_replace:
+                flow_node = self.load_flow_nodes({'file': node.option_replace['file']})
+                filename = flow_node['file'].get_replacement_value()
+            else:
+                filename = node.options['file'].get_value()
+
+            # Construct path to file in Workflow dir
+            to_open = self.path(filename)
             return open(to_open)
         except KeyError:
             raise WorkflowException('download_file', '%s does not have an associated file' % node_id)

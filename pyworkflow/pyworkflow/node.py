@@ -28,15 +28,19 @@ class Node:
     def execute(self, predecessor_data, flow_vars):
         raise NotImplementedError()
 
-    def get_execution_options(self, flow_nodes):
+    def get_execution_options(self, workflow, flow_nodes):
         """Replace Node options with flow variables.
 
         If the user has specified any flow variables to replace Node options,
         perform the replacement and return a dict with all options to use for
         execution. If no flow variables are included, this method will return
-        a copy of all Node options unchanged.
+        a copy of all Node options.
+
+        For any 'file' options, the value will be replaced with a path based on
+        the Workflow's root directory.
 
         Args:
+            workflow: Workflow object to construct file paths
             flow_nodes: dict of FlowNodes used to replace options
 
         Returns:
@@ -49,7 +53,12 @@ class Node:
         for key, option in self.options.items():
 
             if key in flow_nodes:
-                option.set_value(flow_nodes[key].get_replacement_value())
+                replacement_value = flow_nodes[key].get_replacement_value()
+            else:
+                replacement_value = option.get_value()
+
+            if key == 'file':
+                option.set_value(workflow.path(replacement_value))
 
             execution_options[key] = option
 
