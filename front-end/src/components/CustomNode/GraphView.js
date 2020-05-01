@@ -69,28 +69,15 @@ export default class GraphView extends React.Component {
     }
 
     Cell = ({ columnIndex, rowIndex, style }) => {
-      const className =  columnIndex % 2
-          ? rowIndex % 2 === 0
-            ? 'GridItemOdd'
-            : 'GridItemEven'
-          : rowIndex % 2
-            ? 'GridItemOdd'
-            : 'GridItemEven';
-
-      if (rowIndex === 0) {
-        return (
-          <div className={className} style={style}>
-            {this.state.keys[columnIndex]}
-          </div>
-        );
-      }
-
+      const className = (rowIndex % 2 === 0) ? 'GridItemEven' : 'GridItemOdd';
+      const column = this.state.columns[columnIndex];
+      
       return (
         <div className={className} style={style}>
-          {this.state.data[this.state.keys[columnIndex]][rowIndex.toString()] }
+          {(rowIndex === 0) ? column : this.state.data[column][rowIndex.toString()]}
         </div>
       );
-    }
+    };
 
 
     render() {
