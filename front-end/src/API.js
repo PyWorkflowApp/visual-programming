@@ -205,9 +205,11 @@ export async function downloadDataFile(node) {
         .then(async resp => {
             if (!resp.ok) return Promise.reject(await resp.json());
             contentType = resp.headers.get("content-type");
+            let filename = resp.headers.get("Content-Disposition");
+
             if (contentType.startsWith("text")) {
                 resp.text().then(data => {
-                    downloadFile(data, contentType, node.config["file"]);
+                    downloadFile(data, contentType, filename);
                 })
             }
         }).catch(err => console.log(err));

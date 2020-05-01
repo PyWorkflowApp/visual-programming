@@ -293,6 +293,7 @@ def download_file(request):
 
         # Construct response
         response = HttpResponse(content_type=content)
+        response['Content-Disposition'] = os.path.basename(f.name)
         response.write(f.read())
 
         # File not opened with `with`; need to close
