@@ -128,6 +128,24 @@ class BooleanParameter(Parameter):
             raise ParameterValidationError(self)
 
 
+class SelectParameter(Parameter):
+    type = "select"
+
+    def __init__(self, label="", options=None, default=None, docstring=None):
+        super().__init__(label, default, docstring)
+        self.options = options or []
+
+    def to_json(self):
+        out = super().to_json()
+        out["options"] = self.options
+        return out
+
+    def validate(self):
+        value = self.get_value()
+        if not isinstance(value, str):
+            raise ParameterValidationError(self)
+
+
 class ParameterValidationError(Exception):
 
     def __init__(self, parameter):
