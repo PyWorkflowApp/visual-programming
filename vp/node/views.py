@@ -264,13 +264,9 @@ def create_node(request):
     """Pass all request info to Node Factory.
 
     """
+    # Any filenames/paths passed through as-is
+    # A Workflow-specific path is constructed at execution
     json_data = json.loads(request.body)
-    # for options with type 'file', replace value with FileStorage path
-    for field, info in json_data.get("option_types", dict()).items():
-        if info["type"] == "file" or info["label"] == "Filename":
-            opt_value = json_data["options"][field]
-            if opt_value is not None:
-                json_data["options"][field] = request.pyworkflow.path(opt_value)
 
     try:
         return node_factory(json_data)

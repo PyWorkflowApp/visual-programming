@@ -60,10 +60,12 @@ export async function deleteNode(node) {
  * Update configuration of node in server-side workflow
  * @param {CustomNodeModel} node - JS node to remove
  * @param {Object} config - configuration from options form
+ * @param {Object} flowConfig - flow variable configuration options
  * @returns {Promise<Object>} - server response (serialized node)
  */
-export async function updateNode(node, config) {
+export async function updateNode(node, config, flowConfig) {
     node.config = config;
+    node.options.option_replace = flowConfig;
     const payload = {...node.options, options: node.config};
     const options = {
         method: "POST",
@@ -212,9 +214,11 @@ export async function downloadDataFile(node) {
         .then(async resp => {
             if (!resp.ok) return Promise.reject(await resp.json());
             contentType = resp.headers.get("content-type");
+            let filename = resp.headers.get("Content-Disposition");
+
             if (contentType.startsWith("text")) {
                 resp.text().then(data => {
-                    downloadFile(data, contentType, node.config["file"]);
+                    downloadFile(data, contentType, filename);
                 })
             }
         }).catch(err => console.log(err));
