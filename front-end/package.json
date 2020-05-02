@@ -22,6 +22,7 @@
     "react-bootstrap": "^1.0.0-beta.17",
     "react-dom": "^16.13.0",
     "react-scripts": "3.4.1",
+    "react-spinners-css": "^1.1.7",
     "react-vega": "^7.3.0",
     "react-window": "^1.8.5",
     "regenerator-runtime": "^0.13.5",
