@@ -14,6 +14,8 @@ def node_factory(node_info):
         new_node = manipulation_node(node_key, node_info)
     elif node_type == 'flow_control':
         new_node = flow_node(node_key, node_info)
+    elif node_type == 'visualization':
+        new_node = visualization_node(node_key, node_info)
     else:
         new_node = custom_node(node_key, node_info)
 

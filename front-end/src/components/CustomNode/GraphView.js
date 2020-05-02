@@ -1,4 +1,5 @@
 import React from 'react';
+import { VegaLite } from 'react-vega';
 import { Roller } from 'react-spinners-css';
 import { Modal, Button } from 'react-bootstrap';
 import propTypes from 'prop-types';
@@ -87,6 +88,19 @@ export default class GraphView extends React.Component {
           .catch(err => console.error(err));
   };
 
+  loadGraph = async () => {
+      this.setState({loading: true});
+      API.retrieveData(this.key_id)
+          .then(json => {
+              this.setState({
+                  data: json,
+                  loading: false,
+              });
+          })
+          .catch(err => console.log(err));
+
+  };
+
     Cell = ({ columnIndex, rowIndex, style }) => {
       const className = (rowIndex % 2 === 0) ? 'GridItemEven' : 'GridItemOdd';
       const column = this.state.columns[columnIndex];
@@ -107,36 +121,58 @@ export default class GraphView extends React.Component {
           // Print loading spinner
           body = (<Roller color="black" />);
       } else if (this.state.data.length < 1) {
-          // Print instructions about loading
-          body = "Loading the data might take a while depending on how big the data is.";
-          footer = (
-              <Modal.Footer>
-                <Button variant="secondary" onClick={this.onClose}>Cancel</Button>
-                <Button variant="secondary"
-                        disabled={this.props.node.options.status !== "complete"}
-                        onClick={this.load}>Load
-                </Button>
-              </Modal.Footer>
-          );
+          // Print message to load respective table/graph
+          if (this.props.node.options.node_type === "visualization") {
+              // Print instructions about loading
+              body = "Loading the graph might take a while depending on how big the data is.";
+              footer = (
+                  <Modal.Footer>
+                    <Button variant="secondary" onClick={this.onClose}>Cancel</Button>
+                    <Button variant="secondary"
+                            disabled={this.props.node.options.status !== "complete"}
+                            onClick={this.loadGraph}>Load
+                    </Button>
+                  </Modal.Footer>
+              );
+          } else {
+              // Print instructions about loading
+              body = "Loading the data might take a while depending on how big the data is.";
+              footer = (
+                  <Modal.Footer>
+                    <Button variant="secondary" onClick={this.onClose}>Cancel</Button>
+                    <Button variant="secondary"
+                            disabled={this.props.node.options.status !== "complete"}
+                            onClick={this.load}>Load
+                    </Button>
+                  </Modal.Footer>
+              );
+          }
       } else {
-          // Display the grid
-          let displayHeight = this.state.rows.length * 20;
-          let displayWidth = this.state.maxWidth;
+          // Display the visualization
+          if (this.props.node.options.node_type === "visualization") {
+              // Display the graph
+              body = (<VegaLite spec={this.state.data} />);
+          } else {
+              // Display the grid
+              let displayHeight = this.state.rows.length * 20;
+              let displayWidth = this.state.maxWidth;
 
-          body = (
-              <Grid
-                  ref={this.state.gridRef}
-                  className="Grid"
-                  columnCount={this.state.columns.length}
-                  columnWidth={index => this.columnWidths(index)}
-                  height={displayHeight < 600 ? displayHeight + 5 : 600}
-                  rowCount={this.state.rows.length}
-                  rowHeight={index => 20}
-                  width={displayWidth < 900 ? displayWidth : 900}
-              >
-                {this.Cell}
-              </Grid>
-          );
+              body = (
+                  <Grid
+                      ref={this.state.gridRef}
+                      className="Grid"
+                      columnCount={this.state.columns.length}
+                      columnWidth={index => this.columnWidths(index)}
+                      height={displayHeight < 600 ? displayHeight + 5 : 600}
+                      rowCount={this.state.rows.length}
+                      rowHeight={index => 20}
+                      width={displayWidth < 900 ? displayWidth : 900}
+                  >
+                    {this.Cell}
+                  </Grid>
+              );
+          }
+
       }
 
       return (
