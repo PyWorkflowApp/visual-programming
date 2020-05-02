@@ -16,10 +16,11 @@ class GraphNode(VizNode):
     num_out = 0
 
     OPTIONS = {
-        "graph_type": StringParameter(
+        "graph_type": SelectParameter(
             "Graph Type",
+            options=["area", "bar", "line", "point"],
             default="bar",
-            docstring="Graph viz type (supported options: area, bar, line, point)"
+            docstring="Graph viz type"
         ),
         "mark_options": BooleanParameter(
             "Specify mark options",
