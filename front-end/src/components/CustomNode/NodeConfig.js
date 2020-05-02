@@ -101,6 +101,8 @@ function OptionInput(props) {
         inputComp = <FileUploadInput {...props} />
     } else if (props.type === "string") {
         inputComp = <SimpleInput {...props} type="text" />
+    } else if (props.type === "text") {
+        inputComp = <SimpleInput {...props} type="textarea"/>
     } else if (props.type === "int") {
         inputComp = <SimpleInput {...props} type="number" />
     } else if (props.type === "boolean") {
@@ -199,11 +201,20 @@ function SimpleInput(props) {
         },
         [value, keyName, onChange, type]);
 
-    return  (
-        <Form.Control type={props.type} name={props.keyName}
-                          defaultValue={props.value}
-                          onChange={handleChange} />
-    )
+    if (props.type === "textarea") {
+        return (
+            <Form.Control as="textarea" rows="7" name={props.keyName}
+                              defaultValue={props.value}
+                              onChange={handleChange} />
+        )
+
+    } else {
+        return  (
+            <Form.Control type={props.type} name={props.keyName}
+                              defaultValue={props.value}
+                              onChange={handleChange} />
+        )
+    }
 }
 
 

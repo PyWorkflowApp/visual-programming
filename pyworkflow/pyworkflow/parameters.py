@@ -101,6 +101,15 @@ class StringParameter(Parameter):
             raise ParameterValidationError(self)
 
 
+class TextParameter(Parameter):
+    type = "text"
+
+    def validate(self):
+        value = self.get_value()
+        if not isinstance(value, str):
+            raise ParameterValidationError(self)
+
+
 class IntegerParameter(Parameter):
     type = "int"
 
