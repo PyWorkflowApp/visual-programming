@@ -146,9 +146,18 @@ export async function uploadWorkflow(formData) {
 async function handleEdge(link, method) {
     const sourceId = link.getSourcePort().getNode().options.id;
     const targetId = link.getTargetPort().getNode().options.id;
-    return fetchWrapper(
-        `/node/edge/${sourceId}/${targetId}`,
-        {method: method});
+
+    let endpoint;
+
+    if (link.getSourcePort().options.in) {
+        // If edge goes from IN port -> OUT port, reverse the ports
+        endpoint = `/node/edge/${targetId}/${sourceId}`;
+    } else {
+        // Otherwise, keep source -> target edge
+        endpoint = `/node/edge/${sourceId}/${targetId}`;
+    }
+
+    return fetchWrapper(endpoint, {method: method});
 }
 
 

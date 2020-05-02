@@ -135,11 +135,23 @@ function OptionInput(props) {
     if (props.type === "file") {
         inputComp = <FileUploadInput {...props} disabled={isFlow} />
     } else if (props.type === "string") {
+<<<<<<< HEAD
         inputComp = <SimpleInput {...props} type="text" disabled={isFlow} />
+=======
+        inputComp = <SimpleInput {...props} type="text" />
+    } else if (props.type === "text") {
+        inputComp = <SimpleInput {...props} type="textarea"/>
+>>>>>>> master
     } else if (props.type === "int") {
         inputComp = <SimpleInput {...props} type="number" disabled={isFlow} />
     } else if (props.type === "boolean") {
+<<<<<<< HEAD
         inputComp = <BooleanInput {...props} disabled={isFlow} />
+=======
+        inputComp = <BooleanInput {...props} />
+    } else if (props.type === "select") {
+        inputComp = <SelectInput {...props} />
+>>>>>>> master
     } else {
         return (<></>)
     }
@@ -247,12 +259,20 @@ function SimpleInput(props) {
         },
         [value, keyName, onChange, type]);
 
-    return  (
-        <Form.Control type={props.type} name={props.keyName}
-                      disabled={props.disabled}
-                      defaultValue={props.value}
-                      onChange={handleChange} />
-    )
+    if (props.type === "textarea") {
+        return (
+            <Form.Control as="textarea" rows="7" name={props.keyName}
+                              defaultValue={props.value}
+                              onChange={handleChange} />
+        )
+
+    } else {
+        return  (
+            <Form.Control type={props.type} name={props.keyName}
+                              defaultValue={props.value}
+                              onChange={handleChange} />
+        )
+    }
 }
 
 
@@ -310,5 +330,31 @@ function FlowVariableOverride(props) {
                 : null
             }
         </Col>
+    )
+}
+
+
+function SelectInput(props) {
+
+    const [value, setValue] = useState(props.value);
+    const handleChange = (event) => {
+        setValue(event.target.value);
+    };
+
+    const {keyName, onChange} = props;
+    // whenever value changes, fire callback to update config form
+    useEffect(() => {
+            onChange(keyName, value);
+        },
+        [value, keyName, onChange]);
+
+    return  (
+        <Form.Control as="select" name={props.keyName}
+                    value={value}
+                    onChange={handleChange}>
+            {props.options.map(opt =>
+                <option key={opt} value={opt}>{opt}</option>
+            )}
+        </Form.Control>
     )
 }

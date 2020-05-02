@@ -101,6 +101,15 @@ class StringParameter(Parameter):
             raise ParameterValidationError(self)
 
 
+class TextParameter(Parameter):
+    type = "text"
+
+    def validate(self):
+        value = self.get_value()
+        if not isinstance(value, str):
+            raise ParameterValidationError(self)
+
+
 class IntegerParameter(Parameter):
     type = "int"
 
@@ -116,6 +125,24 @@ class BooleanParameter(Parameter):
     def validate(self):
         value = self.get_value()
         if not isinstance(value, bool):
+            raise ParameterValidationError(self)
+
+
+class SelectParameter(Parameter):
+    type = "select"
+
+    def __init__(self, label="", options=None, default=None, docstring=None):
+        super().__init__(label, default, docstring)
+        self.options = options or []
+
+    def to_json(self):
+        out = super().to_json()
+        out["options"] = self.options
+        return out
+
+    def validate(self):
+        value = self.get_value()
+        if not isinstance(value, str):
             raise ParameterValidationError(self)
 
 
