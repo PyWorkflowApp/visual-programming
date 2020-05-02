@@ -6,25 +6,16 @@ import altair as alt
 
 
 class GraphNode(VizNode):
-    """WriteCsvNode
-
-    Writes the current DataFrame to a CSV file.
+    """Displays a pandas DataFrame in a visual graph.
 
     Raises:
-        NodeException: any error writing CSV file, converting
-            from DataFrame.
+        NodeException: any error generating Altair Chart.
     """
     name = "Graph Node"
     num_in = 1
     num_out = 0
-    # download_result = True
 
     OPTIONS = {
-        "sep": StringParameter(
-            "Delimiter",
-            default=",",
-            docstring="Column delimiter"
-        ),
         "graph_type": StringParameter(
             "Graph Type",
             default="bar",
@@ -52,7 +43,7 @@ class GraphNode(VizNode):
         ),
         "x_axis": StringParameter(
             "X-Axis",
-            default="",
+            default="a",
             docstring="X-axis values"
         ),
         "y_axis": StringParameter(
@@ -84,6 +75,7 @@ class GraphNode(VizNode):
 
             graph_type = flow_vars["graph_type"].get_value()
 
+            # Generate requested chart with options
             if graph_type == "area":
                 chart = alt.Chart(df).mark_area(**mark_options).encode(**encode_options)
             elif graph_type == "bar":
@@ -94,8 +86,6 @@ class GraphNode(VizNode):
                 chart = alt.Chart(df).mark_point(**mark_options).encode(**encode_options)
             else:
                 chart = None
-
-            print(chart.to_json())
 
             return chart.to_json()
         except Exception as e:
