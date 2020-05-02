@@ -132,6 +132,14 @@ class ManipulationNode(Node):
         raise NotImplementedError()
 
 
+class VizNode(Node):
+    """VizNodes deal with graphical display of data."""
+    color = "red"
+
+    def execute(self, predecessor_data, flow_vars):
+        raise NotImplementedError()
+
+
 class NodeException(Exception):
     def __init__(self, action: str, reason: str):
         self.action = action

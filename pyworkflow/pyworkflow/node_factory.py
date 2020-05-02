@@ -49,6 +49,13 @@ def manipulation_node(node_key, node_info):
         return None
 
 
+def visualization_node(node_key, node_info):
+    if node_key == 'GraphNode':
+        return GraphNode(node_info)
+    else:
+        return None
+
+
 def custom_node(node_key, node_info):
     try:
         filename = node_info.get('filename')
