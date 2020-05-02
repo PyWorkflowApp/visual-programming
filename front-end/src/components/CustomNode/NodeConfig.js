@@ -107,6 +107,8 @@ function OptionInput(props) {
         inputComp = <SimpleInput {...props} type="number" />
     } else if (props.type === "boolean") {
         inputComp = <BooleanInput {...props} />
+    } else if (props.type === "select") {
+        inputComp = <SelectInput {...props} />
     } else {
         return (<></>)
     }
@@ -236,5 +238,31 @@ function BooleanInput(props) {
         <Form.Check type="checkbox" name={props.keyName}
                       checked={value}
                       onChange={handleChange} />
+    )
+}
+
+
+function SelectInput(props) {
+
+    const [value, setValue] = useState(props.value);
+    const handleChange = (event) => {
+        setValue(event.target.value);
+    };
+
+    const {keyName, onChange} = props;
+    // whenever value changes, fire callback to update config form
+    useEffect(() => {
+            onChange(keyName, value);
+        },
+        [value, keyName, onChange]);
+
+    return  (
+        <Form.Control as="select" name={props.keyName}
+                    value={value}
+                    onChange={handleChange}>
+            {props.options.map(opt =>
+                <option key={opt} value={opt}>{opt}</option>
+            )}
+        </Form.Control>
     )
 }
