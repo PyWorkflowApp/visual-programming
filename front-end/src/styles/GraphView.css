@@ -1,14 +1,21 @@
 .Grid {
     border: 1px solid #d9dddd;
     width: auto;
+    margin: auto;
 }
 
 .GridItemEven, .GridItemOdd {
     display: flex;
     align-items: center;
     justify-content: center;
+    border-right: 1px solid grey;
+    border-bottom: 1px solid grey;
 }
 
 .GridItemEven {
     background-color: #f8f8f0;
+}
+
+.GraphView {
+    max-width: 925px;
 }
