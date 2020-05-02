@@ -22,9 +22,12 @@
     "react-bootstrap": "^1.0.0-beta.17",
     "react-dom": "^16.13.0",
     "react-scripts": "3.4.1",
+    "react-vega": "^7.3.0",
     "react-window": "^1.8.5",
     "regenerator-runtime": "^0.13.5",
-    "resize-observer-polyfill": "^1.5.1"
+    "resize-observer-polyfill": "^1.5.1",
+    "vega": "^5.11.1",
+    "vega-lite": "^4.11.0"
   },
   "scripts": {
     "start": "react-scripts start",
