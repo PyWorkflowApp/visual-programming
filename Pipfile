@@ -18,6 +18,7 @@ pyworkflow = {path = "./pyworkflow",editable = true}
 djangorestframework = "*"
 drf-yasg = "*"
 click = "*"
+altair = "~=4.1.0"
 cli = {path = "./CLI",editable = true}
 
 [requires]
