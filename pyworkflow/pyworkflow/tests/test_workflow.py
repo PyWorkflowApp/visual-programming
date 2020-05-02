@@ -46,7 +46,7 @@ class WorkflowTestCase(unittest.TestCase):
     ##########################
     def test_workflow_packaged_nodes(self):
         nodes = self.workflow.get_packaged_nodes()
-        self.assertEqual(len(nodes), 4)
+        self.assertEqual(len(nodes), 5)
 
     def test_get_flow_variables(self):
         flow_var_options = self.workflow.get_all_flow_var_options("1")
