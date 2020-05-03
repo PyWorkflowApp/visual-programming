@@ -251,20 +251,15 @@ function SimpleInput(props) {
         },
         [value, keyName, onChange, type]);
 
-    if (props.type === "textarea") {
-        return (
-            <Form.Control as="textarea" rows="7" name={props.keyName}
-                              defaultValue={props.value}
-                              onChange={handleChange} />
-        )
-
-    } else {
-        return  (
-            <Form.Control type={props.type} name={props.keyName}
-                              defaultValue={props.value}
-                              onChange={handleChange} />
-        )
-    }
+    const extraProps = props.type === "textarea"
+        ? {as: "textarea", rows: props.rows || 7}
+        : {type: props.type};
+    return (
+        <Form.Control {...extraProps} name={props.keyName}
+                      disabled={props.disabled}
+                      defaultValue={props.value}
+                      onChange={handleChange} />
+    )
 }
 
 
