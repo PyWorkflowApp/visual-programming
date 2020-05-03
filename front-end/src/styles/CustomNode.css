@@ -40,21 +40,21 @@
     border-left-color: mediumpurple;
 }
 
+.custom-node-icons {
+    width: 100%;
+    position: absolute;
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
 .custom-node-configure {
     font-size: 1.5rem;
     cursor: pointer;
-    position: absolute;
-    left: 25%;
-    top: 50%;
-    transform: translate(-50%, -50%);
 }
 
 .custom-node-tabular {
     cursor: pointer;
-    position: absolute;
-    right: 25%;
-    top: 25%;
-    transform: translate(50%, -25%);
 }
 
 .custom-node-description {

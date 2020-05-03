@@ -75,19 +75,22 @@ export default class CustomNodeWidget extends React.Component {
             <div className="custom-node-wrapper">
                 <div className="custom-node-name">{this.props.node.options.name}</div>
                 <div className="custom-node" style={{ borderColor: this.props.node.options.color, width: width }}>
-                    <div className="custom-node-configure" onClick={this.toggleConfig}>{String.fromCharCode(this.icon)}</div>
-                    <NodeConfig node={this.props.node}
-                        globals={this.props.engine.model.globals || []}
-                        show={this.state.showConfig}
-                        toggleShow={this.toggleConfig}
-                        onDelete={this.handleDelete}
-                        onSubmit={this.acceptConfiguration} />
-                    {graphView}
-                    <GraphView node={this.props.node}
-                        show={this.state.showGraph}
-                        toggleShow={this.toggleGraph}
-                        onDelete={this.handleDelete}
-                        onSubmit={this.acceptConfiguration} />
+                    <div className="custom-node-icons">
+                        <div className="custom-node-configure" onClick={this.toggleConfig}>
+                            {String.fromCharCode(this.icon)}
+                        </div>
+                        <NodeConfig node={this.props.node}
+                            show={this.state.showConfig}
+                            toggleShow={this.toggleConfig}
+                            onDelete={this.handleDelete}
+                            onSubmit={this.acceptConfiguration} />
+                        {graphView}
+                        <GraphView node={this.props.node}
+                            show={this.state.showGraph}
+                            toggleShow={this.toggleGraph}
+                            onDelete={this.handleDelete}
+                            onSubmit={this.acceptConfiguration} />
+                    </div>
                     <div className="port-col port-col-in">
                         { portWidgets["in"] }
                     </div>
