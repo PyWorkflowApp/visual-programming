@@ -47,7 +47,9 @@ export default class CustomNodeWidget extends React.Component {
 
     render() {
         const engine = this.props.engine;
-        const ports = _.values(this.props.node.getPorts());
+        const allPorts = _.values(this.props.node.getPorts());
+        const ports = allPorts.filter(p => p.options.name !== "flow-in");
+        const flowPort = allPorts.find(p => p.options.name === "flow-in");
         // group ports by type (in/out)
         const sortedPorts = _.groupBy(ports, p => p.options.in === true ? "in" : "out");
         // create PortWidget array for each type
@@ -55,10 +57,18 @@ export default class CustomNodeWidget extends React.Component {
         for (let portType in sortedPorts) {
             portWidgets[portType] = sortedPorts[portType].map(port =>
                 <PortWidget engine={engine} port={port} key={port.getID()}>
-                        <div className="triangle-port" />
+                    <div className="triangle-port" />
                 </PortWidget>
             );
         }
+
+        const flowPortWidget = flowPort ?
+            <PortWidget engine={engine} port={flowPort} key={flowPort.getID()} style={{position: 'absolute'}}
+                        className="flow-port-div">
+                <div className="flow-port" />
+            </PortWidget>
+            : null;
+
 
         let graphView;
         let width = 40;
@@ -91,6 +101,7 @@ export default class CustomNodeWidget extends React.Component {
                             onDelete={this.handleDelete}
                             onSubmit={this.acceptConfiguration} />
                     </div>
+                    {flowPortWidget}
                     <div className="port-col port-col-in">
                         { portWidgets["in"] }
                     </div>

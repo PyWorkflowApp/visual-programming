@@ -14,6 +14,10 @@
     position: relative;
 }
 
+.custom-node-name {
+    margin-bottom: 3px;
+}
+
 .port-col {
     display: flex;
     flex-direction: column;
@@ -38,6 +42,19 @@
 
 .triangle-port:hover{
     border-left-color: mediumpurple;
+}
+
+.flow-port-div {
+    position: absolute;
+    top: -5px;
+    left: -5px;
+}
+
+.flow-port {
+    width: 10px;
+    height: 10px;
+    border-radius: 5px;
+    background-color: purple;
 }
 
 .custom-node-icons {
