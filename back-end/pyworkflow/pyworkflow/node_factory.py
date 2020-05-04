@@ -14,6 +14,8 @@ def node_factory(node_info):
         new_node = manipulation_node(node_key, node_info)
     elif node_type == 'flow_control':
         new_node = flow_node(node_key, node_info)
+    elif node_type == 'visualization':
+        new_node = visualization_node(node_key, node_info)
     else:
         new_node = custom_node(node_key, node_info)
 
@@ -23,6 +25,8 @@ def node_factory(node_info):
 def flow_node(node_key, node_info):
     if node_key == 'StringNode':
         return StringNode(node_info)
+    elif node_key == 'IntegerNode':
+        return IntegerNode(node_info)
     else:
         return None
 
@@ -43,6 +47,13 @@ def manipulation_node(node_key, node_info):
         return PivotNode(node_info)
     elif node_key == 'FilterNode':
         return FilterNode(node_info)
+    else:
+        return None
+
+
+def visualization_node(node_key, node_info):
+    if node_key == 'GraphNode':
+        return GraphNode(node_info)
     else:
         return None
 

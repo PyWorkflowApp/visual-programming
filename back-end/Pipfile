@@ -4,6 +4,9 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+coverage = "~=5.1"
+coverage-badge = "~=1.0"
+v = {editable = true,version = "*"}
 
 [packages]
 autopep8 = "~=1.5"
@@ -15,7 +18,8 @@ pyworkflow = {path = "./pyworkflow", editable = true}
 djangorestframework = "*"
 drf-yasg = "*"
 click = "*"
-cli = {path = "./CLI", editable = true}
+altair = "~=4.1.0"
+cli = {path = "./CLI",editable = true}
 
 [requires]
 python_version = "3.8.2"

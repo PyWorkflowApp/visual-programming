@@ -1,4 +1,8 @@
-# visual-programming
+# Introduction
+![Postman Tests](https://github.com/matthew-t-smith/visual-programming/workflows/Postman%20Tests/badge.svg)
+![Code Coverage](./docs/media/coverage.svg)
+
+![Pyworkflow UI](./docs/media/pyworkflow-ui.png)
 
 So far the app comprises a Django app and a SPA React app (bootstrapped with
 create-react-app). For React to request data from Django, the `proxy` field is
@@ -61,7 +65,11 @@ data from `localhost:8000` **where the Django app must be running**.
 ## CLI
 1. Run pipenv shell.
 2. Create a workflow using UI and save it. 
-3. Run it as: pyworkflow --file-directory (path-to-json-workflow-file) execute
+3. Run it as: pyworkflow execute workflow-file
+
+Also accepts reading input from std (i.e < file.csv) and writing to sdt out (i.e > output.csv)
+  
+
 
 ---
 ## Tests
@@ -79,3 +87,10 @@ package.
 - `cd pyworkflow/pyworkflow`
 - `pipenv run python3 -m unittest tests/*.py`
 
+To see coverage, you can use the `coverage` package. This is included in the Pipfile
+but must be installed with `pipenv install -dev`. Then, while still in the pyworkflow
+directory, you can run
+
+- `coverage run -m unittest tests/*.py`
+- `coverage report` (to see a report via the CLI)
+- `coverage html && open /htmlcov/index.html` (to view interactive coverage)

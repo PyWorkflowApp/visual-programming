@@ -51,7 +51,8 @@ export async function deleteNode(node) {
     const options = {
         method: "DELETE"
     };
-    return fetchWrapper(`/node/${id}`, options);
+    const endpoint = node.options.is_global ? "node/global" : "node";
+    return fetchWrapper(`/${endpoint}/${id}`, options);
 }
 
 
@@ -59,16 +60,19 @@ export async function deleteNode(node) {
  * Update configuration of node in server-side workflow
  * @param {CustomNodeModel} node - JS node to remove
  * @param {Object} config - configuration from options form
+ * @param {Object} flowConfig - flow variable configuration options
  * @returns {Promise<Object>} - server response (serialized node)
  */
-export async function updateNode(node, config) {
+export async function updateNode(node, config, flowConfig) {
     node.config = config;
+    node.options.option_replace = flowConfig;
     const payload = {...node.options, options: node.config};
     const options = {
         method: "POST",
         body: JSON.stringify(payload)
     };
-    return fetchWrapper(`/node/${node.options.id}`, options)
+    const endpoint = node.options.is_global ? "node/global" : "node";
+    return fetchWrapper(`/${endpoint}/${node.options.id}`, options)
 }
 
 
@@ -96,6 +100,15 @@ export async function save(diagramData) {
  */
 export async function getNodes() {
     return fetchWrapper("/workflow/nodes");
+}
+
+
+/**
+ * Get global flow variables for workflow
+ * @returns {Promise<Object>} - server response (global flow variables)
+ */
+export async function getGlobalVars() {
+    return fetchWrapper("/workflow/globals");
 }
 
 
@@ -133,9 +146,18 @@ export async function uploadWorkflow(formData) {
 async function handleEdge(link, method) {
     const sourceId = link.getSourcePort().getNode().options.id;
     const targetId = link.getTargetPort().getNode().options.id;
-    return fetchWrapper(
-        `/node/edge/${sourceId}/${targetId}`,
-        {method: method});
+
+    let endpoint;
+
+    if (link.getSourcePort().options.in) {
+        // If edge goes from IN port -> OUT port, reverse the ports
+        endpoint = `/node/edge/${targetId}/${sourceId}`;
+    } else {
+        // Otherwise, keep source -> target edge
+        endpoint = `/node/edge/${sourceId}/${targetId}`;
+    }
+
+    return fetchWrapper(endpoint, {method: method});
 }
 
 
@@ -192,9 +214,11 @@ export async function downloadDataFile(node) {
         .then(async resp => {
             if (!resp.ok) return Promise.reject(await resp.json());
             contentType = resp.headers.get("content-type");
+            let filename = resp.headers.get("Content-Disposition");
+
             if (contentType.startsWith("text")) {
                 resp.text().then(data => {
-                    downloadFile(data, contentType, node.config["file"]);
+                    downloadFile(data, contentType, filename);
                 })
             }
         }).catch(err => console.log(err));

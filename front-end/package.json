@@ -7,11 +7,12 @@
     "@emotion/styled": "^10.0.27",
     "@projectstorm/react-diagrams": "^6.0.2",
     "@testing-library/jest-dom": "^4.2.4",
-    "@testing-library/react": "^9.5.0",
+    "@testing-library/react": "^10.0.3",
     "@testing-library/user-event": "^7.2.1",
     "bootstrap": "^4.4.1",
     "closest": "0.0.1",
     "dagre": "^0.8.5",
+    "jest": "24.9.0",
     "jquery": "^3.4.1",
     "mathjs": "^6.6.1",
     "pathfinding": "^0.4.18",
@@ -20,15 +21,36 @@
     "react": "^16.13.0",
     "react-bootstrap": "^1.0.0-beta.17",
     "react-dom": "^16.13.0",
-    "react-scripts": "3.4.0",
+    "react-scripts": "3.4.1",
+    "react-spinners-css": "^1.1.7",
+    "react-vega": "^7.3.0",
     "react-window": "^1.8.5",
-    "resize-observer-polyfill": "^1.5.1"
+    "regenerator-runtime": "^0.13.5",
+    "resize-observer-polyfill": "^1.5.1",
+    "vega": "^5.11.1",
+    "vega-lite": "^4.11.0"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test",
+    "test": "jest --collect-coverage --passWithNoTests",
     "eject": "react-scripts eject"
+  },
+  "jest": {
+    "coverageThreshold": {
+      "global": {
+        "branches": 80,
+        "functions": 80,
+        "lines": 80,
+        "statements": 80
+      }
+    },
+    "moduleNameMapper": {
+      "\\.(css|less)$": "<rootDir>/__mocks__/css/styleMock.js"
+    },
+    "setupFilesAfterEnv": [
+      "./setupTests.js"
+    ]
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -46,4 +68,9 @@
     ]
   },
   "proxy": "http://back-end:8000/"
+  "devDependencies": {
+    "@babel/preset-env": "^7.9.5",
+    "@babel/preset-react": "^7.9.4",
+    "react-test-renderer": "^16.13.1"
+  }
 }

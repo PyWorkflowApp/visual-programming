@@ -1,6 +1,11 @@
+import sys
+
 import click
+import os
+import uuid
 
 from pyworkflow import Workflow
+from pyworkflow import NodeException
 
 
 class Config(object):
@@ -10,16 +15,47 @@ class Config(object):
 pass_config = click.make_pass_decorator(Config, ensure=True)
 
 @click.group()
-@click.option('--file-directory', type=click.Path())
-@pass_config
-def cli(config, file_directory):
-    if file_directory is None:
-        file_directory = '.'
-    config.file_directory = file_directory
+def cli():
+    pass
 
 
 @cli.command()
-@pass_config
-def execute(config):
-    click.echo('Loading workflow file form %s' % config.file_directory)
-    Workflow.execute_workflow(config.file_directory)
+@click.argument('filename', type=click.Path(exists=True), nargs=-1)
+def execute(filename):
+
+    write_to_stdout = not click.get_text_stream('stdout').isatty()
+
+    #execute each one of the workflows in the ar
+    for workflow_file in filename:
+
+        stdin_files = []
+
+        if not click.get_text_stream('stdin').isatty():
+            stdin_text = click.get_text_stream('stdin')
+
+            # write standard in to a new file in local filesystem
+            file_name = str(uuid.uuid4())
+
+            # TODO small issue here, might be better to upload this file to the workflow directory instead of cwd
+            new_file_path = os.path.join(os.getcwd(), file_name)
+
+            # read from std in and upload a new file in project directory
+            with open(new_file_path, 'w') as f:
+                f.write(stdin_text.read())
+
+            stdin_files.append(file_name)
+
+
+
+        if workflow_file is None:
+            click.echo('Please specify a workflow to run')
+            return
+        try:
+            if not write_to_stdout:
+                click.echo('Loading workflow file from %s' % workflow_file)
+            Workflow.execute_workflow(workflow_file, stdin_files, write_to_stdout)
+
+
+        except NodeException as ne:
+            click.echo("Issues during node execution")
+            click.echo(ne)

@@ -2,25 +2,25 @@ from pyworkflow.node import IONode, NodeException
 from pyworkflow.parameters import *
 
 import pandas as pd
+import io
 
 
-class ReadCsvNode(IONode):
-    """ReadCsvNode
-
-    Reads a CSV file into a pandas DataFrame.
+class TableCreatorNode(IONode):
+    """Accepts raw-text CSV input to create data tables.
 
     Raises:
          NodeException: any error reading CSV file, converting
             to DataFrame.
     """
-    name = "Read CSV"
+    name = "Table Creator"
     num_in = 0
     num_out = 1
 
     OPTIONS = {
-        "file": FileParameter(
-            "File",
-            docstring="CSV File"
+        "input": TextParameter(
+            "Input",
+            default="",
+            docstring="Text input"
         ),
         "sep": StringParameter(
             "Delimiter",
@@ -39,20 +39,10 @@ class ReadCsvNode(IONode):
     def execute(self, predecessor_data, flow_vars):
         try:
             df = pd.read_csv(
-                flow_vars["file"].get_value(),
+                io.StringIO(flow_vars["input"].get_value()),
                 sep=flow_vars["sep"].get_value(),
                 header=flow_vars["header"].get_value()
             )
-            return df.to_json()
-        except Exception as e:
-            raise NodeException('read csv', str(e))
-
-    def execute_for_read(self, predecessor_data, flow_vars, file_to_read):
-        try:
-            fname = file_to_read
-            sep = self.options["sep"].get_value()
-            hdr = self.options["header"].get_value()
-            df = pd.read_csv(fname, sep=sep, header=hdr)
             return df.to_json()
         except Exception as e:
             raise NodeException('read csv', str(e))
