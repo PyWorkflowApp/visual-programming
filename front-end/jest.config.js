@@ -14,5 +14,8 @@ module.exports = {
   },
   setupFilesAfterEnv: [
     "./setupTests.js"
+  ],
+  testPathIgnorePatterns: [
+    "__tests__/components/CustomNode/GraphView.test.js"
   ]
 };
