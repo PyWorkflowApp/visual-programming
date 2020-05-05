@@ -1,6 +1,10 @@
 module.exports = {
   collectCoverage: true,
   collectCoverageFrom: ['src/**/*.{js,jsx}'],
+  coveragePathIgnorePatterns: [
+    "src/index.js",
+    "src/serviceWorker.js"
+  ],
   coverageThreshold: {
     "global": {
       "branches": 60,
