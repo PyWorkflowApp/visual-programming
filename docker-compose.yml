@@ -1,0 +1,26 @@
+version: "3.3"
+services:
+  back-end:
+    build: ./back-end
+    volumes:
+      - ./back-end:/visual-programming/back-end
+    ports:
+      - "8000:8000"
+    command: bash -c "pipenv run python manage.py runserver 0.0.0.0:8000"
+    environment:
+      - DJANGO_ENV=development
+  front-end:
+    build: ./front-end
+    volumes:
+      - ./front-end:/visual-programming/front-end
+      # One-way volume to use node_modules from inside image
+      - /visual-programming/front-end/node_modules
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - back-end
+    links:
+      - back-end
+    command: npm start
