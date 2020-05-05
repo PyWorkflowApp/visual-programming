@@ -25,7 +25,12 @@ SECRET_KEY = os.environ['SECRET_KEY']
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['back-end:8000',
+                 'back-end',
+                 'localhost',
+                 '127.0.0.1',
+                 '0.0.0.0',
+                 '[::1]']
 
 
 # Application definition
@@ -81,7 +86,7 @@ WSGI_APPLICATION = 'vp.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
-### Not yet setup
+# Not yet setup
 DATABASES = {}
 
 MEDIA_ROOT = '/tmp'
