@@ -111,6 +111,10 @@ Each individual image can be run by changing to the `front-end` or `back-end` di
 - `docker run -p 8000:8000 --name BE_CONTAINER_NAME BE_IMAGE[:TAG]`
   ex. - `docker run -p 8000:8000 --name pyworkflow-be backendtest:2.0`
 
+Note: there [is a known issue with `react-scripts` v3.4.1](https://github.com/facebook/create-react-app/issues/8688)
+that may cause the front-end container to exit with code 0. If this happens,
+you can add `-e CI=true` to the `docker-run` command above for the front-end.
+
 To compose and run the entire application container, from the root of the application:
 - `docker-compose up`
 
