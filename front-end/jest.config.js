@@ -16,6 +16,5 @@ module.exports = {
     "./setupTests.js"
   ],
   testPathIgnorePatterns: [
-    "__tests__/components/CustomNode/GraphView.test.js"
   ]
 };

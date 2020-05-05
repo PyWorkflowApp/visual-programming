@@ -8,6 +8,7 @@ describe('VPLinkModel behaves as expected', () => {
       const linkModel = new VPLinkModel();
       expect(linkModel.isLastPositionDefault()).toBe(true);
   });
+  
   it('remove calls deleteEdge API', () => {
     API.deleteEdge.mockResolvedValue(new Promise((resolve, reject) => {}));
     const linkModel = new VPLinkModel();
