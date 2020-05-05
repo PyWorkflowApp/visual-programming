@@ -59,6 +59,8 @@ class Node:
 
             if key == 'file':
                 option.set_value(workflow.path(replacement_value))
+            else:
+                option.set_value(replacement_value)
 
             execution_options[key] = option
 
