@@ -33,24 +33,8 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "jest --collect-coverage --passWithNoTests",
+    "test": "jest --passWithNoTests",
     "eject": "react-scripts eject"
-  },
-  "jest": {
-    "coverageThreshold": {
-      "global": {
-        "branches": 80,
-        "functions": 80,
-        "lines": 80,
-        "statements": 80
-      }
-    },
-    "moduleNameMapper": {
-      "\\.(css|less)$": "<rootDir>/__mocks__/css/styleMock.js"
-    },
-    "setupFilesAfterEnv": [
-      "./setupTests.js"
-    ]
   },
   "eslintConfig": {
     "extends": "react-app"
