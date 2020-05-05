@@ -67,7 +67,8 @@ data from `localhost:8000` **where the Django app must be running**.
 2. Create a workflow using UI and save it. 
 3. Run it as: pyworkflow execute workflow-file
 
-Also accepts reading input from std (i.e < file.csv) and writing to sdt out (i.e > output.csv)
+- Also accepts reading input from std (i.e < file.csv) and writing to sdt out (i.e > output.csv)
+- To see node execution details please use the verbose option (i.e pyworkflow execute --verbose workflow-file)
   
 
 
