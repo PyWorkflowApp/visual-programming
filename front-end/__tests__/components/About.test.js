@@ -17,4 +17,18 @@ describe('Validates About', () => {
     const app = render(<About show={true} />);
     expect(app).toMatchSnapshot();
   });
+
+  it('Validates closing', () => {
+    const props = {
+      show: true
+    };
+    const event = {
+      preventDefault: jest.fn(() => [])
+    };
+
+    const about = new About(props);
+    about.handleClose();
+
+    expect(event.preventDefault.mock.calls.length).toBe(1);
+  });
 });
