@@ -64,11 +64,11 @@ data from `localhost:8000` **where the Django app must be running**.
 ---
 ## CLI
 1. Run pipenv shell.
-2. Create a workflow using UI and save it. 
+2. Create a workflow using UI and save it.
 3. Run it as: pyworkflow execute workflow-file
 
 Also accepts reading input from std (i.e < file.csv) and writing to sdt out (i.e > output.csv)
-  
+
 
 
 ---
@@ -94,3 +94,27 @@ directory, you can run
 - `coverage run -m unittest tests/*.py`
 - `coverage report` (to see a report via the CLI)
 - `coverage html && open /htmlcov/index.html` (to view interactive coverage)
+
+
+
+---
+## Docker
+The Docker container for PyWorkflow is built from 2 images: the `front-end` and the `back-end`. The `docker-compose.yml` defines how to combine and run the two.
+
+In order to build each image individually, from the root of the application:
+- `docker build front-end --tag FE_IMAGE[:TAG]`
+- `docker build back-end --tag BE_IMAGE[:TAG]`
+  ex. - `docker build back-end --tag backendtest:2.0`
+
+Each individual image can be run by changing to the `front-end` or `back-end` directory and running:
+- `docker run -p 3000:3000 --name FE_CONTAINER_NAME FE_IMAGE[:TAG]`
+- `docker run -p 8000:8000 --name BE_CONTAINER_NAME BE_IMAGE[:TAG]`
+  ex. - `docker run -p 8000:8000 --name pyworkflow-be backendtest:2.0`
+
+To compose and run the entire application container, from the root of the application:
+- `docker-compose up`
+
+You can then kill the container gracefully with:
+- `docker-compose down`
+
+NOTE: For development, change ./front-end/package.json from "proxy": "http://back-end:8000" to "http://localhost:8000" to work.
