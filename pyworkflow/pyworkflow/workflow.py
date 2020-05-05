@@ -587,11 +587,12 @@ class Workflow:
         preceding_data = self.load_input_data(node_to_execute.node_id)
         flow_nodes = self.load_flow_nodes(node_to_execute.option_replace)
 
+        print('flow-nodes')
+        print(flow_nodes)
         try:
             # Validate input data, and replace flow variables
             node_to_execute.validate_input_data(len(preceding_data))
-            execution_options = node_to_execute.get_execution_options(flow_nodes)
-
+            execution_options = node_to_execute.get_execution_options(self, flow_nodes)
             # Pass in data to current Node to use in execution
             output = node_to_execute.execute(preceding_data, execution_options)
 
