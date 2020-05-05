@@ -15,6 +15,7 @@ services:
       - ./front-end:/visual-programming/front-end
       # One-way volume to use node_modules from inside image
       - /visual-programming/front-end/node_modules
+    stdin_open: true
     ports:
       - "3000:3000"
     environment:
