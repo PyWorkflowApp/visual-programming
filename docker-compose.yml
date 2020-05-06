@@ -8,14 +8,15 @@ services:
     environment:
       - DJANGO_ENV=development
   front-end:
-    build: ./front-end
+    build:
+      context: ./front-end
+      args:
+        BACKEND_URL: "http://back-end:8000"
     stdin_open: true
     ports:
       - "3000:3000"
-    environment:
-      - NODE_ENV=development
     depends_on:
       - back-end
     links:
       - back-end
-    command: npm start
+    command: npx serve -s build -l 3000

@@ -4,6 +4,8 @@ WORKDIR /visual-programming/front-end
 
 COPY . .
 
+ARG BACKEND_URL
+ENV REACT_APP_SERVER_URL=$BACKEND_URL
 RUN npm install && npm run-script build
 
 EXPOSE 3000
