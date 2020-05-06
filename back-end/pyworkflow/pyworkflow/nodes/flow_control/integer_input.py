@@ -9,7 +9,7 @@ class IntegerNode(FlowNode):
     """
     name = "Integer Input"
     num_in = 0
-    num_out = 1
+    num_out = 0
     color = 'purple'
 
     OPTIONS = {
