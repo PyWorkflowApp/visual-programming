@@ -22,4 +22,10 @@ describe('Validates GlobalFlowMenu', () => {
                   />);
     expect(globalFlowMenu).toMatchSnapshot();
   });
+
+  it('Validates execution of methods', () => {
+    const flowMenu = new GlobalFlowMenu();
+    const data = {}
+    flowMenu.handleEdit(data);
+  });
 });
