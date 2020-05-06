@@ -23,5 +23,9 @@ module.exports = {
     "./setupTests.js"
   ],
   testPathIgnorePatterns: [
-  ]
+  ],
+  transform: {
+  '^.+\\.(js|jsx)?$': 'babel-jest'
+  },
+
 };

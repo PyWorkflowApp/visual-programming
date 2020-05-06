@@ -36,7 +36,7 @@ describe('VPLinkModel behaves as expected', () => {
 
   it('getSVGPath executes', () => {
       const linkModel = new VPLinkModel();
-      linkModel.isLastPositionDefault = jest.fn(() => true);
+      linkModel.isLastPositionDefault = jest.fn(() => false);
       linkModel.getSVGPath();
       expect(linkModel.isLastPositionDefault.mock.calls.length).toBe(1);
   });
