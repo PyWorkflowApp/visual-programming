@@ -26,7 +26,7 @@ jobs:
         python3 -m pip install --upgrade pip
         pip3 install pipenv
         cd back-end
-        pipenv install
+        pipenv install --dev
 
     # Add .env and test data
     - name: Add test/env data
@@ -45,7 +45,8 @@ jobs:
     - name: Run unittests
       run: |
         cd back-end/pyworkflow/pyworkflow
-        pipenv run python3 -m unittest tests/*.py
+        pipenv run coverage run -m unittest tests/*.py
+        pipenv run coverage report
 
     # Start server in background for API tests
     - name: Start server
