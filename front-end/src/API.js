@@ -1,5 +1,7 @@
 import { downloadFile } from './utils';
 
+const SERVER = process.env.NODE_ENV === "production" ?
+    process.env.REACT_APP_SERVER_URL || "" : "";
 
 /**
  * Sends request to server via fetch API and handles error cases
@@ -9,7 +11,7 @@ import { downloadFile } from './utils';
  */
 function fetchWrapper(endpoint, options = {}) {
        return new Promise((resolve, reject) => {
-        fetch(endpoint, options)
+        fetch(`${SERVER}${endpoint}`, options)
             .then(async resp => {
                 const data = await resp.json();
                 console.log(data);
@@ -207,7 +209,7 @@ export async function downloadDataFile(node) {
     const payload = {...node.options, options: node.config};
 
     // can't use fetchWrapper because it assumes JSON response
-    fetch(`/workflow/download`, {
+    fetch(`${SERVER}/workflow/download`, {
         method: "POST",
         body: JSON.stringify(payload)
     })
