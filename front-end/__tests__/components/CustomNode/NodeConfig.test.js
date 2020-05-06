@@ -61,4 +61,37 @@ describe('Validate NodeConfig Modal', () => {
     const optionInput = render(<OptionInput />);
     expect(optionInput).toMatchSnapshot();
   });
+
+  it('Validates OptionInput', () => {
+    const props = {
+      keyName: "keyName",
+      flowValue: true,
+      onChange: jest.fn(() => []),
+      type: "file",
+      node: { options: { is_global: true }},
+      label: "Form Label",
+      docstring: "Documentation to Display"
+    }
+    const optionInput = new OptionInput(props);
+
+    optionInput.onFlowCheck(true);
+    expect(props.onChange.mock.calls.length).toBe(1);
+
+    optionInput.handleFlowVariable("newValue");
+    expect(props.onChange.mock.calls.length).toBe(2);
+    expect(global.fetch.mock.calls[1][0]).toBe("keyName");
+    expect(global.fetch.mock.calls[1][1]).toBe("newValue");
+    expect(global.fetch.mock.calls[1][2]).toBe(true);
+
+  });
+
+  it('Validates OptionInput with properties', () => {
+    const optionInputRendered = render(<OptionInput
+        keyName={"keyName"}
+        node={{ options: { is_global: true }, config: {description: "Node description"}}}
+        flowValue={true}
+        />);
+
+    expect(optionInputRendered).toMatchSnapshot();
+  });
 })
