@@ -16,6 +16,9 @@ module.exports = {
   moduleNameMapper: {
     "\\.(css|less)$": "<rootDir>/__mocks__/css/styleMock.js"
   },
+  setupFiles: [
+     'jest-canvas-mock'
+  ],
   setupFilesAfterEnv: [
     "./setupTests.js"
   ],
