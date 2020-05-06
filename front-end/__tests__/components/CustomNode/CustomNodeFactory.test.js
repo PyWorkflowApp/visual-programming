@@ -13,8 +13,16 @@ describe('Validate CustomNodeFactory', () => {
     };
     const event = {
       model: model,
+      initialConfig: {
+        options: { id: "modelId"},
+        config: {}
+      }
     };
     const widget = customNodeFactory.generateReactWidget(event);
     expect(React.isValidElement(widget)).toBe(true);
+
+    const nodeModel = customNodeFactory.generateModel(event);
+    expect(nodeModel instanceof CustomNodeModel).toBe(true);
+    expect(nodeModel.getNodeId()).toBe("modelId");
   });
 })

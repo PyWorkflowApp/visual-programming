@@ -3,15 +3,31 @@ import { render } from '@testing-library/react'
 import Workspace from '../../src/components/Workspace';
 import FileUpload from '../../src/components/Workspace';
 
-global.console = {log: jest.fn()}
+global.console = {log: jest.fn(() => []), error: jest.fn(() => [])}
 global.confirm = () => true;
 
-global.fetch = jest.fn(() => Promise.resolve({
-  data: [],
-  json: jest.fn(() => [])
-}));
-
 describe('Validates Workspace initialization', () => {
+
+  beforeEach(() => {
+    global.fetch = jest.fn(() => Promise.resolve({
+      ok: true,
+      data: [],
+      json: jest.fn(() => []),
+      text: jest.fn(() => Promise.resolve({})),
+      headers:{
+        get: (s)=>{
+          if (s === "content-type") {
+            return "text";
+          }
+
+          if (s === "Content-Disposition") {
+            return "filenameToDownload";
+          }
+        }
+      }
+    }));
+  });
+
   it('Creates Workspace', () => {
     const workspace = render(<Workspace />);
     expect(workspace).toMatchSnapshot();
@@ -19,13 +35,15 @@ describe('Validates Workspace initialization', () => {
 
   it('Validates Workspace', () => {
     const workspace = new Workspace();
-    workspace.componentDidMount();
-    workspace.getAvailableNodes();
-    workspace.getGlobalVars();
-    workspace.clear();
-    workspace.execute();
+    workspace.engine = {
+      repaintCanvas: jest.fn()
+    };
 
-    expet(globa.fetch.mock.calls.length).toBe(3);
+    workspace.componentDidMount();
+    workspace.execute();
+    workspace.clear();
+
+    expect(global.fetch.mock.calls.length).toBe(3);
   });
 
   it('Display FileUpload', () => {

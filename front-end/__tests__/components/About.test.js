@@ -27,6 +27,7 @@ describe('Validates About', () => {
     };
 
     const about = new About(props);
+    about.fetchInfo();
     about.handleClose();
 
     expect(event.preventDefault.mock.calls.length).toBe(1);
