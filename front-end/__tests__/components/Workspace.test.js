@@ -2,6 +2,8 @@ import React from 'react'
 import { render } from '@testing-library/react'
 import Workspace from '../../src/components/Workspace';
 
+global.console = {log: jest.fn()}
+
 global.fetch = jest.fn(() => Promise.resolve({
   data: [],
   json: jest.fn(() => [])

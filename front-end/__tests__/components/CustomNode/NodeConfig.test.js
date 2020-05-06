@@ -4,6 +4,8 @@ import CustomNodeModel from '../../../src/components/CustomNode/CustomNodeModel'
 import NodeConfig from '../../../src/components/CustomNode/NodeConfig';
 import OptionInput from '../../../src/components/CustomNode/NodeConfig';
 
+global.console = {log: jest.fn()}
+
 global.fetch = jest.fn(() => Promise.resolve({
   data: [],
   json: jest.fn(() => [])
