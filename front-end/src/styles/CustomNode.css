@@ -47,7 +47,14 @@
 .flow-port-div {
     position: absolute;
     top: -5px;
+}
+
+.flow-port-div-in {
     left: -5px;
+}
+
+.flow-port-div-out {
+    left: 85%;
 }
 
 .flow-port {

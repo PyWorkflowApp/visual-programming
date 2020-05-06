@@ -48,8 +48,9 @@ export default class CustomNodeWidget extends React.Component {
     render() {
         const engine = this.props.engine;
         const allPorts = _.values(this.props.node.getPorts());
-        const ports = allPorts.filter(p => p.options.name !== "flow-in");
-        const flowPort = allPorts.find(p => p.options.name === "flow-in");
+        const ports = allPorts.filter(p => !p.options.name.includes("flow"));
+        const flowInPort = allPorts.find(p => p.options.name === "flow-in");
+        const flowOutPort = allPorts.find(p => p.options.name === "flow-out");
         // group ports by type (in/out)
         const sortedPorts = _.groupBy(ports, p => p.options.in === true ? "in" : "out");
         // create PortWidget array for each type
@@ -62,12 +63,12 @@ export default class CustomNodeWidget extends React.Component {
             );
         }
 
-        const flowPortWidget = flowPort ?
-            <PortWidget engine={engine} port={flowPort} key={flowPort.getID()} style={{position: 'absolute'}}
-                        className="flow-port-div">
+        const flowPortWidgets = [flowInPort, flowOutPort].filter(p => p).map(port =>
+            <PortWidget engine={engine} port={port} key={port.getID()}
+                        className={`flow-port-div flow-port-div-${port.options.in ? "in" : "out"}`}>
                 <div className="flow-port" />
             </PortWidget>
-            : null;
+        );
 
 
         let graphView;
@@ -101,7 +102,7 @@ export default class CustomNodeWidget extends React.Component {
                             onDelete={this.handleDelete}
                             onSubmit={this.acceptConfiguration} />
                     </div>
-                    {flowPortWidget}
+                    {flowPortWidgets}
                     <div className="port-col port-col-in">
                         { portWidgets["in"] }
                     </div>
