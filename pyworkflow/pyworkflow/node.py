@@ -54,13 +54,12 @@ class Node:
 
             if key in flow_nodes:
                 replacement_value = flow_nodes[key].get_replacement_value()
+                option.set_value(replacement_value)
             else:
                 replacement_value = option.get_value()
 
             if key == 'file':
                 option.set_value(workflow.path(replacement_value))
-            else:
-                option.set_value(replacement_value)
 
             execution_options[key] = option
 
