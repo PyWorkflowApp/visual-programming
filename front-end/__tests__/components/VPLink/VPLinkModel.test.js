@@ -18,7 +18,9 @@ describe('VPLinkModel behaves as expected', () => {
   });
 
   it('Calls targetPortChanged', () => {
-    API.deleteEdge.mockResolvedValue(new Promise((resolve, reject) => {}));
+    API.deleteEdge.mockResolvedValue(Promise.resolve({}));
+    API.addEdge.mockResolvedValue(Promise.resolve({}));
+
     const portModel = new VPPortModel({name: 'vp-port-name'});
     const linkModel = new VPLinkModel();
     linkModel.setTargetPort(portModel);
@@ -34,7 +36,7 @@ describe('VPLinkModel behaves as expected', () => {
 
   it('getSVGPath executes', () => {
       const linkModel = new VPLinkModel();
-      linkModel.isLastPositionDefault = jest.fn(() => false);
+      linkModel.isLastPositionDefault = jest.fn(() => true);
       linkModel.getSVGPath();
       expect(linkModel.isLastPositionDefault.mock.calls.length).toBe(1);
   });
