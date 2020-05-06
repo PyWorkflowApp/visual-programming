@@ -1,0 +1,23 @@
+# This workflow tests building the Docker images and starting containers
+
+name: Test Docker build
+
+on:
+  push:
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build-docker:
+    runs-on: ubuntu-latest
+    steps:
+    # Checks-out your repository, for access in the workflow
+    - uses: actions/checkout@v2
+
+    # Build containers
+    - name: Build docker container
+      run: docker-compose build
+
+    # Run containers
+    - name: Start Docker containers
+      run: docker-compose up -d
