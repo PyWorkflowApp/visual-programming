@@ -3,6 +3,11 @@ import { render } from '@testing-library/react'
 import CustomNodeModel from '../../../src/components/CustomNode/CustomNodeModel';
 import NodeConfig from '../../../src/components/CustomNode/NodeConfig';
 import OptionInput from '../../../src/components/CustomNode/NodeConfig';
+import FileUploadInput from '../../../src/components/CustomNode/NodeConfig';
+import SimpleInput from '../../../src/components/CustomNode/NodeConfig';
+import BooleanInput from '../../../src/components/CustomNode/NodeConfig';
+import FlowVariableOverride from '../../../src/components/CustomNode/NodeConfig';
+import SelectInput from '../../../src/components/CustomNode/NodeConfig';
 
 global.console = {log: jest.fn()}
 
@@ -62,29 +67,6 @@ describe('Validate NodeConfig Modal', () => {
     expect(optionInput).toMatchSnapshot();
   });
 
-  it('Validates OptionInput', () => {
-    const props = {
-      keyName: "keyName",
-      flowValue: true,
-      onChange: jest.fn(() => []),
-      type: "file",
-      node: { options: { is_global: true }},
-      label: "Form Label",
-      docstring: "Documentation to Display"
-    }
-    const optionInput = new OptionInput(props);
-
-    optionInput.onFlowCheck(true);
-    expect(props.onChange.mock.calls.length).toBe(1);
-
-    optionInput.handleFlowVariable("newValue");
-    expect(props.onChange.mock.calls.length).toBe(2);
-    expect(global.fetch.mock.calls[1][0]).toBe("keyName");
-    expect(global.fetch.mock.calls[1][1]).toBe("newValue");
-    expect(global.fetch.mock.calls[1][2]).toBe(true);
-
-  });
-
   it('Validates OptionInput with properties', () => {
     const optionInputRendered = render(<OptionInput
         keyName={"keyName"}
@@ -93,5 +75,30 @@ describe('Validate NodeConfig Modal', () => {
         />);
 
     expect(optionInputRendered).toMatchSnapshot();
+  });
+
+  it('Display FileUploadInput', () => {
+    const fileUploadInput = render(<FileUploadInput />);
+    expect(fileUploadInput).toMatchSnapshot();
+  });
+
+  it('Display SimpleInput', () => {
+    const simpleInput = render(<SimpleInput />);
+    expect(simpleInput).toMatchSnapshot();
+  });
+
+  it('Display BooleanInput', () => {
+    const booleanInput = render(<BooleanInput />);
+    expect(booleanInput).toMatchSnapshot();
+  });
+
+  it('Display FlowVariableOverride', () => {
+    const variableOverride = render(<FlowVariableOverride />);
+    expect(variableOverride).toMatchSnapshot();
+  });
+
+  it('Display SelectInput', () => {
+    const selectInput = render(<SelectInput />);
+    expect(selectInput).toMatchSnapshot();
   });
 })
