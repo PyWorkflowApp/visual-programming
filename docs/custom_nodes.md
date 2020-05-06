@@ -174,11 +174,6 @@ in PyWorkflow's `Pipfile`, your custom node won't know how to use the package.
 All you have to do is install the package in PyWorkflow and you'll be good to
 go!
 
-**Docker**:
-```
-docker exec pipenv install [package-name]
-```
-
 **Running locally**:
 ```
 # Go to wherever the back-end code is located
