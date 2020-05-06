@@ -15,6 +15,6 @@ describe('Validate CustomNodeFactory', () => {
       model: model,
     };
     const widget = customNodeFactory.generateReactWidget(event);
-    expect(widget instanceof CustomNodeWidget).toBe(true);
+    expect(React.isValidElement(widget)).toBe(true);
   });
 })
