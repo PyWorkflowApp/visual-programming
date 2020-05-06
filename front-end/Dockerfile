@@ -2,13 +2,10 @@ FROM node:14-alpine
 
 WORKDIR /visual-programming/front-end
 
-COPY package.json .
+COPY . .
 
-RUN npm install
-
-COPY src/ ./src/
-COPY public/ ./public/
+RUN npm install && npm run-script build
 
 EXPOSE 3000
 
-CMD npm start
+CMD npx serve -s build -l 3000
