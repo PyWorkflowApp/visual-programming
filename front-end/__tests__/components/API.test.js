@@ -5,13 +5,29 @@ import VPLinkModel from '../../src/components/VPLink/VPLinkModel';
 import CustomNodeModel from '../../src/components/CustomNode/CustomNodeModel';
 import VPPortModel from '../../src/components/VPPort/VPPortModel'
 
+global.console = {log: jest.fn()}
+global.URL.createObjectURL = jest.fn(() => 'http://localhost:8080/');
+global.URL.revokeObjectURL = jest.fn();
+
 describe('Validates API calls', () => {
 
   beforeEach(() => {
     global.fetch = jest.fn(() => Promise.resolve({
       ok: true,
       data: [],
-      json: jest.fn(() => [])
+      json: jest.fn(() => []),
+      text: jest.fn(() => Promise.resolve({})),
+      headers:{
+        get: (s)=>{
+          if (s === "content-type") {
+            return "text";
+          }
+
+          if (s === "Content-Disposition") {
+            return "filenameToDownload";
+          }
+        }
+      }
     }));
   });
 
