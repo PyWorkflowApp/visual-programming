@@ -33,7 +33,7 @@ class WorkflowTestCase(unittest.TestCase):
 
     def test_workflow_dir_os_error(self):
         try:
-            # os.makedirs("foobar", 0000)
+            os.makedirs("foobar", 0000)
             test_workflow = Workflow(node_dir="foobar")
         except WorkflowException as e:
             self.assertEqual(e.action, "init workflow")
