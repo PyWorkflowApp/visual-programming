@@ -172,7 +172,7 @@ class Workflow:
         for predecessor_id in self.get_node_predecessors(node_id):
             node = self.get_node(predecessor_id)
 
-            if node.node_type == 'FlowNode':
+            if node.node_type == 'flow_control':
                 flow_variables.append(node.to_json())
 
         return flow_variables
@@ -314,7 +314,7 @@ class Workflow:
         except NodeException as e:
             raise e
 
-        if node_to_execute.data is None:
+        if node_to_execute.data is None and node_to_execute.node_type != "flow_control":
             raise WorkflowException('execute', 'There was a problem saving node output.')
 
         return node_to_execute
@@ -384,7 +384,7 @@ class Workflow:
                 if node_to_retrieve is None:
                     raise WorkflowException('retrieve node data', 'The workflow does not contain node %s' % predecessor_id)
 
-                if node_to_retrieve.node_type != 'FlowNode':
+                if node_to_retrieve.node_type != 'flow_control':
                     input_data.append(self.retrieve_node_data(node_to_retrieve))
 
             except WorkflowException:

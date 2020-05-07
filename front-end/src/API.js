@@ -27,6 +27,16 @@ function fetchWrapper(endpoint, options = {}) {
 
 
 /**
+ * Retrieve node info from server side workflow
+ * @param {string} nodeId - ID of node to retrieve
+ * @returns {Promise<Object>} - server response (node info and flow variables)
+ */
+export async function getNode(nodeId) {
+    return fetchWrapper(`/node/${nodeId}`);
+}
+
+
+/**
  * Add node to server-side workflow
  * @param {CustomNodeModel} node - JS node to add
  * @returns {Promise<Object>} - server response
