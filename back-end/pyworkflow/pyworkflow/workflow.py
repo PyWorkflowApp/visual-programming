@@ -590,8 +590,7 @@ class Workflow:
         try:
             # Validate input data, and replace flow variables
             node_to_execute.validate_input_data(len(preceding_data))
-            execution_options = node_to_execute.get_execution_options(flow_nodes)
-
+            execution_options = node_to_execute.get_execution_options(self, flow_nodes)
             # Pass in data to current Node to use in execution
             output = node_to_execute.execute(preceding_data, execution_options)
 
@@ -609,7 +608,7 @@ class Workflow:
         return node_to_execute
 
     @staticmethod
-    def execute_workflow(workflow_location, stdin_files, write_to_stdout):
+    def execute_workflow(workflow_location, stdin_files, write_to_stdout, verbose_mode):
         """Execute entire workflow at a certain location.
            Current use case: CLI.
         """
@@ -626,6 +625,10 @@ class Workflow:
         #execute each node in the order returned by execution order method
         #TODO exception handling: stop and provide details on which node failed to execute
         for node in execution_order:
+
+            if verbose_mode:
+                print('Executing node of type ' + str(type(workflow_instance.get_node(node))))
+
             if type(workflow_instance.get_node(node)) is ReadCsvNode and len(stdin_files) > 0:
                 csv_location = stdin_files[0]
                 executed_node = workflow_instance.execute_read_csv(node, csv_location)
