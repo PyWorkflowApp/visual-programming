@@ -34,6 +34,8 @@ def flow_node(node_key, node_info):
 def io_node(node_key, node_info):
     if node_key == 'ReadCsvNode':
         return ReadCsvNode(node_info)
+    elif node_key == 'TableCreatorNode':
+        return TableCreatorNode(node_info)
     elif node_key == 'WriteCsvNode':
         return WriteCsvNode(node_info)
     else:
