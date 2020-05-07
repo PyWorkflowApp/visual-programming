@@ -172,7 +172,7 @@ class Workflow:
         for predecessor_id in self.get_node_predecessors(node_id):
             node = self.get_node(predecessor_id)
 
-            if node.node_type == 'FlowNode':
+            if node.node_type == 'flow_control':
                 flow_variables.append(node.to_json())
 
         return flow_variables
@@ -314,7 +314,7 @@ class Workflow:
         except NodeException as e:
             raise e
 
-        if node_to_execute.data is None:
+        if node_to_execute.data is None and node_to_execute.node_type != "flow_control":
             raise WorkflowException('execute', 'There was a problem saving node output.')
 
         return node_to_execute
@@ -384,7 +384,7 @@ class Workflow:
                 if node_to_retrieve is None:
                     raise WorkflowException('retrieve node data', 'The workflow does not contain node %s' % predecessor_id)
 
-                if node_to_retrieve.node_type != 'FlowNode':
+                if node_to_retrieve.node_type != 'flow_control':
                     input_data.append(self.retrieve_node_data(node_to_retrieve))
 
             except WorkflowException:
@@ -590,8 +590,7 @@ class Workflow:
         try:
             # Validate input data, and replace flow variables
             node_to_execute.validate_input_data(len(preceding_data))
-            execution_options = node_to_execute.get_execution_options(flow_nodes)
-
+            execution_options = node_to_execute.get_execution_options(self, flow_nodes)
             # Pass in data to current Node to use in execution
             output = node_to_execute.execute(preceding_data, execution_options)
 
@@ -609,7 +608,7 @@ class Workflow:
         return node_to_execute
 
     @staticmethod
-    def execute_workflow(workflow_location, stdin_files, write_to_stdout):
+    def execute_workflow(workflow_location, stdin_files, write_to_stdout, verbose_mode):
         """Execute entire workflow at a certain location.
            Current use case: CLI.
         """
@@ -626,6 +625,10 @@ class Workflow:
         #execute each node in the order returned by execution order method
         #TODO exception handling: stop and provide details on which node failed to execute
         for node in execution_order:
+
+            if verbose_mode:
+                print('Executing node of type ' + str(type(workflow_instance.get_node(node))))
+
             if type(workflow_instance.get_node(node)) is ReadCsvNode and len(stdin_files) > 0:
                 csv_location = stdin_files[0]
                 executed_node = workflow_instance.execute_read_csv(node, csv_location)

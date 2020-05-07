@@ -21,7 +21,8 @@ def cli():
 
 @cli.command()
 @click.argument('filename', type=click.Path(exists=True), nargs=-1)
-def execute(filename):
+@click.option('--verbose', is_flag=True, help='Enables verbose mode.')
+def execute(filename, verbose):
 
     write_to_stdout = not click.get_text_stream('stdout').isatty()
 
@@ -45,15 +46,17 @@ def execute(filename):
 
             stdin_files.append(file_name)
 
-
-
         if workflow_file is None:
             click.echo('Please specify a workflow to run')
             return
         try:
             if not write_to_stdout:
                 click.echo('Loading workflow file from %s' % workflow_file)
-            Workflow.execute_workflow(workflow_file, stdin_files, write_to_stdout)
+
+            Workflow.execute_workflow(workflow_file, stdin_files, write_to_stdout, verbose)
+
+            if verbose:
+                click.echo('Completed workflow execution!')
 
 
         except NodeException as ne:

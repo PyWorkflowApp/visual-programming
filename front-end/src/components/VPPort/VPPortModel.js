@@ -9,8 +9,16 @@ export default class VPPortModel extends DefaultPortModel {
       }
 
       canLinkToPort(port) {
-          // can't both be in or out ports
-          return port instanceof VPPortModel
-              && this.options.in !== port.options.in;
+          // if connecting to flow port, make sure this is a flow port
+          // and opposite of other's direction
+          if (port.options.name.includes("flow")) {
+              return this.options.name.includes("flow")
+                  && this.options.in !== port.options.in
+          // otherwise, make sure this is NOT a flow port, and ensure
+          // in/out compatibility
+          } else {
+              return !this.options.name.includes("flow")
+                  && this.options.in !== port.options.in
+          }
       }
 }

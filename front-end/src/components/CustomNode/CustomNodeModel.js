@@ -13,6 +13,24 @@ export default class CustomNodeModel extends NodeModel {
         this.configParams = options.option_types;
         this.options.status = options.status || "unconfigured";
 
+        // add flow control input port
+        this.addPort(
+            new VPPortModel({
+                in: true,
+                type: 'vp-port',
+                name: 'flow-in'
+            })
+        );
+        // if flow node, add flow control output port
+        if (this.options.node_type === "flow_control") {
+            this.addPort(
+                new VPPortModel({
+                    in: false,
+                    type: 'vp-port',
+                    name: 'flow-out'
+                })
+            );
+        }
         const nIn = options.num_in === undefined ? 1 : options.num_in;
         const nOut = options.num_out === undefined ? 1 : options.num_out;
         // setup in and out ports
