@@ -12,11 +12,18 @@ export default class CustomNodeWidget extends React.Component {
     constructor(props) {
         super(props);
         this.state = {showConfig: false, showGraph: false};
-        this.toggleConfig = this.toggleConfig.bind(this);
-        this.toggleGraph = this.toggleGraph.bind(this);
-        this.handleDelete = this.handleDelete.bind(this);
-        this.acceptConfiguration = this.acceptConfiguration.bind(this);
         this.icon = '9881';
+    }
+
+    componentDidMount() {
+      this.toggleConfig = this.toggleConfig.bind(this);
+      this.toggleGraph = this.toggleGraph.bind(this);
+      this.handleDelete = this.handleDelete.bind(this);
+      this.acceptConfiguration = this.acceptConfiguration.bind(this);
+    }
+
+    getState() {
+      return this.state;
     }
 
     // show/hide node configuration modal
