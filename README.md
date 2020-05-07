@@ -60,7 +60,12 @@ The easiest way to get started is by deploying both Docker containers on your
 local machine. For help installing Docker, [reference the documentation for your
 specific system](https://docs.docker.com/get-docker/).
 
-The Docker container for PyWorkflow is built from 2 images: the `front-end` and
+To run the application with `docker-compose`, run `docker-compose up` from the root directory
+(or `docker-compose up --build` to rebuild the images first).
+
+Use `docker-compose down` to shut down the application gracefully.
+
+The application comprises running containers of two images: the `front-end` and
 the `back-end`. The `docker-compose.yml` defines how to combine and run the two.
 
 In order to build each image individually, from the root of the application:
@@ -68,7 +73,7 @@ In order to build each image individually, from the root of the application:
 - `docker build back-end --tag BE_IMAGE[:TAG]`
   ex. - `docker build back-end --tag backendtest:2.0`
 
-Each individual image can be run by changing to the `front-end` or `back-end` directory and running:
+Each individual container can be run by changing to the `front-end` or `back-end` directory and running:
 - `docker run -p 3000:3000 --name FE_CONTAINER_NAME FE_IMAGE[:TAG]`
 - `docker run -p 8000:8000 --name BE_CONTAINER_NAME BE_IMAGE[:TAG]`
   ex. - `docker run -p 8000:8000 --name pyworkflow-be backendtest:2.0`
@@ -77,13 +82,7 @@ Note: there [is a known issue with `react-scripts` v3.4.1](https://github.com/fa
 that may cause the front-end container to exit with code 0. If this happens,
 you can add `-e CI=true` to the `docker-run` command above for the front-end.
 
-To compose and run the entire application container, from the root of the application:
-- `docker-compose up`
-
-You can then kill the container gracefully with:
-- `docker-compose down`
-
-NOTE: For development, change ./front-end/package.json from "proxy": "http://back-end:8000" to "http://localhost:8000" to work.
+NOTE: For development outside of Docker, change ./front-end/package.json from "proxy": "http://back-end:8000" to "http://localhost:8000" to work.
 
 
 ## Serve locally
