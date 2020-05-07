@@ -23,7 +23,7 @@ export default class GraphView extends React.Component {
   };
 
   columnWidths = (index) => {
-    return 10 * this.state.widths[index];
+    return 12 * this.state.widths[index];
   };
 
   rowHeights = () => new Array(765)
@@ -56,11 +56,15 @@ export default class GraphView extends React.Component {
             for (let rowIndex = 0; rowIndex < rowCount; rowIndex++) {
               const row = data[column][rowIndex.toString()];
 
-              if (row != null && row.length > widths[index]) {
-                widths[index] = row.length;
+              if (row != null) {
+                  const rowContents = row.toString();
+
+                  if (rowContents.length > widths[index]) {
+                    widths[index] = rowContents.length;
+                  }
               }
 
-            maxWidth += widths[index] * 10;
+            maxWidth += widths[index] * 12;
             }
         }
 
