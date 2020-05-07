@@ -5,8 +5,8 @@ export default class VPLinkModel extends DefaultLinkModel {
     constructor() {
         super({
           type: 'default',
-          width: 5,
-          color: 'orange'
+          width: 2,
+          color: 'black'
         });
         this.registerListener({
             targetPortChanged: event => {

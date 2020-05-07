@@ -53,7 +53,6 @@ class Workspace extends React.Component {
         API.getGlobalVars()
             .then(vars => {
                 this.setState({globals: vars});
-                this.model.globals = vars;
             })
             .catch(err => console.log(err));
     }

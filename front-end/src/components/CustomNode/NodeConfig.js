@@ -12,11 +12,23 @@ export default class NodeConfig extends React.Component {
         this.state = {
             disabled: false,
             data: {},
-            flowData: {}
+            flowData: {},
+            flowNodes: []
         };
         this.updateData = this.updateData.bind(this);
         this.handleDelete = this.handleDelete.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
+    }
+
+    getFlowNodes() {
+        if (!this.props.node) return;
+        API.getNode(this.props.node.options.id)
+            .then(node => this.setState({flowNodes: node.flow_variables}))
+            .catch(err => console.log(err));
+    }
+
+    componentDidUpdate(prevProps) {
+        if (!prevProps.show && this.props.show) this.getFlowNodes();
     }
 
     // callback to update form data in state;
@@ -82,7 +94,7 @@ export default class NodeConfig extends React.Component {
                                          value={this.props.node.config[key]}
                                          flowValue={this.props.node.options.option_replace ?
                                             this.props.node.options.option_replace[key] : null}
-                                         globals={this.props.globals}
+                                         flowNodes={this.state.flowNodes}
                                          disableFunc={(v) => this.setState({disabled: v})}/>
                         )}
                         <Form.Group>
@@ -149,7 +161,7 @@ function OptionInput(props) {
     }
 
     const hideFlow = props.node.options.is_global
-                        || props.type === "file" || props.globals.length === 0
+                        || props.type === "file" || props.flowNodes.length === 0;
     return (
         <Form.Group>
             <Form.Label>{props.label}</Form.Label>
@@ -159,7 +171,7 @@ function OptionInput(props) {
                 {hideFlow ? null :
                     <FlowVariableOverride keyName={props.keyName}
                                           flowValue={props.flowValue || {}}
-                                          flowNodes={props.globals || []}
+                                          flowNodes={props.flowNodes || []}
                                           checked={isFlow}
                                           onFlowCheck={handleFlowCheck}
                                           onChange={handleFlowVariable} />
@@ -290,7 +302,7 @@ function FlowVariableOverride(props) {
 
     const handleSelect = (event) => {
         const uuid = event.target.value;
-        const flow = props.flowNodes.find(d => d.id === uuid);
+        const flow = props.flowNodes.find(d => d.node_id === uuid);
         const obj = {
             node_id: uuid,
             is_global: flow.is_global
@@ -308,9 +320,9 @@ function FlowVariableOverride(props) {
                 <Form.Control as="select" name={props.keyName} onChange={handleSelect}
                               value={props.flowValue.node_id}>
                     <option/>
-                    {props.flowNodes.map(gfv =>
-                        <option  key={gfv.id} value={gfv.id}>
-                            {gfv.options.var_name}
+                    {props.flowNodes.map(fv =>
+                        <option  key={fv.node_id} value={fv.node_id}>
+                            {fv.options ? fv.options.var_name : fv.option_values.var_name}
                         </option>
                     )}
                 </Form.Control>

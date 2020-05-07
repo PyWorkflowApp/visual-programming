@@ -14,6 +14,10 @@
     position: relative;
 }
 
+.custom-node-name {
+    margin-bottom: 3px;
+}
+
 .port-col {
     display: flex;
     flex-direction: column;
@@ -40,21 +44,41 @@
     border-left-color: mediumpurple;
 }
 
+.flow-port-div {
+    position: absolute;
+    top: -5px;
+}
+
+.flow-port-div-in {
+    left: -5px;
+}
+
+.flow-port-div-out {
+    left: 85%;
+}
+
+.flow-port {
+    width: 10px;
+    height: 10px;
+    border-radius: 5px;
+    background-color: purple;
+}
+
+.custom-node-icons {
+    width: 100%;
+    position: absolute;
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
 .custom-node-configure {
     font-size: 1.5rem;
     cursor: pointer;
-    position: absolute;
-    left: 25%;
-    top: 50%;
-    transform: translate(-50%, -50%);
 }
 
 .custom-node-tabular {
     cursor: pointer;
-    position: absolute;
-    right: 25%;
-    top: 25%;
-    transform: translate(50%, -25%);
 }
 
 .custom-node-description {
