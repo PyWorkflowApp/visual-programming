@@ -54,6 +54,7 @@ class Node:
 
             if key in flow_nodes:
                 replacement_value = flow_nodes[key].get_replacement_value()
+                option.set_value(replacement_value)
             else:
                 replacement_value = option.get_value()
 
@@ -108,7 +109,7 @@ class Node:
         }
 
     def __str__(self):
-        return "Test"
+        return self.name
 
 
 class FlowNode(Node):
