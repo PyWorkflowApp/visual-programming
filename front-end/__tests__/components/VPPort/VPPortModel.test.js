@@ -15,9 +15,16 @@ describe('VPPortModel only links to different VPPortModels', () => {
     const otherPortModel = new DefaultPortModel({name: 'default-port-name'});
     expect(portModel.canLinkToPort(otherPortModel)).toBe(false);
   });
+
   it('Cannot link to itself', () => {
     const portModel = new VPPortModel({name: 'vp-port-name'});
     expect(portModel.canLinkToPort(portModel)).toBe(false);
+  });
+
+  it('Cannot link empty inputs to empty inputs', () => {
+    const portModel = new VPPortModel({name: 'vp-port-flow'});
+    const otherPortModel = new DefaultPortModel({name: 'default-port-flow'});
+    expect(portModel.canLinkToPort(otherPortModel)).toBe(false);
   });
 });
 
