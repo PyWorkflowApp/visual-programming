@@ -1,6 +1,6 @@
 import React from 'react';
 import { VegaLite } from 'react-vega';
-import { Roller } from 'react-spinners-css';
+import {Spinner} from "react-bootstrap";
 import { Modal, Button } from 'react-bootstrap';
 import propTypes from 'prop-types';
 import { VariableSizeGrid as Grid } from 'react-window';
@@ -119,7 +119,7 @@ export default class GraphView extends React.Component {
 
       if (this.state.loading) {
           // Print loading spinner
-          body = (<Roller color="black" />);
+          body = (<Spinner animation="border" />);
       } else if (this.state.data.length < 1) {
           // Print message to load respective table/graph
           if (this.props.node.options.node_type === "visualization") {
