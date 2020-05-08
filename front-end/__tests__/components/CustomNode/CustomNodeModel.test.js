@@ -22,6 +22,6 @@ describe('Validates CustomNodeModel', () => {
     const otherNode = new CustomNodeModel();
     otherNode.deserialize(event, engine);
 
-    expect(event.registerModel.mock.calls.length).toBe(3);
+    expect(event.registerModel.mock.calls.length).toBe(4);
   });
 });

@@ -16,17 +16,30 @@ Object {
           style="width: 80px;"
         >
           <div
-            class="custom-node-configure"
+            class="custom-node-icons"
           >
-            ⚙
+            <div
+              class="custom-node-configure"
+            >
+              ⚙
+            </div>
+            <div
+              class="custom-node-tabular"
+            >
+              <img
+                alt="Tabular"
+                src="tabular-icon.png"
+                style="width: 25px; height: 25px;"
+              />
+            </div>
           </div>
           <div
-            class="custom-node-tabular"
+            class="port flow-port-div flow-port-div-in"
+            data-name="flow-in"
+            data-nodeid="myId"
           >
-            <img
-              alt="Tabular"
-              src="tabular-icon.png"
-              style="width: 25px; height: 25px;"
+            <div
+              class="flow-port"
             />
           </div>
           <div
@@ -90,17 +103,30 @@ Object {
         style="width: 80px;"
       >
         <div
-          class="custom-node-configure"
+          class="custom-node-icons"
         >
-          ⚙
+          <div
+            class="custom-node-configure"
+          >
+            ⚙
+          </div>
+          <div
+            class="custom-node-tabular"
+          >
+            <img
+              alt="Tabular"
+              src="tabular-icon.png"
+              style="width: 25px; height: 25px;"
+            />
+          </div>
         </div>
         <div
-          class="custom-node-tabular"
+          class="port flow-port-div flow-port-div-in"
+          data-name="flow-in"
+          data-nodeid="myId"
         >
-          <img
-            alt="Tabular"
-            src="tabular-icon.png"
-            style="width: 25px; height: 25px;"
+          <div
+            class="flow-port"
           />
         </div>
         <div
