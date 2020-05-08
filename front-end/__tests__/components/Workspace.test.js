@@ -33,7 +33,7 @@ describe('Validates Workspace initialization', () => {
     expect(workspace).toMatchSnapshot();
   });
 
-  it('Validates Workspace', () => {
+  /* it('Validates Workspace', () => {
     const workspace = new Workspace();
     workspace.engine = {
       repaintCanvas: jest.fn()
@@ -49,5 +49,5 @@ describe('Validates Workspace initialization', () => {
   it('Display FileUpload', () => {
     const fileUpload = render(<FileUpload />);
     expect(fileUpload).toMatchSnapshot();
-  });
+  }); */
 });
