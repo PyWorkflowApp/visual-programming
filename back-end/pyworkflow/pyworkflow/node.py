@@ -1,5 +1,5 @@
 from .parameters import *
-
+import io
 
 class Node:
     """Node object
@@ -58,7 +58,11 @@ class Node:
             else:
                 replacement_value = option.get_value()
 
-            if key == 'file':
+            if key == 'file' and type(replacement_value) == io.TextIOWrapper:
+                # For files specified via stdin/stdout, store directly
+                option.set_value(replacement_value)
+            elif key == 'file':
+                # Otherwise, point to filepath stored in Workflow directory
                 option.set_value(workflow.path(replacement_value))
 
             execution_options[key] = option
