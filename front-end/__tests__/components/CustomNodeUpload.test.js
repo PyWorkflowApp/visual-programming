@@ -29,6 +29,8 @@ describe('Validates CustomNodeUpload', () => {
     const event = {
       preventDefault: jest.fn(() => [])
     }
-    nodeUpload.onFileSelect();
+    nodeUpload.onFileSelect(event);
+
+    expect(event.preventDefault.mock.calls.length).toBe(1);
   });
 });
