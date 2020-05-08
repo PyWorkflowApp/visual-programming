@@ -1,7 +1,7 @@
 import React from 'react'
 import createEngine from '@projectstorm/react-diagrams';
 import { render } from '@testing-library/react'
-import ReactDOM from 'react-dom';
+import { shallow, mount } from 'enzyme';
 import CustomNodeWidget from '../../../src/components/CustomNode/CustomNodeWidget';
 import CustomNodeModel from '../../../src/components/CustomNode/CustomNodeModel';
 
@@ -63,26 +63,13 @@ document.createElement = (tagName) => {
     const engine = createEngine();
     engine.setModel(model);
 
-    const div = document.createElement('div');
-    const nodeWidget = ReactDOM.render(<CustomNodeWidget
+    const nodeWidget = shallow(<CustomNodeWidget
         engine={engine}
-        node={node}/>, div);
+        node={node}/>);
 
-    expect(nodeWidget.state.showConfig).toBe(false);
-    expect(nodeWidget.state.showGraph).toBe(false);
+   expect(nodeWidget.state('showConfig')).toBe(false);
+   nodeWidget.find({ className: 'custom-node-configure' }).simulate('click');
 
-    nodeWidget.toggleConfig();
-    nodeWidget.toggleGraph();
-
-    expect(nodeWidget.state.showConfig).toBe(true);
-    expect(nodeWidget.state.showGraph).toBe(true);
-
-    nodeWidget.handleDelete();
-
-    expect(global.fetch.mock.calls.length).toBe(1);
-
-    nodeWidget.acceptConfiguration({}, {});
-    expect(global.fetch.mock.calls.length).toBe(2);
-
+   expect(nodeWidget.state('showConfig')).toBe(true);
   });
 })
