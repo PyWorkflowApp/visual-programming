@@ -53,7 +53,7 @@
       "last 1 safari version"
     ]
   },
-  "proxy": "http://localhost:8000",
+  "proxy": "http://back-end:8000",
   "devDependencies": {
     "@babel/preset-env": "^7.9.6",
     "@babel/preset-react": "^7.9.4",

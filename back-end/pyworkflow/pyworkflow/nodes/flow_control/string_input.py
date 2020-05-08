@@ -8,8 +8,8 @@ class StringNode(FlowNode):
     Allows for Strings to replace 'string' fields in Nodes
     """
     name = "String Input"
-    num_in = 1
-    num_out = 1
+    num_in = 0
+    num_out = 0
     color = 'purple'
 
     OPTIONS = {

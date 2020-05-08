@@ -54,7 +54,10 @@ export default class CustomNodeWidget extends React.Component {
 
     render() {
         const engine = this.props.engine;
-        const ports = _.values(this.props.node.getPorts());
+        const allPorts = _.values(this.props.node.getPorts());
+        const ports = allPorts.filter(p => !p.options.name.includes("flow"));
+        const flowInPort = allPorts.find(p => p.options.name === "flow-in");
+        const flowOutPort = allPorts.find(p => p.options.name === "flow-out");
         // group ports by type (in/out)
         const sortedPorts = _.groupBy(ports, p => p.options.in === true ? "in" : "out");
         // create PortWidget array for each type
@@ -62,10 +65,18 @@ export default class CustomNodeWidget extends React.Component {
         for (let portType in sortedPorts) {
             portWidgets[portType] = sortedPorts[portType].map(port =>
                 <PortWidget engine={engine} port={port} key={port.getID()}>
-                        <div className="triangle-port" />
+                    <div className="triangle-port" />
                 </PortWidget>
             );
         }
+
+        const flowPortWidgets = [flowInPort, flowOutPort].filter(p => p).map(port =>
+            <PortWidget engine={engine} port={port} key={port.getID()}
+                        className={`flow-port-div flow-port-div-${port.options.in ? "in" : "out"}`}>
+                <div className="flow-port" />
+            </PortWidget>
+        );
+
 
         let graphView;
         let width = 40;
@@ -82,19 +93,23 @@ export default class CustomNodeWidget extends React.Component {
             <div className="custom-node-wrapper">
                 <div className="custom-node-name">{this.props.node.options.name}</div>
                 <div className="custom-node" style={{ borderColor: this.props.node.options.color, width: width }}>
-                    <div className="custom-node-configure" onClick={this.toggleConfig}>{String.fromCharCode(this.icon)}</div>
-                    <NodeConfig node={this.props.node}
-                        globals={this.props.engine.model.globals || []}
-                        show={this.state.showConfig}
-                        toggleShow={this.toggleConfig}
-                        onDelete={this.handleDelete}
-                        onSubmit={this.acceptConfiguration} />
-                    {graphView}
-                    <GraphView node={this.props.node}
-                        show={this.state.showGraph}
-                        toggleShow={this.toggleGraph}
-                        onDelete={this.handleDelete}
-                        onSubmit={this.acceptConfiguration} />
+                    <div className="custom-node-icons">
+                        <div className="custom-node-configure" onClick={this.toggleConfig}>
+                            {String.fromCharCode(this.icon)}
+                        </div>
+                        <NodeConfig node={this.props.node}
+                            show={this.state.showConfig}
+                            toggleShow={this.toggleConfig}
+                            onDelete={this.handleDelete}
+                            onSubmit={this.acceptConfiguration} />
+                        {graphView}
+                        <GraphView node={this.props.node}
+                            show={this.state.showGraph}
+                            toggleShow={this.toggleGraph}
+                            onDelete={this.handleDelete}
+                            onSubmit={this.acceptConfiguration} />
+                    </div>
+                    {flowPortWidgets}
                     <div className="port-col port-col-in">
                         { portWidgets["in"] }
                     </div>
