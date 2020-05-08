@@ -22,22 +22,22 @@ export default class CustomNodeWidget extends React.Component {
       this.acceptConfiguration = this.acceptConfiguration.bind(this);
     }
 
-    getState() {
+    getState = () => {
       return this.state;
     }
 
     // show/hide node configuration modal
-    toggleConfig() {
+    toggleConfig = () =>  {
         this.setState({showConfig: !this.state.showConfig});
     }
 
     // show/hide node graph modal
-    toggleGraph() {
+    toggleGraph = () =>  {
       this.setState({showGraph: !this.state.showGraph});
     }
 
     // delete node from diagram model and redraw diagram
-    handleDelete() {
+    handleDelete = () =>  {
         API.deleteNode(this.props.node).then(() => {
             this.props.node.remove();
             this.props.engine.repaintCanvas();

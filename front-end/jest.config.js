@@ -3,11 +3,7 @@ module.exports = {
   collectCoverageFrom: ['src/**/*.{js,jsx}'],
   coveragePathIgnorePatterns: [
     "src/index.js",
-    "src/serviceWorker.js",
-    "src/components/CustomNode/GraphView.js",
-    "src/components/CustomNode/NodeConfig.js",
-    "src/components/GlobalFlowMenu.js",
-    "src/components/CustomNodeUpload.js"
+    "src/serviceWorker.js"
   ],
   coverageThreshold: {
     "global": {

@@ -20,7 +20,7 @@ export default class CustomNodeUpload extends React.Component {
         fd.append("file", file);
         API.uploadDataFile(fd)
             .then(resp => {
-                onUpload();
+                this.onUpload();
                 this.setState({status: "ready"});
             }).catch(() => {
               this.setState({status: "failed"});
@@ -35,7 +35,7 @@ export default class CustomNodeUpload extends React.Component {
           return;
         }
 
-        uploadFile(this.state.input.current.files[0]);
+        this.uploadFile(this.state.input.current.files[0]);
     };
 
     render() {
