@@ -10,4 +10,20 @@ describe('Validates SelectInput', () => {
           />);
     expect(input).toMatchSnapshot();
   });
+
+  it('SelectInput onChange', () => {
+    const onChange = jest.fn(() => []);
+    const options =["area", "bar", "line", "point"];
+    const input = mount(<SelectInput
+          options={options}
+          onChange={onChange}
+          value="area"
+          keyName="selectInputPlot"
+          />);
+
+    expect(onChange.mock.calls.length).toBe(1);
+    input.find({keyName: "selectInputPlot"}).simulate('change', {target: {value: "bar"}})
+
+    expect(onChange.mock.calls.length).toBe(2);
+  });
 });
