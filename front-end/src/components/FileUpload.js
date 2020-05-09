@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button } from 'react-bootstrap';
+import * as API from '../API';
 
 export default class FileUpload extends React.Component {
 
@@ -27,7 +28,7 @@ export default class FileUpload extends React.Component {
           return;
         }
 
-        uploadFile(this.state.input.current.files[0]);
+        this.uploadFile(this.state.input.current.files[0]);
     };
 
     render() {
