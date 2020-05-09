@@ -1,3 +1,4 @@
+import React, { useRef, useState, useEffect } from 'react';
 import BooleanInput from './BooleanInput'
 import FileUploadInput from './FileUploadInput'
 import FlowVariableOverride from './FlowVariableOverride'
@@ -8,7 +9,7 @@ import SimpleInput from './SimpleInput'
 /**
  *  Wrapper component to render form groups in the node config form.
  */
-function OptionInput(props) {
+export default function OptionInput(props) {
 
     const [isFlow, setIsFlow] = useState(props.flowValue ? true : false);
 
