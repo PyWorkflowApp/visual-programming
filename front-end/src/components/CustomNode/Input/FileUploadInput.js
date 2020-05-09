@@ -39,7 +39,10 @@ export default function FileUploadInput(props) {
     };
     const onFileSelect = e => {
         e.preventDefault();
-        if (!input.current.files) return;
+        if (!input.current.files) {
+          return;
+        }
+        
         uploadFile(input.current.files[0]);
     };
 
