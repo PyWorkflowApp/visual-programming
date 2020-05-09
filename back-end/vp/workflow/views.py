@@ -56,7 +56,7 @@ def open_workflow(request):
     Args:
         request: Django request Object, should follow the pattern:
             {
-                react: {react-diagrams JSON},
+                ui-graph: {JSON representation of visual graph},
                 pyworkflow: {
                     name: Workflow name,
                     root_dir: File storage,
@@ -67,7 +67,7 @@ def open_workflow(request):
 
     Raises:
         JSONDecodeError: invalid JSON data
-        KeyError: request missing either 'react' or 'pyworkflow' data
+        KeyError: request missing either 'ui-graph' or 'pyworkflow' data
         WorkflowException: error loading JSON into NetworkX DiGraph
 
     Returns:
@@ -86,11 +86,11 @@ def open_workflow(request):
         request.session.update(request.pyworkflow.to_session_dict())
 
         # Send back front-end workflow
-        return JsonResponse(combined_json['react'])
+        return JsonResponse(combined_json['ui-graph'])
     except KeyError as e:
         return JsonResponse({'open_workflow': 'Missing data for ' + str(e)}, status=500)
     except json.JSONDecodeError as e:
-        return JsonResponse({'No React JSON provided': str(e)}, status=500)
+        return JsonResponse({'No JSON provided for UI graph': str(e)}, status=500)
     except WorkflowException as e:
         return JsonResponse({e.action: e.reason}, status=404)
 
@@ -139,7 +139,7 @@ def save_workflow(request):
     try:
         combined_json = json.dumps({
             'filename': request.pyworkflow.filename,
-            'react': json.loads(request.body),
+            'ui-graph': json.loads(request.body),
             'pyworkflow': {
                 'name': request.pyworkflow.name,
                 'root_dir': request.pyworkflow.root_dir,
