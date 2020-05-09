@@ -78,7 +78,7 @@ export async function updateNode(node, config, flowConfig) {
     node.options.option_replace = flowConfig;
     const payload = {...node.options, options: node.config};
     const options = {
-        method: "POST",
+        method: "PATCH",
         body: JSON.stringify(payload)
     };
     const endpoint = node.options.is_global ? "node/global" : "node";

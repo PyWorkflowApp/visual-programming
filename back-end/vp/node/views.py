@@ -126,7 +126,7 @@ def handle_edge(request, node_from_id, node_to_id):
                          400: 'No file specified',
                          404: 'Node/graph not found'
                      })
-@swagger_auto_schema(method='post',
+@swagger_auto_schema(method='patch',
                      operation_summary='Update a node from the graph',
                      operation_description='Updates a node from the graph.',
                      responses={
@@ -144,10 +144,10 @@ def handle_edge(request, node_from_id, node_to_id):
                          405: 'Method not allowed',
                          500: 'Error processing Node change'
                      })
-@api_view(['GET', 'POST', 'DELETE'])
+@api_view(['GET', 'PATCH', 'DELETE'])
 @csrf_exempt
 def handle_node(request, node_id):
-    """ Retrieve, update, or delete a Node from the graph
+    """Retrieve, update, or delete a Node from the graph
 
     Returns:
         200 - Node was found; data in JSON format
@@ -173,7 +173,7 @@ def handle_node(request, node_id):
                 "retrieved_node": retrieved_node.to_json(),
                 "flow_variables": request.pyworkflow.get_all_flow_var_options(node_id),
             }, safe=False)
-        elif request.method == 'POST':
+        elif request.method == 'PATCH':
             updated_node = create_node(request)
 
             # Nodes need to be the same type to update
