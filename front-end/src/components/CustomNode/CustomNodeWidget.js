@@ -12,25 +12,28 @@ export default class CustomNodeWidget extends React.Component {
     constructor(props) {
         super(props);
         this.state = {showConfig: false, showGraph: false};
-        this.toggleConfig = this.toggleConfig.bind(this);
-        this.toggleGraph = this.toggleGraph.bind(this);
-        this.handleDelete = this.handleDelete.bind(this);
-        this.acceptConfiguration = this.acceptConfiguration.bind(this);
         this.icon = '9881';
     }
 
+    componentDidMount() {
+      this.toggleConfig = this.toggleConfig.bind(this);
+      this.toggleGraph = this.toggleGraph.bind(this);
+      this.handleDelete = this.handleDelete.bind(this);
+      this.acceptConfiguration = this.acceptConfiguration.bind(this);
+    }
+
     // show/hide node configuration modal
-    toggleConfig() {
+    toggleConfig = () =>  {
         this.setState({showConfig: !this.state.showConfig});
     }
 
     // show/hide node graph modal
-    toggleGraph() {
+    toggleGraph = () =>  {
       this.setState({showGraph: !this.state.showGraph});
     }
 
     // delete node from diagram model and redraw diagram
-    handleDelete() {
+    handleDelete = () =>  {
         API.deleteNode(this.props.node).then(() => {
             this.props.node.remove();
             this.props.engine.repaintCanvas();
@@ -41,6 +44,7 @@ export default class CustomNodeWidget extends React.Component {
         API.updateNode(this.props.node, optionsData, flowData).then(() => {
             this.props.node.setStatus("configured");
             this.forceUpdate();
+            console.log("Node updated");
             this.props.engine.repaintCanvas();
         }).catch(err => console.log(err));
     }

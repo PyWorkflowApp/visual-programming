@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Validates OptionInput Display OptionInput 1`] = `ShallowWrapper {}`;
+
+exports[`Validates OptionInput Display OptionInput as BooleanInput 1`] = `ShallowWrapper {}`;
+
+exports[`Validates OptionInput Display OptionInput as FileUploadInput 1`] = `ShallowWrapper {}`;
+
+exports[`Validates OptionInput Display OptionInput as SelectInput 1`] = `ShallowWrapper {}`;
+
+exports[`Validates OptionInput Display OptionInput as SimpleInput 1`] = `ShallowWrapper {}`;
+
+exports[`Validates OptionInput Display OptionInput as int 1`] = `ShallowWrapper {}`;
+
+exports[`Validates OptionInput Display OptionInput as text 1`] = `ShallowWrapper {}`;

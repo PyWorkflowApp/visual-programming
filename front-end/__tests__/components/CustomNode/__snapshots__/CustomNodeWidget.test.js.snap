@@ -1,0 +1,232 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Validate CustomNodeWidget Display CustomNodeWidget 1`] = `
+Object {
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div>
+      <div
+        class="custom-node-wrapper"
+      >
+        <div
+          class="custom-node-name"
+        />
+        <div
+          class="custom-node"
+          style="width: 80px;"
+        >
+          <div
+            class="custom-node-icons"
+          >
+            <div
+              class="custom-node-configure"
+            >
+              ⚙
+            </div>
+            <div
+              class="custom-node-tabular"
+            >
+              <img
+                alt="Tabular"
+                src="tabular-icon.png"
+                style="width: 25px; height: 25px;"
+              />
+            </div>
+          </div>
+          <div
+            class="port flow-port-div flow-port-div-in"
+            data-name="flow-in"
+            data-nodeid="myId"
+          >
+            <div
+              class="flow-port"
+            />
+          </div>
+          <div
+            class="port-col port-col-in"
+          >
+            <div
+              class="port "
+              data-name="in-0"
+              data-nodeid="myId"
+            >
+              <div
+                class="triangle-port"
+              />
+            </div>
+          </div>
+          <div
+            class="port-col port-col-out"
+          >
+            <div
+              class="port "
+              data-name="out-0"
+              data-nodeid="myId"
+            >
+              <div
+                class="triangle-port"
+              />
+            </div>
+          </div>
+        </div>
+        <div
+          class="StatusLight"
+        >
+          <div
+            class="StatusLightItem"
+            style="background-color: red;"
+          />
+          <div
+            class="StatusLightItem"
+            style="background-color: white;"
+          />
+          <div
+            class="StatusLightItem"
+            style="background-color: white;"
+          />
+        </div>
+        <div
+          class="custom-node-description"
+        />
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <div
+      class="custom-node-wrapper"
+    >
+      <div
+        class="custom-node-name"
+      />
+      <div
+        class="custom-node"
+        style="width: 80px;"
+      >
+        <div
+          class="custom-node-icons"
+        >
+          <div
+            class="custom-node-configure"
+          >
+            ⚙
+          </div>
+          <div
+            class="custom-node-tabular"
+          >
+            <img
+              alt="Tabular"
+              src="tabular-icon.png"
+              style="width: 25px; height: 25px;"
+            />
+          </div>
+        </div>
+        <div
+          class="port flow-port-div flow-port-div-in"
+          data-name="flow-in"
+          data-nodeid="myId"
+        >
+          <div
+            class="flow-port"
+          />
+        </div>
+        <div
+          class="port-col port-col-in"
+        >
+          <div
+            class="port "
+            data-name="in-0"
+            data-nodeid="myId"
+          >
+            <div
+              class="triangle-port"
+            />
+          </div>
+        </div>
+        <div
+          class="port-col port-col-out"
+        >
+          <div
+            class="port "
+            data-name="out-0"
+            data-nodeid="myId"
+          >
+            <div
+              class="triangle-port"
+            />
+          </div>
+        </div>
+      </div>
+      <div
+        class="StatusLight"
+      >
+        <div
+          class="StatusLightItem"
+          style="background-color: red;"
+        />
+        <div
+          class="StatusLightItem"
+          style="background-color: white;"
+        />
+        <div
+          class="StatusLightItem"
+          style="background-color: white;"
+        />
+      </div>
+      <div
+        class="custom-node-description"
+      />
+    </div>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "unmount": [Function],
+}
+`;

@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import { Row, Col, Button } from 'react-bootstrap';
 import createEngine, { DiagramModel } from '@projectstorm/react-diagrams';
 import { CanvasWidget } from '@projectstorm/react-canvas-core';
@@ -10,8 +10,9 @@ import * as API from '../API';
 import NodeMenu from './NodeMenu';
 import '../styles/Workspace.css';
 import GlobalFlowMenu from "./GlobalFlowMenu";
+import FileUpload from "./FileUpload"
 
-class Workspace extends React.Component {
+export default class Workspace extends React.Component {
 
     constructor(props) {
         super(props);
@@ -151,32 +152,3 @@ class Workspace extends React.Component {
         );
     }
 }
-
-
-function FileUpload(props) {
-    const input = useRef(null);
-    const uploadFile = file => {
-        const form = new FormData();
-        form.append("file", file);
-        API.uploadWorkflow(form).then(json => {
-            props.handleData(json);
-        }).catch(err => {
-            console.log(err);
-        });
-        input.current.value = null;
-    };
-    const onFileSelect = e => {
-        e.preventDefault();
-        if (!input.current.files) return;
-        uploadFile(input.current.files[0]);
-    };
-    return (
-        <>
-        <input type="file" ref={input} onChange={onFileSelect}
-            style={{display: "none"}} />
-        <Button size="sm" onClick={() => input.current.click()}>Load</Button>
-        </>
-    )
-}
-
-export default Workspace;

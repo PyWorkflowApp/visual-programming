@@ -96,4 +96,3 @@ const NodeTooltip = React.forwardRef((props, ref) => {
         </Tooltip>
     )
 });
-

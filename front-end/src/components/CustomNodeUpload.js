@@ -1,48 +1,61 @@
-import React, {useRef, useState} from "react";
+import React from "react";
 import * as API from "../API";
 import {Button} from "react-bootstrap";
 
+export default class CustomNodeUpload extends React.Component {
 
-export default function CustomNodeUpload({ onUpload }) {
+    constructor(props) {
+        super(props);
+        this.state = {
+          status: "ready",
+          input: React.createRef()
+        }
 
-    const input = useRef(null);
-    const [status, setStatus] = useState("ready");
+        this.onUpload = props.onUpload;
+    }
 
-    const uploadFile = async file => {
-        setStatus("loading");
+    uploadFile = async file => {
+      this.setState({status: "loading"});
         const fd = new FormData();
         fd.append("file", file);
         API.uploadDataFile(fd)
             .then(resp => {
-                onUpload();
-                setStatus("ready");
+                this.onUpload();
+                this.setState({status: "ready"});
             }).catch(() => {
-                setStatus("failed");
+              this.setState({status: "failed"});
         });
-        input.current.value = null;
-    };
-    const onFileSelect = e => {
-        e.preventDefault();
-        if (!input.current.files) return;
-        uploadFile(input.current.files[0]);
+
+        this.setState({input: React.createRef()});
     };
 
-    let content;
-    if (status === "loading") {
-        content = <div>Uploading file...</div>;
-    } else if (status === "failed") {
-        content = (<div>Upload failed. Try a new file.</div>);
+    onFileSelect = e => {
+        e.preventDefault();
+        if (!this.state.input.current || !this.state.input.current.files) {
+          return;
+        }
+
+        this.uploadFile(this.state.input.current.files[0]);
+    };
+
+    render() {
+      let content;
+      if (this.state.status === "loading") {
+          content = <div>Uploading file...</div>;
+      } else if (this.state.status === "failed") {
+          content = (<div>Upload failed. Try a new file.</div>);
+      }
+      return (
+          <>
+              <input type="file" ref={this.state.input} onChange={this.onFileSelect}
+                     style={{display: "none"}} />
+              <Button size="sm" onClick={() => this.state.input.current.click()}
+                      variant="success"
+                      disabled={this.state.status === "loading"}>
+                  Add Custom Node
+              </Button>
+              {content}
+          </>
+      )
     }
-    return (
-        <>
-            <input type="file" ref={input} onChange={onFileSelect}
-                   style={{display: "none"}} />
-            <Button size="sm" onClick={() => input.current.click()}
-                    variant="success"
-                    disabled={status === "loading"}>
-                Add Custom Node
-            </Button>
-            {content}
-        </>
-    )
 }

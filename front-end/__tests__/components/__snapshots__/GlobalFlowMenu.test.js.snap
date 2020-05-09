@@ -1,86 +1,96 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Validate Graph Modal Display warning message 1`] = `
+exports[`Validates GlobalFlowMenu Display of GlobalFlowMenu with empty list 1`] = `
 Object {
   "asFragment": [Function],
-  "baseElement": <body
-    class="modal-open"
-    style="padding-right: 0px;"
-  >
-    <div
-      aria-hidden="true"
-    />
-    <div
-      class="fade modal-backdrop show"
-    />
-    <div
-      aria-modal="true"
-      class="fade modal show"
-      role="dialog"
-      style="display: block;"
-      tabindex="-1"
-    >
+  "baseElement": <body>
+    <div>
       <div
-        class="modal-dialog GraphView modal-dialog-centered"
-        role="document"
+        class="GlobalFlowMenu"
       >
-        <div
-          class="modal-content"
+        <h3>
+          Flow Variables
+        </h3>
+        <table
+          class="table table-sm"
         >
-          <div
-            class="modal-header"
+          <thead>
+            <tr>
+              <th>
+                Name
+              </th>
+              <th>
+                Type
+              </th>
+              <th>
+                Value
+              </th>
+              <th />
+              <th />
+            </tr>
+          </thead>
+          <tbody />
+        </table>
+        <div
+          class="dropdown btn-group"
+          role="group"
+        >
+          <button
+            aria-expanded="false"
+            aria-haspopup="true"
+            class="dropdown-toggle dropdown-toggle-split btn btn-success btn-sm"
+            id="dropdown-split-basic"
+            type="button"
           >
-            <div
-              class="modal-title h4"
-            >
-              <b />
-               View
-            </div>
-            <button
-              class="close"
-              type="button"
-            >
-              <span
-                aria-hidden="true"
-              >
-                ×
-              </span>
-              <span
-                class="sr-only"
-              >
-                Close
-              </span>
-            </button>
-          </div>
-          <div
-            class="modal-body"
-          >
-            Loading the data might take a while depending on how big the data is.
-          </div>
-          <div
-            class="modal-footer"
-          >
-            <button
-              class="btn btn-secondary"
-              type="button"
-            >
-              Cancel
-            </button>
-            <button
-              class="btn btn-secondary"
-              disabled=""
-              type="button"
-            >
-              Load
-            </button>
-          </div>
+            Add Global Flow Variable 
+          </button>
         </div>
       </div>
     </div>
   </body>,
-  "container": <div
-    aria-hidden="true"
-  />,
+  "container": <div>
+    <div
+      class="GlobalFlowMenu"
+    >
+      <h3>
+        Flow Variables
+      </h3>
+      <table
+        class="table table-sm"
+      >
+        <thead>
+          <tr>
+            <th>
+              Name
+            </th>
+            <th>
+              Type
+            </th>
+            <th>
+              Value
+            </th>
+            <th />
+            <th />
+          </tr>
+        </thead>
+        <tbody />
+      </table>
+      <div
+        class="dropdown btn-group"
+        role="group"
+      >
+        <button
+          aria-expanded="false"
+          aria-haspopup="true"
+          class="dropdown-toggle dropdown-toggle-split btn btn-success btn-sm"
+          id="dropdown-split-basic"
+          type="button"
+        >
+          Add Global Flow Variable 
+        </button>
+      </div>
+    </div>
+  </div>,
   "debug": [Function],
   "findAllByAltText": [Function],
   "findAllByDisplayValue": [Function],

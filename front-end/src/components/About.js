@@ -1,37 +1,49 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Modal } from 'react-bootstrap';
 
-function About(props) {
-    const [show, setShow] = useState(props.show);
-    const [info, setInfo] = useState();
+export default class About extends React.Component {
 
-    async function fetchInfo() {
+    constructor(props) {
+      super(props);
+      this.state = {
+          show: props.show,
+          info: {}};
+    }
+
+    componentDidMount() {
+
+    }
+
+    fetchInfo = async () => {
         const resp = await fetch("/info");
         const data = await resp.json();
-        setInfo(data);
+        this.setState({info: data});
     }
 
-    const handleClose = () => setShow(false);
-    const handleShow = (e) => {
+    handleClose = () => {
+      this.setState({show: false});
+    }
+
+    handleShow = (e) => {
         e.preventDefault();
-        fetchInfo()
-        setShow(true);
+        this.fetchInfo()
+        this.setState({show: true});
     }
 
-    return (
-        <>
-            <div><span className="btn btn-link" onClick={handleShow}>About</span></div>
+    render() {
+      return (
+          <>
+              <div><span className="btn btn-link" onClick={this.handleShow}>About</span></div>
 
-            <Modal show={show} onHide={handleClose}>
-                <Modal.Header closeButton>
-                    <Modal.Title><b>About Visual Programming</b></Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    {JSON.stringify(info)}
-                </Modal.Body>
-            </Modal>
-        </>
-    );
+              <Modal show={this.state.show} onHide={this.handleClose}>
+                  <Modal.Header closeButton>
+                      <Modal.Title><b>About Visual Programming</b></Modal.Title>
+                  </Modal.Header>
+                  <Modal.Body>
+                      {JSON.stringify(this.state.info)}
+                  </Modal.Body>
+              </Modal>
+          </>
+      );
+    }
 }
-
-export default About;
