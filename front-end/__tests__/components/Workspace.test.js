@@ -59,19 +59,11 @@ describe('Validates Workspace initialization', () => {
     const workspace = shallow(
           <Workspace />
     );
-  });
-/*
-   it('Validates Workspace', () => {
-    const workspace = new Workspace();
-    workspace.engine = {
-      repaintCanvas: jest.fn()
-    };
 
-    workspace.componentDidMount();
-    workspace.execute();
-    workspace.clear();
+    workspace.find('Button').at(0).simulate('click');
+    workspace.find('Button').at(1).simulate('click');
+    workspace.find('Button').at(2).simulate('click');
 
-    expect(global.fetch.mock.calls.length).toBe(3);
   });
-  */
+
 });

@@ -77,7 +77,10 @@ export default class NodeConfig extends React.Component {
     };
 
     render() {
-        if (!this.props.node) return null;
+        if (!this.props.node) {
+          return null;
+        }
+        
         return (
             <Modal show={this.props.show} onHide={this.props.toggleShow} centered
                    dialogClassName="NodeConfig"
