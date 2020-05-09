@@ -43,6 +43,6 @@ class WorkflowMiddleware:
         # Request should have 'pyworkflow' attribute, but do not crash if not
         if hasattr(request, 'pyworkflow'):
             # Save Workflow back to session
-            request.session.update(request.pyworkflow.to_session_dict())
+            request.session.update(request.pyworkflow.to_json())
 
         return response

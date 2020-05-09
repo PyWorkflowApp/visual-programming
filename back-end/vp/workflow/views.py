@@ -145,6 +145,7 @@ def save_workflow(request):
             'pyworkflow': {
                 'name': request.pyworkflow.name,
                 'root_dir': request.pyworkflow.root_dir,
+                'node_dir': request.pyworkflow.node_dir,
                 'graph': Workflow.to_graph_json(request.pyworkflow.graph),
                 'flow_vars': Workflow.to_graph_json(request.pyworkflow.flow_vars),
             }

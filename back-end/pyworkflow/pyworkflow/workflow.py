@@ -513,6 +513,9 @@ class Workflow:
         """
         return f"{workflow.name}-{node_id}"
 
+    ############################
+    # WORKFLOW (DE)SERIALIZATION
+    ############################
     @classmethod
     def from_json(cls, json_data):
         """Load Workflow from JSON data.
@@ -528,33 +531,35 @@ class Workflow:
                 malformed NetworkX graph data (NetworkXError)
         """
         try:
-            name = json_data['name']
-            root_dir = json_data['root_dir']
-            graph = Workflow.read_graph_json(json_data['graph'])
-            flow_vars = Workflow.read_graph_json(json_data['flow_vars'])
-
-            return cls(name=name, root_dir=root_dir, graph=graph, flow_vars=flow_vars)
+            return cls(
+                name=json_data['name'],
+                root_dir=json_data['root_dir'],
+                node_dir=json_data['node_dir'],
+                graph=Workflow.read_graph_json(json_data['graph']),
+                flow_vars=Workflow.read_graph_json(json_data['flow_vars']),
+            )
         except KeyError as e:
             raise WorkflowException('from_json', str(e))
         except nx.NetworkXError as e:
             raise WorkflowException('from_json', str(e))
 
+    def to_json(self):
+        """Save Workflow information in JSON format."""
+        try:
+            return {
+                'name': self.name,
+                'root_dir': self.root_dir,
+                'node_dir': self.node_dir,
+                'graph': Workflow.to_graph_json(self.graph),
+                'flow_vars': Workflow.to_graph_json(self.flow_vars),
+            }
+        except nx.NetworkXError as e:
+            raise WorkflowException('to_json', str(e))
     @staticmethod
     def to_graph_json(graph):
         return nx.readwrite.json_graph.node_link_data(graph)
 
-    def to_session_dict(self):
-        """Store Workflow information in the Django session.
         """
-        try:
-            out = dict()
-            out['name'] = self.name
-            out['root_dir'] = self.root_dir
-            out['graph'] = Workflow.to_graph_json(self.graph)
-            out['flow_vars'] = Workflow.to_graph_json(self.flow_vars)
-            return out
-        except nx.NetworkXError as e:
-            raise WorkflowException('to_session_dict', str(e))
 
     def execute_read_csv(self, node_id, csv_location):
         # TODO: some duplicated code here from execute common method. Need to refactor.
