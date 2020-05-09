@@ -211,7 +211,6 @@ export async function uploadDataFile(formData) {
  * @returns {Promise<void>}
  */
 export async function downloadDataFile(node) {
-    // TODO: make this not a giant security problem
     let contentType;
 
     const payload = {...node.options, options: node.config};
