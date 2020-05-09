@@ -7,10 +7,11 @@ export default class CustomNodeUpload extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-          onUpload: props.onUpload,
           status: "ready",
           input: React.createRef()
         }
+
+        this.onUpload = props.onUpload;
     }
 
     uploadFile = async file => {

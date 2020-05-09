@@ -5,6 +5,9 @@ import { shallow, mount } from 'enzyme';
 import CustomNodeWidget from '../../../src/components/CustomNode/CustomNodeWidget';
 import CustomNodeModel from '../../../src/components/CustomNode/CustomNodeModel';
 
+global.console = {log: jest.fn(), error: jest.fn()}
+
+
 describe('Validate CustomNodeWidget', () => {
 
   beforeEach(() => {
@@ -71,5 +74,33 @@ document.createElement = (tagName) => {
    nodeWidget.find({ className: 'custom-node-configure' }).simulate('click');
 
    expect(nodeWidget.state('showConfig')).toBe(true);
+  });
+
+  it('Mounts CustomNodeWidget', () => {
+    const node = new CustomNodeModel({id: "myId"});
+    const model = {
+      node: node,
+      globals: {}
+    };
+    const engine = createEngine();
+    engine.setModel(model);
+
+    const nodeWidget = mount(<CustomNodeWidget
+        engine={engine}
+        node={node}/>);
+
+    expect(nodeWidget.state('showConfig')).toBe(false);
+    expect(nodeWidget.state('showGraph')).toBe(false);
+  });
+
+  it('Accepts configuration', () => {
+      const node = new CustomNodeModel({id: "myId"});
+      const repaintCanvas = jest.fn(() => [])
+      const engine = {
+        repaintCanvas: repaintCanvas
+      }
+      const props = { node: node, engine: engine};
+      const nodeWidget = new CustomNodeWidget(props);
+      nodeWidget.acceptConfiguration({}, {});
   });
 })

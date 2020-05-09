@@ -22,10 +22,6 @@ export default class CustomNodeWidget extends React.Component {
       this.acceptConfiguration = this.acceptConfiguration.bind(this);
     }
 
-    getState = () => {
-      return this.state;
-    }
-
     // show/hide node configuration modal
     toggleConfig = () =>  {
         this.setState({showConfig: !this.state.showConfig});
@@ -48,6 +44,7 @@ export default class CustomNodeWidget extends React.Component {
         API.updateNode(this.props.node, optionsData, flowData).then(() => {
             this.props.node.setStatus("configured");
             this.forceUpdate();
+            console.log("Node updated");
             this.props.engine.repaintCanvas();
         }).catch(err => console.log(err));
     }

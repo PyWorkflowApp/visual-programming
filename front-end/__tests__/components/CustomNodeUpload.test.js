@@ -4,8 +4,11 @@ import { shallow, mount } from 'enzyme';
 import { DiagramModel } from '@projectstorm/react-diagrams';
 import CustomNodeUpload from '../../src/components/CustomNodeUpload';
 
+global.console = {log: jest.fn(), error: jest.fn()}
+
 global.fetch = jest.fn(() => Promise.resolve({
   data: [],
+  ok: true,
   json: jest.fn(() => [])
 }));
 
@@ -18,9 +21,14 @@ describe('Validates CustomNodeUpload', () => {
     expect(nodeUpload).toMatchSnapshot();
   });
 
-  it('Validates uploading a file', () => {
-    const onUpload = jest.fn(() => []);
-    const nodeUpload = new CustomNodeUpload(onUpload);
+  it('Validates uploading a file', (done) => {
+    let called = false;
+    const onUpload = jest.fn(() => {
+      throw "Error from onUpload";
+      // return [];
+    });
+    const props = { onUpload: onUpload};
+    const nodeUpload = new CustomNodeUpload(props);
     nodeUpload.input = {
       current: {
         files: ["randomFile"]
@@ -33,6 +41,9 @@ describe('Validates CustomNodeUpload', () => {
     nodeUpload.onFileSelect(event);
 
     expect(event.preventDefault.mock.calls.length).toBe(1);
+    nodeUpload.uploadFile("filename").then(() => {
+      done();
+    });
   });
 
   it('Validate loading message', () => {
