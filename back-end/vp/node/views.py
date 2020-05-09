@@ -2,7 +2,7 @@ import json
 
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from pyworkflow import Workflow, WorkflowException, Node, NodeException, node_factory, ParameterValidationError
+from pyworkflow import WorkflowException, NodeException, ParameterValidationError, node_factory
 from rest_framework.decorators import api_view
 from drf_yasg.utils import swagger_auto_schema
 

@@ -1,14 +1,11 @@
 import os
 import json
-import sys
 
 from django.http import JsonResponse, HttpResponse
 from django.conf import settings
 from rest_framework.decorators import api_view
 from pyworkflow import Workflow, WorkflowException
 from drf_yasg.utils import swagger_auto_schema
-
-from modulefinder import ModuleFinder
 
 
 @swagger_auto_schema(method='post',
