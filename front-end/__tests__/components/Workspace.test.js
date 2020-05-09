@@ -3,6 +3,14 @@ import { Container } from 'react-bootstrap';
 import { render } from '@testing-library/react'
 import { shallow, mount } from 'enzyme';
 import Workspace from '../../src/components/Workspace';
+import { CanvasWidget } from '@projectstorm/react-canvas-core';
+
+jest.mock('@projectstorm/react-canvas-core', () => (
+  {
+    ...(jest.requireActual('@projectstorm/react-canvas-core')),
+    CanvasWidget: () => <div />
+  }
+))
 
 global.console = {log: jest.fn(() => []), error: jest.fn(() => [])}
 global.confirm = () => true;
@@ -46,15 +54,13 @@ describe('Validates Workspace initialization', () => {
     expect(workspace).toMatchSnapshot();
   });
 
-/*
+
   it('Displays Workspaces', () => {
     const workspace = shallow(
-      <Container fluid={true} className="App">
           <Workspace />
-      </Container>
     );
   });
-
+/*
    it('Validates Workspace', () => {
     const workspace = new Workspace();
     workspace.engine = {

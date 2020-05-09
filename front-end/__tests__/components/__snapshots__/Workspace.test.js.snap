@@ -120,28 +120,7 @@ Object {
           <div
             style="position: relative; flex-grow: 1;"
           >
-            <div
-              class="diagram-canvas css-18f0176"
-            >
-              <svg
-                class="css-12q0bj3"
-                style="transform: translate(
-				0px,
-				0px)
-			scale(
-				1
-			);"
-              />
-              <div
-                class="css-12q0bj3"
-                style="transform: translate(
-				0px,
-				0px)
-			scale(
-				1
-			);"
-              />
-            </div>
+            <div />
           </div>
         </div>
       </div>
@@ -263,28 +242,7 @@ Object {
         <div
           style="position: relative; flex-grow: 1;"
         >
-          <div
-            class="diagram-canvas css-18f0176"
-          >
-            <svg
-              class="css-12q0bj3"
-              style="transform: translate(
-				0px,
-				0px)
-			scale(
-				1
-			);"
-            />
-            <div
-              class="css-12q0bj3"
-              style="transform: translate(
-				0px,
-				0px)
-			scale(
-				1
-			);"
-            />
-          </div>
+          <div />
         </div>
       </div>
     </div>
