@@ -5,6 +5,14 @@ import pandas as pd
 
 
 class PivotNode(ManipulationNode):
+    """Create a spreadsheet-style pivot table as a DataFrame.
+
+    pandas reference:
+    https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.pivot_table.html
+
+    Raises:
+        NodeException: catches exceptions when dealing with pandas DataFrames.
+    """
     name = "Pivoting"
     num_in = 1
     num_out = 3

@@ -5,6 +5,14 @@ import pandas as pd
 
 
 class FilterNode(ManipulationNode):
+    """Subset the DataFrame rows or columns according to the specified index labels.
+
+    pandas API reference:
+    https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.filter.html
+
+    Raises:
+        NodeException: catches exceptions when dealing with pandas DataFrames.
+    """
     name = "Filter"
     num_in = 1
     num_out = 1
