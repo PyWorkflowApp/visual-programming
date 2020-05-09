@@ -18,7 +18,10 @@ class JoinNode(ManipulationNode):
     num_out = 1
 
     OPTIONS = {
-        "on": StringParameter("Join Column", docstring="Name of column to join on")
+        "on": StringParameter(
+            "Join Column",
+            docstring="Name of column to join on"
+        )
     }
 
     def execute(self, predecessor_data, flow_vars):
