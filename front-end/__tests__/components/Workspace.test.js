@@ -1,10 +1,23 @@
 import React from 'react'
+import { Container } from 'react-bootstrap';
 import { render } from '@testing-library/react'
+import { shallow, mount } from 'enzyme';
 import Workspace from '../../src/components/Workspace';
-import FileUpload from '../../src/components/Workspace';
 
 global.console = {log: jest.fn(() => []), error: jest.fn(() => [])}
 global.confirm = () => true;
+
+const createElement = document.createElement.bind(document);
+
+document.createElement = (tagName) => {
+if (tagName === 'canvas') {
+    return {
+        getContext: () => ({}),
+        measureText: () => ({})
+    };
+}
+return createElement(tagName);
+};
 
 describe('Validates Workspace initialization', () => {
 
@@ -33,7 +46,16 @@ describe('Validates Workspace initialization', () => {
     expect(workspace).toMatchSnapshot();
   });
 
-  /* it('Validates Workspace', () => {
+/*
+  it('Displays Workspaces', () => {
+    const workspace = shallow(
+      <Container fluid={true} className="App">
+          <Workspace />
+      </Container>
+    );
+  });
+
+   it('Validates Workspace', () => {
     const workspace = new Workspace();
     workspace.engine = {
       repaintCanvas: jest.fn()
@@ -45,9 +67,5 @@ describe('Validates Workspace initialization', () => {
 
     expect(global.fetch.mock.calls.length).toBe(3);
   });
-
-  it('Display FileUpload', () => {
-    const fileUpload = render(<FileUpload />);
-    expect(fileUpload).toMatchSnapshot();
-  }); */
+  */
 });

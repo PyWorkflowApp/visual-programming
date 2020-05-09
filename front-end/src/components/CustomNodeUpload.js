@@ -2,7 +2,6 @@ import React from "react";
 import * as API from "../API";
 import {Button} from "react-bootstrap";
 
-
 export default class CustomNodeUpload extends React.Component {
 
     constructor(props) {
