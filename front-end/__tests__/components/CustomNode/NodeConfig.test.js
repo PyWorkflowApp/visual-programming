@@ -64,11 +64,6 @@ describe('Validate NodeConfig Modal', () => {
     expect(props.toggleShow.mock.calls.length).toBe(1);
   });
 
-  it('Display OptionInput', () => {
-    const optionInput = render(<OptionInput />);
-    expect(optionInput).toMatchSnapshot();
-  });
-
   it('Validates OptionInput with properties', () => {
     const optionInputRendered = render(<OptionInput
         keyName={"keyName"}
@@ -79,30 +74,5 @@ describe('Validate NodeConfig Modal', () => {
     expect(optionInputRendered).toMatchSnapshot();
   });
 
-  it('Display FileUploadInput', () => {
-    const fileUploadInput = render(<FileUploadInput />);
-    expect(fileUploadInput).toMatchSnapshot();
-  });
 
-  it('Display SimpleInput', () => {
-    const simpleInput = render(<SimpleInput />);
-    expect(simpleInput).toMatchSnapshot();
-  });
-
-  it('Display BooleanInput', () => {
-    const booleanInput = render(<BooleanInput />);
-    expect(booleanInput).toMatchSnapshot();
-  });
-
-  it('Display FlowVariableOverride', () => {
-    const variableOverride = render(<FlowVariableOverride />);
-    expect(variableOverride).toMatchSnapshot();
-  });
-
-  it('Display SelectInput', () => {
-    const selectInput = render(<SelectInput
-                          keyName="myKeyName"
-                        />);
-    expect(selectInput).toMatchSnapshot();
-  });
 })

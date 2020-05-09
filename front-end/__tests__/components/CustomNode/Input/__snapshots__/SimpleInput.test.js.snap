@@ -1,0 +1,3 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Validates SimpleInput Display SimpleInput 1`] = `ShallowWrapper {}`;
