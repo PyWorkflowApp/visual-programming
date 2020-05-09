@@ -50,8 +50,6 @@ describe('Validates GlobalFlowMenu', () => {
                   onUpdate={getGlobalVars}
                   />);
 
-    flowMenu.setProps(props);
-
     flowMenu.find({ className: 'edit-global' }).simulate('click');
     expect(flowMenu.state('show')).toBe(true);
 

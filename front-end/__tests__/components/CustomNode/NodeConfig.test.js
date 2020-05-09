@@ -1,5 +1,7 @@
 import React from 'react'
+import { Col, Modal, Button, Form } from 'react-bootstrap';
 import { render } from '@testing-library/react'
+import { shallow, mount } from 'enzyme';
 import CustomNodeModel from '../../../src/components/CustomNode/CustomNodeModel';
 import NodeConfig from '../../../src/components/CustomNode/NodeConfig';
 import OptionInput from '../../../src/components/CustomNode/NodeConfig';
@@ -98,7 +100,9 @@ describe('Validate NodeConfig Modal', () => {
   });
 
   it('Display SelectInput', () => {
-    const selectInput = render(<SelectInput />);
+    const selectInput = render(<SelectInput
+                          keyName="myKeyName"
+                        />);
     expect(selectInput).toMatchSnapshot();
   });
 })
