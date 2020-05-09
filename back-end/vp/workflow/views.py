@@ -31,7 +31,7 @@ def new_workflow(request):
             name=workflow_id['id'],
             root_dir=settings.MEDIA_ROOT
         )
-        request.session.update(request.pyworkflow.to_session_dict())
+        request.session.update(request.pyworkflow.to_json())
 
         return JsonResponse(Workflow.to_graph_json(request.pyworkflow.graph))
     except (json.JSONDecodeError, KeyError) as e:
@@ -85,7 +85,7 @@ def open_workflow(request):
         combined_json = json.load(uploaded_file)
 
         request.pyworkflow = Workflow.from_json(combined_json['pyworkflow'])
-        request.session.update(request.pyworkflow.to_session_dict())
+        request.session.update(request.pyworkflow.to_json())
 
         # Send back front-end workflow
         return JsonResponse(combined_json['ui-graph'])
