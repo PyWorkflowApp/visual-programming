@@ -1,5 +1,5 @@
-import React, { useRef, useState, useEffect } from 'react';
-import { Col, Modal, Button, Form } from 'react-bootstrap';
+import React from 'react';
+import { Modal, Button, Form } from 'react-bootstrap';
 import propTypes from 'prop-types';
 import * as _ from 'lodash';
 import * as API from '../../API';
