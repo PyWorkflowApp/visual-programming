@@ -86,9 +86,9 @@ def node(request):
                      })
 @api_view(['POST', 'DELETE'])
 def handle_edge(request, node_from_id, node_to_id):
-    """ Add new edge to the graph
+    """Add new edge to the graph
 
-        Creates a new edge from node_from_id to node_to_id.
+    Creates a new edge from node_from_id to node_to_id.
     """
     # Check if the graph contains the requested Node
     node_from = request.pyworkflow.get_node(node_from_id)

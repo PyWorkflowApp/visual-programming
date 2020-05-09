@@ -3,8 +3,7 @@ from rest_framework.decorators import api_view
 from drf_yasg.utils import swagger_auto_schema
 
 
-
-@swagger_auto_schema(method='get', responses={200:'JSON response with data'})
+@swagger_auto_schema(method='get', responses={200: 'JSON response with data'})
 @api_view(['GET'])
 def info(request):
     """Retrieve app info.

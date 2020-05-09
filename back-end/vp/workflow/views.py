@@ -27,7 +27,10 @@ def new_workflow(request):
         workflow_id = json.loads(request.body)
 
         # Create new Workflow
-        request.pyworkflow = Workflow(name=workflow_id['id'], root_dir=settings.MEDIA_ROOT)
+        request.pyworkflow = Workflow(
+            name=workflow_id['id'],
+            root_dir=settings.MEDIA_ROOT
+        )
         request.session.update(request.pyworkflow.to_session_dict())
 
         return JsonResponse(Workflow.to_graph_json(request.pyworkflow.graph))
@@ -37,7 +40,9 @@ def new_workflow(request):
 
 @swagger_auto_schema(method='post',
                      operation_summary='Open workflow from file.',
-                     operation_description='Loads a JSON file from disk and translates into Workflow object and JSON object of front-end',
+                     operation_description='Loads a JSON file from disk and '
+                                           'translates into Workflow object and '
+                                           'JSON object of front-end',
                      responses={
                          200: 'Workflow representation in JSON',
                          400: 'No file specified',
@@ -131,8 +136,8 @@ def save_workflow(request):
     Returns:
         Downloads JSON file representing graph.
     """
-    # Load session data into Workflow object. If successful, return
-    # serialized graph
+    # Load session data into Workflow object.
+    # If successful, return serialized graph
     try:
         combined_json = json.dumps({
             'filename': request.pyworkflow.filename,
