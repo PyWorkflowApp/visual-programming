@@ -9,9 +9,12 @@ describe('Validates BooleanInpupt', () => {
   });
 
   it('Checked BooleanInput', () => {
+
+    const onChange = jest.fn(() => []);
     const booleanInput = shallow(<BooleanInput
                         keyName="booleanSelector"
-                        value={false}/>);
+                        value={false}
+                        onChange={onChange}/>);
 
     expect(booleanInput.find({name: "booleanSelector"}).prop('checked')).toBe(false);
 
@@ -19,5 +22,18 @@ describe('Validates BooleanInpupt', () => {
 
     booleanInput.update();
     expect(booleanInput.find({name: "booleanSelector"}).prop('checked')).toBe(true);
+  });
+
+  it('Checked BooleanInput onChange', () => {
+
+    const onChange = jest.fn(() => []);
+    const booleanInput = mount(<BooleanInput
+                        keyName="booleanSelector"
+                        value={false}
+                        onChange={onChange}/>);
+
+    booleanInput.find({keyName: "booleanSelector"}).simulate('change', {target: {checked: true}})
+
+    expect(onChange.mock.calls.length).toBe(1);
   });
 });
