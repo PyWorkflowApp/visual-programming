@@ -53,7 +53,7 @@ class WorkflowTestCase(unittest.TestCase):
 
     def test_workflow_from_json(self):
         new_workflow = Workflow("Untitled", root_dir="/tmp")
-        workflow_copy = Workflow.from_json(self.workflow.to_session_dict())
+        workflow_copy = Workflow.from_json(self.workflow.to_json())
 
         self.assertEqual(new_workflow.name, workflow_copy.name)
 
@@ -62,16 +62,17 @@ class WorkflowTestCase(unittest.TestCase):
             new_workflow = Workflow.from_json(dict())
 
     def test_empty_workflow_to_session(self):
-        new_workflow = Workflow("Untitled", root_dir="/tmp")
-        saved_workflow = new_workflow.to_session_dict()
+        new_workflow = Workflow("Untitled", root_dir="/tmp", node_dir=os.path.join(os.getcwd(), 'nodes'))
+        saved_workflow = new_workflow.to_json()
 
         workflow_to_compare = {
             'name': 'Untitled',
             'root_dir': '/tmp',
+            'node_dir': os.path.join(os.getcwd(), 'nodes'),
             'graph': Workflow.to_graph_json(new_workflow.graph),
             'flow_vars': Workflow.to_graph_json(new_workflow.flow_vars),
         }
-        self.assertDictEqual(new_workflow.to_session_dict(), workflow_to_compare)
+        self.assertDictEqual(new_workflow.to_json(), workflow_to_compare)
 
     ##########################
     # Node lists
