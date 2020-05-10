@@ -1,12 +1,11 @@
 # PyWorkflow
-|            |        |
+|            | Status |
 |------------|--------|
-| Docker     | TBD    |
-| Back-end   | ![Postman Tests](https://github.com/matthew-t-smith/visual-programming/workflows/Postman%20Tests/badge.svg) |
-| Front-end  | TBD |
+| Docker     | ![Test Docker build](https://github.com/matthew-t-smith/visual-programming/workflows/Test%20Docker%20build/badge.svg)    |
+| Back-end   | ![Test back-end](https://github.com/matthew-t-smith/visual-programming/workflows/Test%20back-end/badge.svg) |
+| Front-end  | ![Test front-end](https://github.com/matthew-t-smith/visual-programming/workflows/Test%20front-end/badge.svg) |
 | PyWorkflow | ![Code Coverage](./docs/media/pyworkflow_coverage.svg) |
-| CLI        | TBD |
-| Jest       | TBD |  
+| UI       | ![Code Coverage](./docs/media/ui_coverage.svg) |  
 
 PyWorkflow is a visual programming application for building data science
 pipelines and workflows. It is inspired by [KNIME](https://www.knime.com)

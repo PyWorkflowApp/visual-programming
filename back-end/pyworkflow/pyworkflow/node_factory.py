@@ -68,5 +68,5 @@ def custom_node(node_key, node_info):
 
         return instance
     except Exception as e:
-        print(str(e))
+        # print(str(e))
         return None

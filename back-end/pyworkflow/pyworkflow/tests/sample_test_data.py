@@ -28,7 +28,13 @@ GOOD_NODES = {
         "node_key": "JoinNode",
         "is_global": False,
         "options": {
-            "on": "key"
+            "on": "to_replace"
+        },
+        "option_replace": {
+            "on": {
+                "node_id": "7",
+                "is_global": False,
+            }
         }
     },
     "filter_node": {
@@ -51,14 +57,32 @@ GOOD_NODES = {
             "on": "key"
         }
     },
+    "graph_node": {
+        "name": "Graph",
+        "node_id": "6",
+        "node_type": "visualization",
+        "node_key": "GraphNode",
+        "is_global": False,
+    },
     "string_input": {
         "name": "String Input",
-        "node_id": "6",
+        "node_id": "7",
         "node_type": "flow_control",
         "node_key": "StringNode",
         "is_global": False,
         "options": {
-            "default_value": "My value",
+            "default_value": "key",
+            "var_name": "local_flow_var"
+        }
+    },
+    "integer_input": {
+        "name": "Integer Input",
+        "node_id": "8",
+        "node_type": "flow_control",
+        "node_key": "IntegerNode",
+        "is_global": False,
+        "options": {
+            "default_value": 42,
             "var_name": "my_var"
         }
     },
@@ -69,8 +93,8 @@ GOOD_NODES = {
         "node_key": "StringNode",
         "is_global": True,
         "options": {
-            "default_value": "My value",
-            "var_name": "my_var"
+            "default_value": ",",
+            "var_name": "global_flow_var"
         }
     },
 }
@@ -97,6 +121,13 @@ BAD_NODES = {
         "node_key": "foobar",
         "is_global": False,
     },
+    "bad_visualization_node": {
+        "name": "Foobar",
+        "node_id": "1",
+        "node_type": "visualization",
+        "node_key": "foobar",
+        "is_global": False,
+    },
     "bad_node_type": {
         "name": "Foobar",
         "node_id": "1",
@@ -109,6 +140,11 @@ BAD_NODES = {
 GOOD_PARAMETERS = {
     "string_param": StringParameter(
         'Index',
+        default='my value',
+        docstring='my docstring'
+    ),
+    "text_param": TextParameter(
+        'CSV Input',
         default='my value',
         docstring='my docstring'
     ),
@@ -125,6 +161,12 @@ GOOD_PARAMETERS = {
         'Integer',
         default=42,
         docstring="CSV File"
+    ),
+    "select_param": SelectParameter(
+        'Graph type',
+        options=["area", "bar", "line", "point"],
+        default='bar',
+        docstring='my docstring'
     ),
 }
 
@@ -149,6 +191,16 @@ BAD_PARAMETERS = {
         default=42,
         docstring="CSV File"
     ),
+    "bad_text_param": TextParameter(
+        'Bad Bool Param',
+        default=42,
+        docstring="CSV File"
+    ),
+    "bad_select_param": SelectParameter(
+        'Bad Bool Param',
+        default=42,
+        docstring="CSV File"
+    ),
 }
 
 DATA_FILES = {
@@ -162,5 +214,22 @@ DATA_FILES = {
     "sample2": (',key,B\n'
                 '0,K0,B0\n'
                 '1,K1,B1\n'
-                '2,K2,B2\n')
+                '2,K2,B2\n'),
+    "good_custom_node": ('from pyworkflow.node import Node, NodeException\n'
+                         'from pyworkflow.parameters import *\n'
+                         'class MyGoodCustomNode(Node):\n'
+                         '\tname="Custom Node"\n'
+                         '\tnum_in=1\n'
+                         '\tnum_out=1\n'
+                         '\tdef execute(self, predecessor_data, flow_vars):\n'
+                         '\t\tprint("Hello world")\n'),
+    "bad_custom_node": ('from pyworkflow.node import Node, NodeException\n'
+                        'from pyworkflow.parameters import *\n'
+                        'import torch\n'
+                        'class MyBadCustomNode(Node):\n'
+                        '\tname="Custom Node"\n'
+                        '\tnum_in=1\n'
+                        '\tnum_out=1\n'
+                        '\tdef execute(self, predecessor_data, flow_vars):\n'
+                        '\t\tprint("Hello world")\n'),
 }

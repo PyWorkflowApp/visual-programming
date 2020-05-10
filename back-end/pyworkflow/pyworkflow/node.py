@@ -111,7 +111,7 @@ class Node:
         }
 
     def __str__(self):
-        return "Test"
+        return self.name
 
 
 class FlowNode(Node):
