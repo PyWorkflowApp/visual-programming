@@ -1,0 +1,69 @@
+# This workflow tests starting the back-end server, unit and API tests
+
+name: Test back-end
+
+on:
+  push:
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  setup-back-end:
+    runs-on: ubuntu-latest
+    steps:
+    # Checks-out your repository, for access in the workflow
+    - uses: actions/checkout@v2
+
+    # Setup python
+    - name: Set up Python 3.x
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.x
+
+    # Install dependencies
+    - name: Install dependencies
+      run: |
+        python3 -m pip install --upgrade pip
+        pip3 install pipenv
+        cd back-end
+        pipenv install --dev
+
+    # Add .env and test data
+    - name: Add test/env data
+      run: |
+        cd back-end
+        pipenv run echo "SECRET_KEY='TEMPORARY SECRET KEY'" > vp/.environment
+        echo ",key,A
+              0,K0,A0
+              1,K1,A1
+              2,K2,A2
+              3,K3,A3
+              4,K4,A4
+              5,K5,A5" > /tmp/sample.csv
+
+    # Run unittests
+    - name: Run unittests
+      run: |
+        cd back-end/pyworkflow/pyworkflow
+        pipenv run coverage run -m unittest tests/*.py
+        pipenv run coverage report
+
+    # Start server in background for API tests
+    - name: Start server
+      run: |
+        cd back-end/vp
+        pipenv run nohup python3 manage.py runserver &
+
+
+  postman-tests:
+    needs: setup-back-end
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/checkout@master
+    - uses: matt-ball/newman-action@master
+      with:
+        collection: Postman/Visual\ Programming-Tests.postman_collection.json
+        environment: Postman/Local\ Testing.postman_environment.json
+        

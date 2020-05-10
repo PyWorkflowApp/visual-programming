@@ -15,6 +15,14 @@ class ParameterTestCase(unittest.TestCase):
 
         self.assertDictEqual(GOOD_PARAMETERS["string_param"].to_json(), full_json)
 
+    def test_parameter_validate_not_implemented(self):
+        test_param = Parameter(dict())
+        params = [test_param]
+
+        for param_to_validate in params:
+            with self.assertRaises(NotImplementedError):
+                param_to_validate.validate()
+
     def test_validate_string_param(self):
         with self.assertRaises(ParameterValidationError):
             BAD_PARAMETERS["bad_string_param"].validate()
@@ -26,6 +34,14 @@ class ParameterTestCase(unittest.TestCase):
     def test_validate_boolean_param(self):
         with self.assertRaises(ParameterValidationError):
             BAD_PARAMETERS["bad_bool_param"].validate()
+
+    def test_validate_text_param(self):
+        with self.assertRaises(ParameterValidationError):
+            BAD_PARAMETERS["bad_text_param"].validate()
+
+    def test_validate_select_param(self):
+        with self.assertRaises(ParameterValidationError):
+            BAD_PARAMETERS["bad_select_param"].validate()
 
     def test_validate_file_param(self):
         with self.assertRaises(ParameterValidationError):
