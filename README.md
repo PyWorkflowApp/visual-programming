@@ -59,8 +59,7 @@ The easiest way to get started is by deploying both Docker containers on your
 local machine. For help installing Docker, [reference the documentation for your
 specific system](https://docs.docker.com/get-docker/).
 
-To run the application with `docker-compose`, run `docker-compose up` from the root directory
-(or `docker-compose up --build` to rebuild the images first).
+To run the application with `docker-compose`, run `docker-compose -f docker-compose.[ENV].yml up` from the root directory (or `docker-compose -f docker-compose.[ENV].yml up --build` to rebuild the images first). Note that you must fill in the `[ENV]` with either `dev` or `prod`.
 
 Use `docker-compose down` to shut down the application gracefully.
 
