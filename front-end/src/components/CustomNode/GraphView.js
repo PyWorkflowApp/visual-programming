@@ -111,7 +111,7 @@ export default class GraphView extends React.Component {
 
       return (
         <div className={className} style={style}>
-          {(rowIndex === 0) ? column : this.state.data[column][rowIndex.toString()]}
+          {(rowIndex === 0) ? column : this.state.data[column][(rowIndex - 1).toString()]}
         </div>
       );
     };
@@ -168,7 +168,7 @@ export default class GraphView extends React.Component {
                       columnCount={this.state.columns.length}
                       columnWidth={index => this.columnWidths(index)}
                       height={displayHeight < 600 ? displayHeight + 5 : 600}
-                      rowCount={this.state.rows.length}
+                      rowCount={this.state.rows.length + 1}
                       rowHeight={index => 20}
                       width={displayWidth < 900 ? displayWidth : 900}
                   >
