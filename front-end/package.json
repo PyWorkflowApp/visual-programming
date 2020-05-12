@@ -33,7 +33,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "jest --collect-coverage --passWithNoTests",
+    "test": "jest --collect-coverage --passWithNoTests --no-cache",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
