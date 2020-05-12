@@ -13,6 +13,7 @@
     "closest": "0.0.1",
     "dagre": "^0.8.5",
     "jest": "24.9.0",
+    "jest-canvas-mock": "^2.2.0",
     "jquery": "^3.4.1",
     "mathjs": "^6.6.1",
     "pathfinding": "^0.4.18",
