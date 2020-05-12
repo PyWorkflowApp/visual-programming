@@ -9,6 +9,9 @@ export default class VPPortModel extends DefaultPortModel {
       }
 
       canLinkToPort(port) {
+          if (port == null) {
+            return false;
+          }
           // if connecting to flow port, make sure this is a flow port
           // and opposite of other's direction
           if (port.options.name.includes("flow")) {
