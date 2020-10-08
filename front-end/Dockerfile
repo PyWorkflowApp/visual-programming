@@ -3,6 +3,7 @@ FROM node:14-alpine
 WORKDIR /visual-programming/front-end
 
 COPY package.json .
+COPY package-lock.json .
 
 RUN npm install
 
