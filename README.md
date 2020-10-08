@@ -81,8 +81,12 @@ Note: there [is a known issue with `react-scripts` v3.4.1](https://github.com/fa
 that may cause the front-end container to exit with code 0. If this happens,
 you can add `-e CI=true` to the `docker-run` command above for the front-end.
 
-NOTE: For development outside of Docker, change ./front-end/package.json from "proxy": "http://back-end:8000" to "http://localhost:8000" to work.
+NOTE: For development outside of Docker, change `./front-end/package.json`
+from `"proxy": "http://back-end:8000"` to `"proxy": http://localhost:8000"` to work.
 
+After the Docker containers are started, and both front- and back-ends are running,
+you can access the application by loading [http://localhost:3000/](http://localhost:3000/)
+in your browser.
 
 ## Serve locally
 
@@ -139,6 +143,10 @@ npm install
 ```
 npm start
 ```
+
+By default, the `react-scripts` should open your default browser to the main
+application page. If not, you can go to [http://localhost:3000/](http://localhost:3000/)
+in your browser.
 
 # CLI
 PyWorkflow also provides a command-line interface to execute pre-built workflows
