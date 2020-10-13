@@ -48,8 +48,6 @@ class Node:
         """
         execution_options = dict()
 
-        # TODO: Can we iterate through flow_vars instead?
-        #       If none are included, we can just return `self.options`.
         for key, option in self.options.items():
 
             if key in flow_nodes:

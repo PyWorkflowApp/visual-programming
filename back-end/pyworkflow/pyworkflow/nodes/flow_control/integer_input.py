@@ -1,11 +1,11 @@
-from pyworkflow.node import FlowNode, NodeException
+from pyworkflow.node import FlowNode
 from pyworkflow.parameters import *
 
 
 class IntegerNode(FlowNode):
-    """StringNode object
+    """IntegerNode object
 
-    Allows for Strings to replace 'string' fields in Nodes
+    Allows for Integers to replace fields representing numbers in Nodes
     """
     name = "Integer Input"
     num_in = 0

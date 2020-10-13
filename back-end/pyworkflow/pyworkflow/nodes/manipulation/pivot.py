@@ -5,6 +5,14 @@ import pandas as pd
 
 
 class PivotNode(ManipulationNode):
+    """Create a spreadsheet-style pivot table as a DataFrame.
+
+    pandas reference:
+    https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.pivot_table.html
+
+    Raises:
+        NodeException: catches exceptions when dealing with pandas DataFrames.
+    """
     name = "Pivoting"
     num_in = 1
     num_out = 3
@@ -56,7 +64,18 @@ class PivotNode(ManipulationNode):
     def execute(self, predecessor_data, flow_vars):
         try:
             input_df = pd.DataFrame.from_dict(predecessor_data[0])
-            output_df = pd.DataFrame.pivot_table(input_df, **self.options)
+            output_df = pd.DataFrame.pivot_table(
+                input_df,
+                index=flow_vars['index'].get_value(),
+                values=flow_vars['values'].get_value(),
+                columns=flow_vars['columns'].get_value(),
+                aggfunc=flow_vars['aggfunc'].get_value(),
+                fill_value=flow_vars['fill_value'].get_value(),
+                margins=flow_vars['margins'].get_value(),
+                dropna=flow_vars['dropna'].get_value(),
+                margins_name=flow_vars['margins_name'].get_value(),
+                observed=flow_vars['observed'].get_value(),
+            )
             return output_df.to_json()
         except Exception as e:
             raise NodeException('pivot', str(e))

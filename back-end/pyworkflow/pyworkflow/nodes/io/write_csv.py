@@ -5,13 +5,10 @@ import pandas as pd
 
 
 class WriteCsvNode(IONode):
-    """WriteCsvNode
-
-    Writes the current DataFrame to a CSV file.
+    """Writes the current DataFrame to a CSV file.
 
     Raises:
-        NodeException: any error writing CSV file, converting
-            from DataFrame.
+        NodeException: any error writing CSV file, converting from DataFrame.
     """
     name = "Write CSV"
     num_in = 1

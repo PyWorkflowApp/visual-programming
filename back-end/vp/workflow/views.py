@@ -1,14 +1,11 @@
 import os
 import json
-import sys
 
 from django.http import JsonResponse, HttpResponse
 from django.conf import settings
 from rest_framework.decorators import api_view
 from pyworkflow import Workflow, WorkflowException
 from drf_yasg.utils import swagger_auto_schema
-
-from modulefinder import ModuleFinder
 
 
 @swagger_auto_schema(method='post',
@@ -30,8 +27,11 @@ def new_workflow(request):
         workflow_id = json.loads(request.body)
 
         # Create new Workflow
-        request.pyworkflow = Workflow(name=workflow_id['id'], root_dir=settings.MEDIA_ROOT)
-        request.session.update(request.pyworkflow.to_session_dict())
+        request.pyworkflow = Workflow(
+            name=workflow_id['id'],
+            root_dir=settings.MEDIA_ROOT
+        )
+        request.session.update(request.pyworkflow.to_json())
 
         return JsonResponse(Workflow.to_graph_json(request.pyworkflow.graph))
     except (json.JSONDecodeError, KeyError) as e:
@@ -40,7 +40,9 @@ def new_workflow(request):
 
 @swagger_auto_schema(method='post',
                      operation_summary='Open workflow from file.',
-                     operation_description='Loads a JSON file from disk and translates into Workflow object and JSON object of front-end',
+                     operation_description='Loads a JSON file from disk and '
+                                           'translates into Workflow object and '
+                                           'JSON object of front-end',
                      responses={
                          200: 'Workflow representation in JSON',
                          400: 'No file specified',
@@ -56,7 +58,7 @@ def open_workflow(request):
     Args:
         request: Django request Object, should follow the pattern:
             {
-                react: {react-diagrams JSON},
+                ui-graph: {JSON representation of visual graph},
                 pyworkflow: {
                     name: Workflow name,
                     root_dir: File storage,
@@ -67,7 +69,7 @@ def open_workflow(request):
 
     Raises:
         JSONDecodeError: invalid JSON data
-        KeyError: request missing either 'react' or 'pyworkflow' data
+        KeyError: request missing either 'ui-graph' or 'pyworkflow' data
         WorkflowException: error loading JSON into NetworkX DiGraph
 
     Returns:
@@ -83,14 +85,14 @@ def open_workflow(request):
         combined_json = json.load(uploaded_file)
 
         request.pyworkflow = Workflow.from_json(combined_json['pyworkflow'])
-        request.session.update(request.pyworkflow.to_session_dict())
+        request.session.update(request.pyworkflow.to_json())
 
         # Send back front-end workflow
-        return JsonResponse(combined_json['react'])
+        return JsonResponse(combined_json['ui-graph'])
     except KeyError as e:
         return JsonResponse({'open_workflow': 'Missing data for ' + str(e)}, status=500)
     except json.JSONDecodeError as e:
-        return JsonResponse({'No React JSON provided': str(e)}, status=500)
+        return JsonResponse({'No JSON provided for UI graph': str(e)}, status=500)
     except WorkflowException as e:
         return JsonResponse({e.action: e.reason}, status=404)
 
@@ -134,15 +136,16 @@ def save_workflow(request):
     Returns:
         Downloads JSON file representing graph.
     """
-    # Load session data into Workflow object. If successful, return
-    # serialized graph
+    # Load session data into Workflow object.
+    # If successful, return serialized graph
     try:
         combined_json = json.dumps({
             'filename': request.pyworkflow.filename,
-            'react': json.loads(request.body),
+            'ui-graph': json.loads(request.body),
             'pyworkflow': {
                 'name': request.pyworkflow.name,
                 'root_dir': request.pyworkflow.root_dir,
+                'node_dir': request.pyworkflow.node_dir,
                 'graph': Workflow.to_graph_json(request.pyworkflow.graph),
                 'flow_vars': Workflow.to_graph_json(request.pyworkflow.flow_vars),
             }

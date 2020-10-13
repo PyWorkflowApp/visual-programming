@@ -5,6 +5,14 @@ import pandas as pd
 
 
 class FilterNode(ManipulationNode):
+    """Subset the DataFrame rows or columns according to the specified index labels.
+
+    pandas API reference:
+    https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.filter.html
+
+    Raises:
+        NodeException: catches exceptions when dealing with pandas DataFrames.
+    """
     name = "Filter"
     num_in = 1
     num_out = 1
@@ -31,7 +39,13 @@ class FilterNode(ManipulationNode):
     def execute(self, predecessor_data, flow_vars):
         try:
             input_df = pd.DataFrame.from_dict(predecessor_data[0])
-            output_df = pd.DataFrame.filter(input_df, **self.options)
+            output_df = pd.DataFrame.filter(
+                input_df,
+                items=flow_vars['items'].get_value(),
+                like=flow_vars['like'].get_value(),
+                regex=flow_vars['regex'].get_value(),
+                axis=flow_vars['axis'].get_value(),
+            )
             return output_df.to_json()
         except Exception as e:
             raise NodeException('filter', str(e))
