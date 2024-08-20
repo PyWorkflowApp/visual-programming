@@ -5,13 +5,10 @@ import pandas as pd
 
 
 class ReadCsvNode(IONode):
-    """ReadCsvNode
-
-    Reads a CSV file into a pandas DataFrame.
+    """Reads a CSV file into a pandas DataFrame.
 
     Raises:
-         NodeException: any error reading CSV file, converting
-            to DataFrame.
+         NodeException: any error reading CSV file, converting to DataFrame.
     """
     name = "Read CSV"
     num_in = 0

@@ -3,8 +3,7 @@ import importlib
 
 
 def node_factory(node_info):
-    # Create a new Node with info
-    # TODO: should perform error-checking or add default values if missing
+    """Create a new Node with info."""
     node_type = node_info.get('node_type')
     node_key = node_info.get('node_key')
 

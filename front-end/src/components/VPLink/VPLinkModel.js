@@ -27,9 +27,6 @@ export default class VPLinkModel extends DefaultLinkModel {
       return this.getLastPoint().getX() === 0 && this.getLastPoint().getY() === 0;
     }
 
-    /**
-     * TODO: Notify backend the link has been removed
-    */
     remove() {
         super.remove();
         API.deleteEdge(this)

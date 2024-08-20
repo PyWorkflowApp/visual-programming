@@ -5,12 +5,23 @@ import pandas as pd
 
 
 class JoinNode(ManipulationNode):
+    """Merge DataFrame or named Series objects with a database-style join.
+
+    pandas API reference:
+    https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.merge.html
+
+    Raises:
+        NodeException: catches exceptions when dealing with pandas DataFrames.
+    """
     name = "Joiner"
     num_in = 2
     num_out = 1
 
     OPTIONS = {
-        "on": StringParameter("Join Column", docstring="Name of column to join on")
+        "on": StringParameter(
+            "Join Column",
+            docstring="Name of column to join on"
+        )
     }
 
     def execute(self, predecessor_data, flow_vars):

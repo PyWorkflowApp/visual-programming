@@ -78,7 +78,7 @@ export async function updateNode(node, config, flowConfig) {
     node.options.option_replace = flowConfig;
     const payload = {...node.options, options: node.config};
     const options = {
-        method: "POST",
+        method: "PATCH",
         body: JSON.stringify(payload)
     };
     const endpoint = node.options.is_global ? "node/global" : "node";
@@ -211,7 +211,6 @@ export async function uploadDataFile(formData) {
  * @returns {Promise<void>}
  */
 export async function downloadDataFile(node) {
-    // TODO: make this not a giant security problem
     let contentType;
 
     const payload = {...node.options, options: node.config};

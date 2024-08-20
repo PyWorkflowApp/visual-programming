@@ -40,6 +40,21 @@ class Workflow:
         except OSError as e:
             raise WorkflowException('init workflow', str(e))
 
+    ##################
+    # GETTERS/SETTERS
+    ##################
+    @property
+    def name(self):
+        return self._name
+
+    @name.setter
+    def name(self, name: str):
+        self._name = name
+
+    @property
+    def root_dir(self):
+        return self._root_dir
+
     @property
     def node_dir(self):
         return self._node_dir
@@ -48,19 +63,139 @@ class Workflow:
     def graph(self):
         return self._graph
 
+    @property
+    def flow_vars(self):
+        return self._flow_vars
+
+    @property
+    def filename(self):
+        return self.name + '.json'
+
+    @staticmethod
+    def generate_file_name(workflow, node_id):
+        """Generates a file name for saving intermediate execution data.
+
+        Current format is 'workflow_name - node_id'
+
+        Args:
+            workflow: the workflow
+            node_id: the id of the workflow
+        """
+        return f"{workflow.name}-{node_id}"
+
     def path(self, file_name):
         return os.path.join(self.root_dir, file_name)
 
     def node_path(self, node_type, file_name):
         return os.path.join(self.node_dir, node_type, file_name)
 
-    @property
-    def root_dir(self):
-        return self._root_dir
+    ##################
+    # EDGE OPERATIONS
+    ##################
+    def add_edge(self, node_from: Node, node_to: Node):
+        """ Add a Node object to the graph.
 
-    @property
-    def flow_vars(self):
-        return self._flow_vars
+        Args:
+            node_from - The Node the edge originates from
+              node_to - The Node the edge ends at
+
+        Returns:
+            Tuple representing the new Edge (from, to)
+        """
+        # Prevent duplicate edges between the same two nodes
+        # TODO: This may be incorrect usage for a `node_to` that has multi-in
+        from_id = node_from.node_id
+        to_id = node_to.node_id
+
+        if self.graph.has_edge(from_id, to_id):
+            raise WorkflowException('add_node', 'Edge between nodes already exists.')
+
+        self.graph.add_edge(from_id, to_id)
+
+        return (from_id, to_id)
+
+    def remove_edge(self, node_from: Node, node_to: Node):
+        """ Remove a node from the graph.
+
+        Returns:
+            Tuple representing the removed Edge (from, to)
+
+        Raises:
+            WorkflowException: on issue with removing node from graph
+        """
+        from_id = node_from.node_id
+        to_id = node_to.node_id
+
+        try:
+            self.graph.remove_edge(from_id, to_id)
+        except nx.NetworkXError:
+            raise WorkflowException('remove_edge', 'Edge from %s to %s does not exist in graph.' % (from_id, to_id))
+
+        return (from_id, to_id)
+
+    ##################
+    # NODE OPERATIONS
+    ##################
+    def get_all_flow_var_options(self, node_id):
+        """Retrieve all FlowNode options for a specified Node.
+
+        A Node can use all global FlowNodes, and any connected local FlowNodes
+        for variable substitution.
+
+        Args:
+            node_id: The Node to GET
+
+        Returns:
+            list of all FlowNode objects, converted to JSON
+        """
+        # Add global FlowNodes
+        graph_data = Workflow.to_graph_json(self.flow_vars)
+        flow_variables = graph_data['nodes']
+
+        # Append local FlowNodes
+        for predecessor_id in self.get_node_predecessors(node_id):
+            node = self.get_node(predecessor_id)
+
+            if node.node_type == 'flow_control':
+                flow_variables.append(node.to_json())
+
+        return flow_variables
+
+    def get_flow_var(self, node_id):
+        """Retrieves a global flow variable from workflow, if exists
+
+        Return:
+            FlowNode object, if one exists. Otherwise, None.
+        """
+        if self.flow_vars.has_node(node_id) is not True:
+            return None
+
+        node_info = self.flow_vars.nodes[node_id]
+        return node_factory(node_info)
+
+    def get_node(self, node_id):
+        """Retrieves Node from workflow, if exists
+
+        Return:
+            Node object, if one exists. Otherwise, None.
+        """
+        if self.graph.has_node(node_id) is not True:
+            return None
+
+        node_info = self.graph.nodes[node_id]
+        return node_factory(node_info)
+
+    def get_node_predecessors(self, node_id):
+        try:
+            return list(self.graph.predecessors(node_id))
+        except nx.NetworkXError as e:
+            raise WorkflowException('get node predecessors', str(e))
+
+    def get_node_successors(self, node_id):
+        try:
+            return list(self.graph.successors(node_id))
+        except nx.NetworkXError as e:
+            raise WorkflowException('get node successors', str(e))
 
     def get_packaged_nodes(self, root_path=None, node_type=None):
         """Retrieve list of Nodes available to the Workflow.
@@ -128,54 +263,20 @@ class Workflow:
             # Otherwise, return list containing all Nodes of a `node_type`
             return nodes
 
-    def get_node(self, node_id):
-        """Retrieves Node from workflow, if exists
+    def remove_node(self, node):
+        """ Remove a node from the graph.
 
-        Return:
-            Node object, if one exists. Otherwise, None.
+        Raises:
+            WorkflowException: on issue with removing node from graph
         """
-        if self._graph.has_node(node_id) is not True:
-            return None
+        try:
+            # Select the correct graph to modify
+            graph = self.flow_vars if node.is_global else self.graph
 
-        node_info = self.graph.nodes[node_id]
-        return node_factory(node_info)
-
-    def get_flow_var(self, node_id):
-        """Retrieves a global flow variable from workflow, if exists
-
-        Return:
-            FlowNode object, if one exists. Otherwise, None.
-        """
-        if self.flow_vars.has_node(node_id) is not True:
-            return None
-
-        node_info = self.flow_vars.nodes[node_id]
-        return node_factory(node_info)
-
-    def get_all_flow_var_options(self, node_id):
-        """Retrieve all FlowNode options for a specified Node.
-
-        A Node can use all global FlowNodes, and any connected local FlowNodes
-        for variable substitution.
-
-        Args:
-            node_id: The Node to GET
-
-        Returns:
-            list of all FlowNode objects, converted to JSON
-        """
-        # Add global FlowNodes
-        graph_data = Workflow.to_graph_json(self.flow_vars)
-        flow_variables = graph_data['nodes']
-
-        # Append local FlowNodes
-        for predecessor_id in self.get_node_predecessors(node_id):
-            node = self.get_node(predecessor_id)
-
-            if node.node_type == 'flow_control':
-                flow_variables.append(node.to_json())
-
-        return flow_variables
+            graph.remove_node(node.node_id)
+            return node
+        except (AttributeError, nx.NetworkXError):
+            raise WorkflowException('remove_node', 'Node does not exist in graph.')
 
     def update_or_add_node(self, node: Node):
         """ Update or add a Node object to the graph.
@@ -200,86 +301,9 @@ class Workflow:
 
         return node
 
-    @property
-    def name(self):
-        return self._name
-
-    @name.setter
-    def name(self, name: str):
-        self._name = name
-
-    @property
-    def filename(self):
-        return self.name + '.json'
-
-    def add_edge(self, node_from: Node, node_to: Node):
-        """ Add a Node object to the graph.
-
-        Args:
-            node_from - The Node the edge originates from
-              node_to - The Node the edge ends at
-
-        Returns:
-            Tuple representing the new Edge (from, to)
-        """
-        # Prevent duplicate edges between the same two nodes
-        # TODO: This may be incorrect usage for a `node_to` that has multi-in
-        from_id = node_from.node_id
-        to_id = node_to.node_id
-
-        if self.graph.has_edge(from_id, to_id):
-            raise WorkflowException('add_node', 'Edge between nodes already exists.')
-
-        self.graph.add_edge(from_id, to_id)
-
-        return (from_id, to_id)
-
-    def remove_edge(self, node_from: Node, node_to: Node):
-        """ Remove a node from the graph.
-
-        Returns:
-            Tuple representing the removed Edge (from, to)
-
-        Raises:
-            WorkflowException: on issue with removing node from graph
-        """
-        from_id = node_from.node_id
-        to_id = node_to.node_id
-
-        try:
-            self.graph.remove_edge(from_id, to_id)
-        except nx.NetworkXError:
-            raise WorkflowException('remove_edge', 'Edge from %s to %s does not exist in graph.' % (from_id, to_id))
-
-        return (from_id, to_id)
-
-    def remove_node(self, node):
-        """ Remove a node from the graph.
-
-        Raises:
-            WorkflowException: on issue with removing node from graph
-        """
-        try:
-            # Select the correct graph to modify
-            graph = self.flow_vars if node.is_global else self.graph
-
-            graph.remove_node(node.node_id)
-            return node
-        except (AttributeError, nx.NetworkXError):
-            raise WorkflowException('remove_node', 'Node does not exist in graph.')
-
-    def get_node_successors(self, node_id):
-        try:
-            return list(self.graph.successors(node_id))
-        except nx.NetworkXError as e:
-            raise WorkflowException('get node successors', str(e))
-
-    def get_node_predecessors(self, node_id):
-        try:
-            return list(self.graph.predecessors(node_id))
-        except nx.NetworkXError as e:
-            raise WorkflowException('get node predecessors', str(e))
-
+    ####################
+    # EXECUTION METHODS
+    ####################
     def execute(self, node_id):
         """Execute a single Node in the graph.
 
@@ -318,6 +342,14 @@ class Workflow:
             raise WorkflowException('execute', 'There was a problem saving node output.')
 
         return node_to_execute
+
+    def execution_order(self):
+        try:
+            return list(nx.topological_sort(self.graph))
+        except (nx.NetworkXError, nx.NetworkXUnfeasible) as e:
+            raise WorkflowException('execution order', str(e))
+        except RuntimeError as e:
+            raise WorkflowException('execution order', 'The graph was changed while generating the execution order')
 
     def load_flow_nodes(self, option_replace):
         """Construct dict of FlowNodes indexed by option name.
@@ -393,26 +425,9 @@ class Workflow:
 
         return input_data
 
-    def execution_order(self):
-        try:
-            return list(nx.topological_sort(self.graph))
-        except (nx.NetworkXError, nx.NetworkXUnfeasible) as e:
-            raise WorkflowException('execution order', str(e))
-        except RuntimeError as e:
-            raise WorkflowException('execution order', 'The graph was changed while generating the execution order')
-
-    @staticmethod
-    def upload_file(uploaded_file, to_open):
-        try:
-            # TODO: Change to a stream/other method for large files?
-            with open(to_open, 'wb') as f:
-                f.write(uploaded_file.read())
-
-            uploaded_file.close()
-            return to_open
-        except OSError as e:
-            raise WorkflowException('upload_file', str(e))
-
+    ##################
+    # FILE I/O
+    ##################
     def download_file(self, node_id):
         node = self.get_node(node_id)
         if node is None:
@@ -433,30 +448,6 @@ class Workflow:
             raise WorkflowException('download_file', '%s does not have an associated file' % node_id)
         except OSError as e:
             raise WorkflowException('download_file', str(e))
-
-    @staticmethod
-    def store_node_data(workflow, node_id, data):
-        """Store Node data
-
-        Writes the current DataFrame to disk in JSON format.
-
-        Args:
-            workflow: The Workflow that stores the graph.
-            node_id: The Node which contains a DataFrame to save.
-            data: A pandas DataFrame converted to JSON.
-
-        Returns:
-
-        """
-        file_name = Workflow.generate_file_name(workflow, node_id)
-        file_path = workflow.path(file_name)
-
-        try:
-            with open(file_path, 'w') as f:
-                f.write(data)
-            return file_name
-        except Exception as e:
-            return None
 
     def retrieve_node_data(self, node_to_retrieve):
         """Retrieve Node data
@@ -487,32 +478,44 @@ class Workflow:
             raise WorkflowException('retrieve node data', str(e))
 
     @staticmethod
-    def read_graph_json(json_data):
-        """Deserialize JSON NetworkX graph
+    def store_node_data(workflow, node_id, data):
+        """Store Node data
+
+        Writes the current DataFrame to disk in JSON format.
 
         Args:
-            json_data: JSON data from which to read JSON-serialized graph
+            workflow: The Workflow that stores the graph.
+            node_id: The Node which contains a DataFrame to save.
+            data: A pandas DataFrame converted to JSON.
 
         Returns:
-             NetworkX DiGraph object
 
-        Raises:
-            NetworkXError: on issue with loading JSON graph data
         """
-        return nx.readwrite.json_graph.node_link_graph(json_data)
+        file_name = Workflow.generate_file_name(workflow, node_id)
+        file_path = workflow.path(file_name)
+
+        try:
+            with open(file_path, 'w') as f:
+                f.write(data)
+            return file_name
+        except Exception as e:
+            return None
 
     @staticmethod
-    def generate_file_name(workflow, node_id):
-        """Generates a file name for saving intermediate execution data.
+    def upload_file(uploaded_file, to_open):
+        try:
+            # TODO: Change to a stream/other method for large files?
+            with open(to_open, 'wb') as f:
+                f.write(uploaded_file.read())
 
-        Current format is 'workflow_name - node_id'
+            uploaded_file.close()
+            return to_open
+        except OSError as e:
+            raise WorkflowException('upload_file', str(e))
 
-        Args:
-            workflow: the workflow
-            node_id: the id of the workflow
-        """
-        return f"{workflow.name}-{node_id}"
-
+    ############################
+    # WORKFLOW (DE)SERIALIZATION
+    ############################
     @classmethod
     def from_json(cls, json_data):
         """Load Workflow from JSON data.
@@ -528,33 +531,63 @@ class Workflow:
                 malformed NetworkX graph data (NetworkXError)
         """
         try:
-            name = json_data['name']
-            root_dir = json_data['root_dir']
-            graph = Workflow.read_graph_json(json_data['graph'])
-            flow_vars = Workflow.read_graph_json(json_data['flow_vars'])
-
-            return cls(name=name, root_dir=root_dir, graph=graph, flow_vars=flow_vars)
+            return cls(
+                name=json_data['name'],
+                root_dir=json_data['root_dir'],
+                node_dir=json_data['node_dir'],
+                graph=Workflow.read_graph_json(json_data['graph']),
+                flow_vars=Workflow.read_graph_json(json_data['flow_vars']),
+            )
         except KeyError as e:
             raise WorkflowException('from_json', str(e))
         except nx.NetworkXError as e:
             raise WorkflowException('from_json', str(e))
 
+    def to_json(self):
+        """Save Workflow information in JSON format."""
+        try:
+            return {
+                'name': self.name,
+                'root_dir': self.root_dir,
+                'node_dir': self.node_dir,
+                'graph': Workflow.to_graph_json(self.graph),
+                'flow_vars': Workflow.to_graph_json(self.flow_vars),
+            }
+        except nx.NetworkXError as e:
+            raise WorkflowException('to_json', str(e))
+
+    ####################
+    # NetworkX GRAPH I/O
+    ####################
+    @staticmethod
+    def read_graph_json(json_data):
+        """Deserialize JSON NetworkX graph
+
+        Args:
+            json_data: JSON data from which to read JSON-serialized graph
+
+        Returns:
+             NetworkX DiGraph object
+
+        Raises:
+            NetworkXError: on issue with loading JSON graph data
+        """
+        return nx.readwrite.json_graph.node_link_graph(json_data)
+
     @staticmethod
     def to_graph_json(graph):
-        return nx.readwrite.json_graph.node_link_data(graph)
+        """Serialize JSON NetworkX graph
 
-    def to_session_dict(self):
-        """Store Workflow information in the Django session.
+        Args:
+            graph: NetworkX graph to save to JSON
+
+        Returns:
+            JSON representation of NetworkX graph
+
+        Raises:
+            NetworkXError: on issue with saving graph to JSON
         """
-        try:
-            out = dict()
-            out['name'] = self.name
-            out['root_dir'] = self.root_dir
-            out['graph'] = Workflow.to_graph_json(self.graph)
-            out['flow_vars'] = Workflow.to_graph_json(self.flow_vars)
-            return out
-        except nx.NetworkXError as e:
-            raise WorkflowException('to_session_dict', str(e))
+        return nx.readwrite.json_graph.node_link_data(graph)
 
 
 class WorkflowUtils:
